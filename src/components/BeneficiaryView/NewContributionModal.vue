@@ -18,6 +18,7 @@
                         Tipo de Apoyo
                     </label>
                     <select id="contributionType" v-model="contribution.contributionType"
+                        @change="getContributionItemsByCategory"
                         class="input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                         required>
                         <option value="" disabled>Seleccione un tipo</option>
@@ -132,6 +133,7 @@ const getContributionItemsByCategory = async () => {
     const response = await contributionServices.getContributionItemsByCategory({
       category: contribution.value.contributionType,
     })
+    console.log(response)
     if (response.code === "ERR_NETWORK") {
       toast.error('No se pudo conectar con el servidor')
     } else {

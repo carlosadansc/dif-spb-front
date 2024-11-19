@@ -7,9 +7,5 @@ const getContributionItemsByCategory = async (params) => {
 }
 
 export default {
-    getBeneficiary,
-    getBeneficiaries,
-    createBeneficiary,
-    updateBeneficiary,
-    deleteBeneficiary
+    getContributionItemsByCategory,
 }
