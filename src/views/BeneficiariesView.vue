@@ -14,15 +14,23 @@
       </div>
     </div>
 
-    <EasyDataTable v-model:server-options="serverOptions" :server-items-length="serverItemsLength" :headers="headers"
-      :items="data" :rows-items="rowsItems" :loading="loading">
+    <EasyDataTable
+      v-model:server-options="serverOptions"
+      :server-items-length="serverItemsLength"
+      :headers="headers"
+      :items="data" :rows-items="rowsItems" :loading="loading"
+      rows-per-page-message="Total de registros mostrados"
+      alternating
+    >
       <template #item-address="{ address }">
         {{ address.street + ' #' + address.extNum + ' , ' + address.city + ' , ' + address.cp }}
       </template>
       <template #item-profile="{ _id: id }">
-        <button class="btn btn-square btn-sm my-2 mx-auto text-red-800" @click="openBeneficiaryView(id)">
-          <IconArrowBarRight class="h-5 w-5" />
-        </button>
+        <div class="tooltip tooltip-left" data-tip="Ver expediente">
+          <button class="btn btn-square btn-sm my-2 mx-auto text-red-800" @click="openBeneficiaryView(id)">
+            <IconFileExport class="h-5 w-5" />
+          </button>
+        </div>
       </template>
     </EasyDataTable>
 
@@ -35,10 +43,14 @@
 import { ref, onMounted, watch } from 'vue';
 import router from '../router';
 import { toast } from 'vue3-toastify';
-import { IconSearch, IconArrowBarRight } from '@tabler/icons-vue';
+import { IconSearch, IconFileExport } from '@tabler/icons-vue';
 import beneficiaryServices from '../services/beneficiaryServices'
 import NewBeneficiarieModal from '../components/BeneficiariesView/NewBeneficiarieModal.vue'
 import { AxiosError } from 'axios';
+import { useAuth } from '../composables/useAuth';
+
+// composables
+const { authHeader } = useAuth()
 
 //data
 const showModal = ref(false)
@@ -61,7 +73,7 @@ const headers = [
   { text: 'Colonia', value: 'address.neighborhood', sortable: true },
   { text: 'Código postal', value: 'address.cp', sortable: true },
   { text: 'Dirección', value: 'address' },
-  { text: 'Ver expediente', value: 'profile' },
+  { text: '', value: 'profile' },
 ]
 
 const data = ref([])
@@ -81,7 +93,7 @@ const getBeneficiariesData = async () => {
       sort: serverOptions.value.sortBy,
       order: serverOptions.value.sortType,
       search: search.value,
-    })
+    }, authHeader.value)
     if (response.code === "ERR_NETWORK") {
       toast.error('No se pudo conectar con el servidor')
     } else {

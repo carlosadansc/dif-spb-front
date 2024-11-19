@@ -203,6 +203,7 @@ import medicalServices from '../../constants/medicalServices'
 import civilStatus from '../../constants/civilStatus'
 import scholarships from '../../constants/scholarships'
 import delegations from '../../constants/delegations'
+import { useAuth } from '../../composables/useAuth';
 //props
 const props = defineProps({
   showModal: Boolean,
@@ -257,6 +258,9 @@ watch(
   }
 )
 
+// composables
+const { authHeader } = useAuth()
+
 //methods
 const getSubDelegations = () => {
   subdelegations.value = beneficiary.value.address.delegation.subdelegations
@@ -269,7 +273,7 @@ const closeModal = () => {
 const submitForm = async () => {
   loading.value = true
   try {
-    const response = await beneficiaryServices.createBeneficiary(normalizeObjectText(beneficiary.value))
+    const response = await beneficiaryServices.createBeneficiary(normalizeObjectText(beneficiary.value), authHeader.value)
     if (response.status === 200) {
       toast.success('Registro creado exitosamente')
       closeModal()

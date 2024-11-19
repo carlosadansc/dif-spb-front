@@ -2,10 +2,16 @@ import { useAuthStore } from '../stores/authStore'
 import { storeToRefs } from 'pinia'
 import { jwtDecode } from 'jwt-decode'
 import axios from 'axios'
+import { computed } from 'vue'
 
 export const useAuth = () => {
     const authStore = useAuthStore()
     const { user, authToken } = storeToRefs(authStore)
+    const authHeader = computed(() => {
+      return {
+        'Authorization': 'Bearer ' + authToken.value ?? ''
+      }
+    })
 
     // Methods
     function logoutUser() {
@@ -39,6 +45,7 @@ export const useAuth = () => {
         user,
         authToken,
         isLoggedIn,
-        logoutUser
+        logoutUser,
+        authHeader
     }
 }

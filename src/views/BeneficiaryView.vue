@@ -8,14 +8,21 @@
           <button class="btn btn-square" @click="goBack">
             <IconArrowNarrowLeft class="w-6 h-6" />
           </button>
-          <button v-for="section in sections" :key="section.id" @click="activeSection = section.id"
-            class="btn btn-ghost" :class="[activeSection === section.id
-              ? 'border-b-red-700 text-red-800 font-bold'
-              : 'border-b-transparent text-gray-500 hover:text-gray-700 hover:border-b-gray-400',
-              'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm'
-            ]">
-            {{ section.title }}
-          </button>
+          <div
+            v-for="section in sections"
+            :key="section.id"
+            class="flex flex-col justify-center items-center relative"
+            :class="[
+              activeSection === section.id ? 'after:w-11/12 after:h-1 after:absolute after:-bottom-1 after:bg-red-800 after:rounded-full' : ''
+            ]"
+          >
+            <button 
+              class="btn btn-ghost border-b-transparent text-gray-500 hover:bg-transparent hover:scale-105 hover:text-gray-700 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm"
+              @click="activeSection = section.id"
+            >
+              {{ section.title }}
+            </button>
+          </div>
         </nav>
       </div>
 
@@ -348,6 +355,7 @@ import { toast } from 'vue3-toastify';
 import { IconArrowNarrowLeft } from '@tabler/icons-vue';
 import beneficiaryServices from '../services/beneficiaryServices';
 import ContributionHistory from '@/components/BeneficiaryView/ContributionHistory.vue';
+import { useAuth } from '../composables/useAuth';
 
 //data
 const beneficiaryId = router.currentRoute.value.params.id;
@@ -419,11 +427,14 @@ const sections = [
   { title: 'Historial de apoyos', id: 'contributions' }
 ]
 
+// composables
+const { authHeader } = useAuth()
+
 //methods
 const getBeneficiary = async () => {
   loading.value = true
   try {
-    const response = await beneficiaryServices.getBeneficiary(beneficiaryId)
+    const response = await beneficiaryServices.getBeneficiary(beneficiaryId, authHeader.value)
     if (response.code === "ERR_NETWORK") {
       toast.error('No se pudo conectar con el servidor')
     } else {
