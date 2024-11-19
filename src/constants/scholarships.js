@@ -4,16 +4,16 @@ const scholarships = [
         value: 'NINGUNA'
     },
     {
-        text: 'Primaria',
-        value: 'PRIMARIA'
+        text: 'Básica',
+        value: 'BASICA'
     },
     {
-        text: 'Secundaria',
-        value: 'SECUNDARIA'
+        text: 'Media',
+        value: 'MEDIA'
     },
     {
-        text: 'Bachillerato',
-        value: 'BACHILERLATO'
+        text: 'Media superior',
+        value: 'MEDIA_SUPERIOR'
     },
     {
         text: 'Licenciatura',

@@ -131,7 +131,7 @@
           <div class="flex flex-col">
             <label for="delegation" class="font-semibold">Delegación</label>
             <select v-model="beneficiary.address.delegation" id="delegation" name="delegation"
-              class="select select-bordered mt-2" @change="geteSubDelegations()">
+              class="select select-bordered mt-2" @change="getSubDelegations()">
               <option v-for="delegation in delegations" :key="delegation.value" :value="delegation">{{ delegation.text
                 }}</option>
             </select>
@@ -180,10 +180,11 @@
 
         <div class="grid grid-cols-2 gap-4 items-center mt-10">
           <div class="flex flex-col">
-            <button class="btn btn-secondary" @click="closeModal">Cancelar</button>
+            <button class="btn" @click.prevent="closeModal">Cancelar</button>
           </div>
           <div class="flex flex-col">
-            <button class="btn btn-primary" @click="submitForm">Guardar</button>
+            <button class="btn bg-red-800 text-white" @click.prevent="submitForm">{{ !loading ? 'Guardar' : 'Guardando' }} <span
+                v-if="loading" class="loading loadign-spinner" /></button>
           </div>
         </div>
 
@@ -194,6 +195,9 @@
 
 <script setup>
 import { ref, watch } from 'vue'
+import { toast } from 'vue3-toastify';
+import beneficiaryServices from '../../services/beneficiaryServices'
+import normalizeObjectText from '../../utilities/normalizeObjectText'
 import disabilityTypes from '../../constants/disabilityTypes'
 import medicalServices from '../../constants/medicalServices'
 import civilStatus from '../../constants/civilStatus'
@@ -210,6 +214,7 @@ const emits = defineEmits(['close:modal'])
 //data
 const newBeneficiaryModalRef = ref()
 const subdelegations = ref([])
+const loading = ref(false)
 const beneficiary = ref({
   name: '',
   fatherSurname: '',
@@ -239,6 +244,7 @@ const beneficiary = ref({
   }
 })
 
+
 //watches
 watch(
   () => props.showModal,
@@ -252,7 +258,7 @@ watch(
 )
 
 //methods
-const geteSubDelegations = () => {
+const getSubDelegations = () => {
   subdelegations.value = beneficiary.value.address.delegation.subdelegations
 }
 
@@ -260,6 +266,21 @@ const closeModal = () => {
   emits('close:modal')
 }
 
+const submitForm = async () => {
+  loading.value = true
+  try {
+    const response = await beneficiaryServices.createBeneficiary(normalizeObjectText(beneficiary.value))
+    if (response.status === 200) {
+      toast.success('Registro creado exitosamente')
+      closeModal()
+    } else {
+      toast.error(response.response.data.errors[0].title)
+    }
+  } catch (err) {
+    toast.error(err)
+  }
+  loading.value = false
+}
 </script>
 
 <style lang="scss" scoped></style>

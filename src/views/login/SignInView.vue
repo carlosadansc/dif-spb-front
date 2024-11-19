@@ -1,7 +1,10 @@
 <template>
   <div class="relative flex flex-col justify-center h-screen overflow-hidden">
     <div class="w-full p-6 m-auto bg-white lg:max-w-lg">
-      <h1 class="text-3xl font-bold text-center text-blue-700 mb-10">SIPA DIF</h1>
+      <div class="flex flex-col items-center justify-center mb-[5rem]">
+        <img src="@/assets/img/logo-dif.png" class="h-[105px] w-auto mb-1" />
+        <span class="font-bold text-center text-red-800">Sistema de Padrón de <br> Beneficiarios</span>
+      </div>
       <form @submit.prevent="login" class="space-y-4">
         <div>
           <input v-model="credentials.username" type="text" placeholder="Usuario"
@@ -13,7 +16,7 @@
         </div>
         <a href="#" class="text-xs text-gray-600 hover:underline hover:text-blue-600">Perdí mi contraseña</a>
         <div>
-          <button type="submit" class="btn w-full text-white bg-blue-700 rounded-[.8rem]">
+          <button type="submit" class="btn w-full text-white bg-red-800 rounded-[.8rem]">
             {{ loading ? '' : 'Iniciar sesión' }}
             <span v-if="loading" class="loading loading-spinner"></span>
           </button>
@@ -24,7 +27,9 @@
 </template>
 
 <script setup>
-import { reactive, ref } from "vue"
+import { ref } from "vue"
+import { toast } from 'vue3-toastify'
+import { AxiosError } from 'axios'
 import { storeToRefs } from 'pinia'
 import router from '../../router'
 import userServices from '../../services/userServices'
@@ -47,16 +52,26 @@ const usernameRules = [value => {
 //methods
 const login = async () => {
   loading.value = true
-  await userServices.login(credentials.value).then((response) => {
-    authStore.setAuthToken(response.data.token)
-    authStore.setUser(response.data.user)
-    loading.value = false
-    router.push('/')
-  }).catch(err => {
-    console.log(err)
-    loading.value = false
-  })
 
+  try {
+    const response = await userServices.login(credentials.value)
+    if (response.code === "ERR_NETWORK") {
+      toast.error('No se pudo conectar con el servidor')
+    } else {
+      authStore.setAuthToken(response.data.token)
+      authStore.setUser(response.data.user)
+      loading.value = false
+      router.push('/')
+    }
+  } catch (err) {
+    if (err instanceof AxiosError) {
+      toast.error(err.response?.data?.message)
+    } else {
+      toast.error(err)
+    }
+  } finally {
+    loading.value = false
+  }
 }
 
 

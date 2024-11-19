@@ -3,7 +3,7 @@ import api from '../services/api'
 const headers =  {'Authorization': 'Bearer ' + localStorage.getItem("authToken")}
 
 const getBeneficiary = async (id) => {
-    return await api.get('/beneficiary/' + id).then((response) =>  response.data ).catch((err) => err)
+    return await api.get('/beneficiary/' + id, { headers } ).then((response) =>  response.data ).catch((err) => err)
 }
 
 const getBeneficiaries = async (params) => {
@@ -11,7 +11,7 @@ const getBeneficiaries = async (params) => {
 }
 
 const createBeneficiary = async (beneficiary) => {
-    return await api.post('/beneficiary', beneficiary).then((response) =>  response.data ).catch((err) => err)
+    return await api.post('/beneficiary/create', beneficiary, { headers }).then((response) =>  response.data ).catch((err) => err)
 }
 
 const updateBeneficiary = async (beneficiary) => {

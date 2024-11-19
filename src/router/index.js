@@ -7,6 +7,7 @@ import HomeView from "../views/HomeView.vue"
 import LoginView from "../views/login/SignInView.vue"
 import DashboardView from '../views/DashboardView.vue'
 import BeneficiariesView from '../views/BeneficiariesView.vue'
+import BeneficiaryView from '../views/BeneficiaryView.vue'
 
 //Routes
 const routes = [
@@ -29,19 +30,18 @@ const routes = [
       {
         path: '/dashboard',
         name: 'Dashboard',
-        component: DashboardView,
-        meta: {
-          requiresAuth: true
-        }
+        component: DashboardView
       },
       {
         path: '/beneficiaries',
         name: 'Beneficiaries',
         component: BeneficiariesView,
-        meta: {
-          requiresAuth: true
-        }
-      }
+      },
+      {
+        path: '/beneficiaries/:id',
+        name: 'Beneficiary',
+        component: BeneficiaryView
+      },
     ],
   }
 ]
