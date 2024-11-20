@@ -1,7 +1,5 @@
 import api from '../services/api'
 
-// const headers =  {'Authorization': 'Bearer ' + localStorage.getItem("authToken")}
-
 const getBeneficiary = async (id, headers) => {
     return await api.get('/beneficiary/' + id, { headers } ).then((response) =>  response.data ).catch((err) => err)
 }

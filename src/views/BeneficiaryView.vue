@@ -2,10 +2,11 @@
   <span v-if="loading" class="loading loading-spinner loading-lg"></span>
   <div v-else class="h-screen bg-gray-100 px-4 sm:px-6 lg:px-8 overflow-y-auto">
     <div class="max-w-7xl mx-auto">
+      <h1 class="text-3xl font-bold text-gray-900 mt-5"><span class="bg-white py-2 px-4 rounded-[10px] shadow-sm">{{beneficiary.name + ' ' + beneficiary.fatherSurname + ' ' + beneficiary.motherSurname}}</span></h1>
       <!-- Navigation Tabs -->
       <div class="mt-4">
         <nav class="-mb-px flex space-x-4" aria-label="Tabs">
-          <button class="btn btn-square" @click="goBack">
+          <button class="btn btn-square btn-ghost" @click="goBack">
             <IconArrowNarrowLeft class="w-6 h-6" />
           </button>
           <div
@@ -69,7 +70,7 @@
             <div>
               <label class="block text-sm font-medium text-gray-700">Sexo</label>
               <select v-model="beneficiary.sex"
-                class="input input-sm mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                class="select select-sm mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                 <option value="HOMBRE">Hombre</option>
                 <option value="MUJER">Mujer</option>
               </select>
@@ -82,7 +83,7 @@
             <div>
               <label class="block text-sm font-medium text-gray-700">Estado Civil</label>
               <select v-model="beneficiary.civilStatus"
-                class="input input-sm mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                class="select select-sm mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                 <option value="CASADO">Casado</option>
                 <option value="SOLTERO">Soltero</option>
                 <option value="VIUDO">Viudo</option>
@@ -92,12 +93,10 @@
             <div>
               <label class="block text-sm font-medium text-gray-700">Escolaridad</label>
               <select v-model="beneficiary.scholarship"
-                class="input input-sm mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                <option value="BASICA">Básica</option>
-                <option value="MEDIA">Media</option>
-                <option value="MEDIA SUPERIOR">Media Superior</option>
-                <option value="LICENCIATURA">Licenciatura</option>
-                <option value="POSGRADO">Posgrado</option>
+                class="select select-sm mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <option v-for="scholarship in scholarships" :key="scholarship.id" :value="scholarship.value">
+                  {{ scholarship.text }}
+                </option>
               </select>
             </div>
           </div>
@@ -110,11 +109,10 @@
             <div v-if="beneficiary.hasDisability">
               <label class="block text-sm font-medium text-gray-700">Tipo de Discapacidad</label>
               <select v-model="beneficiary.disabilityType"
-                class="input input-sm mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                <option value="MOTRIZ">Motriz</option>
-                <option value="VISUAL">Visual</option>
-                <option value="AUDITIVA">Auditiva</option>
-                <option value="MENTAL">Mental</option>
+                class="select select-sm mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <option v-for="disabilityType in disabilityTypes" :key="disabilityType.id" :value="disabilityType.value">
+                  {{ disabilityType.text }}
+                </option>
               </select>
             </div>
           </div>
@@ -126,20 +124,29 @@
             <div>
               <label class="block text-sm font-medium text-gray-700">Tipo de Comunidad</label>
               <select v-model="beneficiary.address.communityType"
-                class="input input-sm mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                class="select select-sm mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                 <option value="RURAL">Rural</option>
                 <option value="URBANA">Urbana</option>
               </select>
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700">Delegación</label>
-              <input type="text" v-model="beneficiary.address.delegation"
-                class="input input-sm mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
+              <select name="delegation" v-model="beneficiary.address.delegation"
+              @change="getSubdelegations()"
+                class="select select-sm mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <option v-for="delegation in delegations" :key="delegation.id" :value="delegation">
+                  {{ delegation.text }}
+                </option>
+              </select>
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700">Subdelegación</label>
-              <input type="text" v-model="beneficiary.address.subdelegation"
-                class="input input-sm mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
+              <select name="subdelegation" v-model="beneficiary.address.subdelegation"
+                class="select select-sm mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <option v-for="subdelegation in subdelegations" :key="subdelegation.id" :value="subdelegation.value">
+                  {{ subdelegation.text }}
+                </option>
+              </select>
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700">Calle</label>
@@ -356,6 +363,9 @@ import { IconArrowNarrowLeft } from '@tabler/icons-vue';
 import beneficiaryServices from '../services/beneficiaryServices';
 import ContributionHistory from '@/components/BeneficiaryView/ContributionHistory.vue';
 import { useAuth } from '../composables/useAuth';
+import scholarships from '../constants/scholarships';
+import disabilityTypes from '../constants/disabilityTypes';
+import delegations from '../constants/delegations';
 
 //data
 const beneficiaryId = router.currentRoute.value.params.id;
@@ -416,6 +426,7 @@ const beneficiary = ref({
     otherExpenses: 0
   }
 })
+const subdelegations = ref([])
 const loading = ref(false)
 const activeSection = ref('general')
 const sections = [
@@ -439,6 +450,7 @@ const getBeneficiary = async () => {
       toast.error('No se pudo conectar con el servidor')
     } else {
       beneficiary.value = response.data
+      console.log(beneficiary.value)
     }
   } catch (err) {
     if (err instanceof AxiosError) {
@@ -449,6 +461,10 @@ const getBeneficiary = async () => {
   } finally {
     loading.value = false
   }
+}
+
+const getSubdelegations = async () => {
+  subdelegations.value = beneficiary.value.address.delegation.subdelegations
 }
 
 onMounted(() => {

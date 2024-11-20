@@ -13,7 +13,7 @@ const scholarships = [
     },
     {
         text: 'Media superior',
-        value: 'MEDIA_SUPERIOR'
+        value: 'MEDIA SUPERIOR'
     },
     {
         text: 'Licenciatura',
