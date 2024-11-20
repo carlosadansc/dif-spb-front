@@ -273,6 +273,8 @@ const closeModal = () => {
 const submitForm = async () => {
   loading.value = true
   try {
+    const delegation = beneficiary.value.address.delegation.value
+    beneficiary.value.address.delegation = delegation
     const response = await beneficiaryServices.createBeneficiary(normalizeObjectText(beneficiary.value), authHeader.value)
     if (response.status === 200) {
       toast.success('Registro creado exitosamente')
