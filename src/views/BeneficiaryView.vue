@@ -1,6 +1,6 @@
 <template>
   <span v-if="loading" class="loading loading-spinner loading-lg"></span>
-  <div v-else class="h-screen bg-gray-100 px-4 sm:px-6 lg:px-8 overflow-y-auto">
+  <div v-else class="bg-gray-100 px-4 sm:px-6 lg:px-8 h-screen overflow-y-auto">
     <div class="max-w-7xl mx-auto">
       <h1 class="text-3xl font-bold text-gray-900 mt-5"><span class="bg-white py-2 px-4 rounded-[10px] shadow-sm">{{beneficiary.name + ' ' + beneficiary.fatherSurname + ' ' + beneficiary.motherSurname}}</span></h1>
       <!-- Navigation Tabs -->

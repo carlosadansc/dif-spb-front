@@ -42,7 +42,7 @@
                         <span class="text-gray-500 mx-1">·</span>
                         <span class="text-gray-500">{{ item.contributionItem.description }}</span>
                       </div>
-                      <div class="text-indigo-600 font-medium ml-2">
+                      <div class="text-red-900 font-medium ml-2">
                         {{ item.quantity }}
                       </div>
                     </div>

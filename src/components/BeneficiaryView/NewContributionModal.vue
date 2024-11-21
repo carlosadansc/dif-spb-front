@@ -74,7 +74,7 @@
                             class="flex items-center justify-between px-4 py-3 hover:bg-gray-50">
                             <span class="text-sm text-gray-700">{{ item.contributionItem.description }} ( {{
                                 item.quantity }} )</span>
-                            <button @click="removeItem(index)"
+                            <button type="button" @click="removeItem(index)"
                                 class="text-red-600 hover:text-red-800 text-sm font-medium">
                                 Remove
                             </button>
@@ -192,6 +192,7 @@ const getContributionItemsByCategory = async () => {
 }
 
 const submitForm = async () => {
+    loading.value = true
     try {
         const response = await contributionServices.createContribution(normalizeObjectText(
             {
@@ -201,15 +202,20 @@ const submitForm = async () => {
                 contributionDate: contribution.value.contributionDate,
             }
         ), authHeader.value)
-        console.log(response)
-        if (response.status === 200) {
-            toast.success('Registro creado exitosamente')
-            closeModal()
+        if (response.code === "ERR_NETWORK") {
+            toast.error('No se pudo conectar con el servidor')
         } else {
-            toast.error(response.response.data.errors[0].title)
+           toast.success('Registro creado exitosamente')
+           closeModal()
         }
     } catch (err) {
-        toast.error(err)
+        if (err instanceof AxiosError) {
+            toast.error(err.response?.data?.message)
+        } else {
+            toast.error(err)
+        }
+    } finally {
+        loading.value = false
     }
 }
 

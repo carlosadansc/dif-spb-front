@@ -16,7 +16,9 @@
 
         <div class="flex flex-col mb-5">
           <label for="curp" class="font-semibold">CURP</label>
-          <input v-model="beneficiary.curp" id="name" type="text" class="mt-1 p-2 input input-bordered" />
+          <ValidationProvider v-slot="v">
+            <input v-model="beneficiary.curp" id="name" type="text" class="mt-1 p-2 input input-bordered" />
+          </ValidationProvider>
         </div>
 
         <div class="grid grid-cols-2 gap-5 mb-5">
@@ -52,11 +54,11 @@
             <label for="sex" class="font-semibold">Sexo</label>
             <div class="flex items-center gap-10 mt-2">
               <div class="flex items-center">
-                <input type="radio" id="male" value="MALE" v-model="beneficiary.sex" checked class="radio mt-1 p-2" />
+                <input type="radio" id="male" value="HOMBRE" v-model="beneficiary.sex" checked class="radio mt-1 p-2" />
                 <label for="male" class="ml-2">Hombre</label>
               </div>
               <div class="flex items-center">
-                <input type="radio" id="female" value="FEMALE" v-model="beneficiary.sex" class="radio mt-1 p-2" />
+                <input type="radio" id="female" value="MUJER" v-model="beneficiary.sex" class="radio mt-1 p-2" />
                 <label for="female" class="ml-2">Mujer</label>
               </div>
             </div>
@@ -183,8 +185,8 @@
             <button class="btn" @click.prevent="closeModal">Cancelar</button>
           </div>
           <div class="flex flex-col">
-            <button class="btn bg-red-800 text-white" @click.prevent="submitForm">{{ !loading ? 'Guardar' : 'Guardando' }} <span
-                v-if="loading" class="loading loadign-spinner" /></button>
+            <button class="btn bg-red-800 text-white" @click.prevent="submitForm">{{ !loading ? 'Guardar' : 'Guardando'
+              }} <span v-if="loading" class="loading loadign-spinner" /></button>
           </div>
         </div>
 
@@ -276,16 +278,21 @@ const submitForm = async () => {
     const delegation = beneficiary.value.address.delegation.value
     beneficiary.value.address.delegation = delegation
     const response = await beneficiaryServices.createBeneficiary(normalizeObjectText(beneficiary.value), authHeader.value)
-    if (response.status === 200) {
+    if (response.code === "ERR_NETWORK") {
+      toast.error('No se pudo conectar con el servidor')
+    } else {
       toast.success('Registro creado exitosamente')
       closeModal()
-    } else {
-      toast.error(response.response.data.errors[0].title)
     }
   } catch (err) {
-    toast.error(err)
+    if (err instanceof AxiosError) {
+      toast.error(err.response?.data?.message)
+    } else {
+      toast.error(err)
+    }
+  } finally {
+    loading.value = false
   }
-  loading.value = false
 }
 </script>
 
