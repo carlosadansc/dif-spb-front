@@ -134,7 +134,7 @@ const props = defineProps({
 })
 
 //emits
-const emits = defineEmits(['close:modal'])
+const emits = defineEmits(['close:modal', 'update:list'])
 
 //data
 const newContributionModalRef = ref()
@@ -167,6 +167,10 @@ watch(
 //methods
 const closeModal = () => {
     emits('close:modal')
+}
+
+const updateList = () => {
+    emits('update:list')
 }
 
 const getContributionItemsByCategory = async () => {
@@ -206,7 +210,7 @@ const submitForm = async () => {
             toast.error('No se pudo conectar con el servidor')
         } else {
            toast.success('Registro creado exitosamente')
-           closeModal()
+          updateList()
         }
     } catch (err) {
         if (err instanceof AxiosError) {

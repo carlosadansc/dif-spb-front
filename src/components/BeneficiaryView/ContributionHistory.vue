@@ -9,7 +9,7 @@
         </div>
       </div>
 
-        <div class="max-w-2xl mx-auto">
+        <div class="w-full">
 
           <!-- Loading State -->
           <div v-if="loading" class="flex justify-center items-center py-8">
@@ -22,47 +22,41 @@
           </div>
 
           <!-- Contributions List -->
-          <div v-else class="bg-white shadow overflow-hidden sm:rounded-md">
-            <ul class="divide-y divide-gray-200">
-              <li v-for="contribution in contributions" :key="contribution._id">
-                <div class="px-4 py-3">
-                  <!-- Date Header -->
-                  <div class="flex justify-between items-center mb-1">
-                    <span class="text-xs text-gray-500">
-                      {{ formatDate(contribution.contributionDate) }}
-                    </span>
-                  </div>
+          <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div
+              v-for="contribution in contributions"
+              :key="`contribution-card-${contribution._id}`"
+              class="bg-white border border-solid border-gray-100 rounded-lg p-4 flex flex-col"
+            >
+              <span class="text-xs text-gray-500">
+                {{ formatDate(contribution.contributionDate) }}
+              </span>
 
-                  <!-- Contribution Items -->
-                  <div class="space-y-1">
-                    <div v-for="(item, index) in contribution.contributionItems" :key="index"
-                      class="flex items-center justify-between text-sm">
-                      <div class="flex-1 min-w-0">
-                        <span class="font-medium text-gray-900">{{ item.contributionItem.category }}</span>
-                        <span class="text-gray-500 mx-1">·</span>
-                        <span class="text-gray-500">{{ item.contributionItem.description }}</span>
-                      </div>
-                      <div class="text-red-900 font-medium ml-2">
-                        {{ item.quantity }}
-                      </div>
-                    </div>
+              <div class="space-y-1">
+                <div v-for="(item, index) in contribution.contributionItems" :key="index"
+                  class="flex items-center justify-between text-sm">
+                  <div class="flex-1 min-w-0">
+                    <span class="font-medium text-gray-900">{{ item.contributionItem.category }}</span>
+                    <span class="text-gray-500 mx-1">·</span>
+                    <span class="text-gray-500">{{ item.contributionItem.description }}</span>
                   </div>
-
-                  <!-- Comments -->
-                  <div v-if="contribution.comments" class="mt-1">
-                    <p class="text-xs text-gray-500 italic">
-                      {{ contribution.comments }}
-                    </p>
+                  <div class="text-red-900 font-medium ml-2">
+                    {{ item.quantity }}
                   </div>
                 </div>
-              </li>
-            </ul>
-          </div>
+              </div>
 
+              <div v-if="contribution.comments" class="mt-1">
+                <p class="text-xs text-gray-500 italic">
+                  {{ contribution.comments }}
+                </p>
+              </div>
+            </div>
+          </div>
       </div>
     </div>
 
-    <NewContributionModal :showModal="showModal" @close:modal="showModal = false" />
+    <NewContributionModal :showModal="showModal" @close:modal="showModal = false" @update:list="emits('update:list')" />
   </div>
 </template>
 
@@ -76,6 +70,8 @@ import NewContributionModal from './NewContributionModal.vue';
 const props = defineProps({
   contributions: Array,
 });
+
+const emits = defineEmits(['update:list']);
 
 //data
 const showModal = ref(false);
