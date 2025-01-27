@@ -8,7 +8,7 @@
         
         <div>
           <button @click="toggleEditMode" id="edit-save" class="btn btn-square bg-red-800 font-black text-white mx-1"><IconEdit v-if="!isEditing" class="h-5 w-5" /> <IconDeviceFloppy v-else class="h-5 w-5" /></button>
-          <button class="btn btn-square bg-gray-500 font-black text-white mx-1"><IconPrinter class="h-5 w-5" /></button>
+          <button class="btn btn-square bg-gray-500 font-black text-white mx-1" @click="exportToPDF"><IconPrinter class="h-5 w-5" /></button>
         </div>
       </div>
      
@@ -36,7 +36,7 @@
       <!-- Content Sections -->
       <div class="mt-6 bg-white border border-gray-400 rounded-lg p-6">
         <!-- General Information -->
-        <div v-if="activeSection === 'general'" class="space-y-6">
+        <div v-if="activeSection === 'general'" class="space-t-6">
           <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
             <div>
               <label class="block text-sm font-medium text-gray-700">CURP</label>
@@ -354,7 +354,7 @@
         </div>
       </div>
 
-      <ProfilePDF />
+      <ProfilePDF ref="profilePDFRef" :beneficiary="beneficiary" />
     </div>
   </div>
 </template>
@@ -549,6 +549,11 @@ const goBack = () => {
   router.go(-1)
 }
 
+// Eventos de PDF
+const profilePDFRef = ref()
+const exportToPDF = () => {
+  profilePDFRef.value.exportToPDF()
+}
 </script>
 
 <style scoped>
