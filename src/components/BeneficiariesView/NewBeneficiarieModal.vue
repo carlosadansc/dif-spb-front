@@ -15,36 +15,60 @@
       <form @submit.prevent="submitForm">
 
         <div class="flex flex-col mb-5">
-          <label for="curp" class="font-semibold">CURP</label>
-          <ValidationProvider v-slot="v">
-            <input v-model="beneficiary.curp" id="name" type="text" class="mt-1 p-2 input input-bordered" />
-          </ValidationProvider>
+          <label for="curp" class="font-semibold required">CURP</label>
+          <div :class="{ error: v$.curp.$errors.length }">
+            <input @blur="checkBeneficiaryExists()" @input="beneficiary.curp = beneficiary.curp.toUpperCase()" v-maska="'@@@@######@@@@@@**'"
+              v-model="beneficiary.curp" id="name" type="text" class="mt-1 p-2 input input-bordered w-full" />
+            <div class="font-bold text-xs text-red-500 input-errors" v-for="error of v$.curp.$errors" :key="error.$uid">
+              <div class="error-msg">{{ error.$message }}</div>
+            </div>
+            <span class="font-bold text-xs text-red-800" v-if="beneficiaryExists">Este beneficiario ya existe <a href="#" class="underline">Ver perfil</a></span>
+          </div>
         </div>
 
         <div class="grid grid-cols-2 gap-5 mb-5">
-
           <div class="flex flex-col col-span-1">
-            <label for="name" class="font-semibold mb-1">Nombre/s</label>
-            <input v-model="beneficiary.name" id="name" type="text" class="mt-1 p-2 input input-bordered" />
+            <label for="name" class="font-semibold mb-1 required">Nombre/s</label>
+            <div :class="{ error: v$.name.$errors.length }">
+              <input v-model="beneficiary.name" id="name" type="text" class="mt-1 p-2 input input-bordered w-full" />
+              <div class="font-bold text-xs text-red-500 input-errors" v-for="error of v$.name.$errors"
+                :key="error.$uid">
+                <div class="error-msg">{{ error.$message }}</div>
+              </div>
+            </div>
 
-            <label for="fatherSurname" class="font-semibold mb-1 mt-5">Apellido paterno</label>
-            <input v-model="beneficiary.fatherSurname" id="fatherSurname" type="text"
-              class="mt-1 p-2 input input-bordered" />
+
+            <label for="fatherSurname" class="font-semibold mb-1 mt-5 required">Apellido paterno</label>
+            <div :class="{ error: v$.fatherSurname.$errors.length }">
+              <input v-model="beneficiary.fatherSurname" id="fatherSurname" type="text"
+                class="mt-1 p-2 input input-bordered w-full" />
+              <div class="font-bold text-xs text-red-500 input-errors" v-for="error of v$.fatherSurname.$errors"
+                :key="error.$uid">
+                <div class="error-msg">{{ error.$message }}</div>
+              </div>
+            </div>
 
             <label for="motherSurname" class="font-semibold mb-1 mt-5">Apellido materno</label>
             <input v-model="beneficiary.motherSurname" id="motherSurname" type="text"
-              class="mt-1 p-2 input input-bordered" />
+              class="mt-1 p-2 input input-bordered w-full" />
           </div>
 
           <div class="flex flex-col col-span-1">
-            <label for="birthdate" class="font-semibold mb-1">Fecha de nacimiento</label>
-            <input v-model="beneficiary.birthdate" id="birthdate" type="date" class="mt-1 p-2 input input-bordered" />
+            <label for="birthdate" class="font-semibold mb-1 required">Fecha de nacimiento</label>
+            <div :class="{ error: v$.birthdate.$errors.length }">
+              <input v-model="beneficiary.birthdate" id="birthdate" type="date" class="mt-1 p-2 input input-bordered w-full" />
+              <div class="font-bold text-xs text-red-500 input-errors" v-for="error of v$.birthdate.$errors"
+                :key="error.$uid">
+                <div class="error-msg">{{ error.$message }}</div>
+              </div>
+            </div>
 
             <label for="age" class="font-semibold mb-1 mt-5">Edad</label>
-            <input v-model="beneficiary.age" id="age" type="number" class="mt-1 p-2 input input-bordered" />
+            <input v-maska="'###'" v-model="beneficiary.age" id="age" type="number"
+              class="mt-1 p-2 input input-bordered w-full" />
 
             <label for="birthplace" class="font-semibold mb-1 mt-5">Lugar de nacimiento</label>
-            <input v-model="beneficiary.birthplace" id="birthplace" type="text" class="mt-1 p-2 input input-bordered" />
+            <input v-model="beneficiary.birthplace" id="birthplace" type="text" class="mt-1 p-2 input input-bordered w-full" />
           </div>
 
         </div>
@@ -64,50 +88,77 @@
             </div>
           </div>
           <div class="flex flex-col">
-            <label for="phone" class="font-semibold">Teléfono</label>
-            <input type="text" id="phone" name="phone" v-model="beneficiary.phone" class="input input-bordered mt-2" />
+            <label for="phone" class="font-semibold required">Teléfono</label>
+            <div :class="{ error: v$.phone.$errors.length }">
+              <input v-maska="'(###) ### ####'" type="text" id="phone" name="phone" v-model="beneficiary.phone"
+                class="input input-bordered mt-2 w-full" />
+              <div class="font-bold text-xs text-red-500 input-errors" v-for="error of v$.phone.$errors"
+                :key="error.$uid">
+                <div class="error-msg">{{ error.$message }}</div>
+              </div>
+            </div>
           </div>
 
           <div class="flex flex-col">
             <div class="flex items-center gap-3 mt-10">
-              <label for="hasDisability" class="font-semibold">Tiene alguna discapacidad</label>
+              <label for="hasDisability" class="font-semibold">¿Tiene alguna discapacidad?</label>
               <input type="checkbox" id="hasDisability" name="hasDisability" v-model="beneficiary.hasDisability"
                 class="toggle" />
             </div>
           </div>
 
           <div class="flex flex-col">
-            <label for="disabilityType" class="font-semibold">Tipo de discapacidad</label>
-            <select v-model="beneficiary.disabilityType" id="disabilityType" name="disabilityType"
-              class="select select-bordered mt-2">
+            <label v-if="beneficiary.hasDisability" for="disabilityType" class="font-semibold">Tipo de
+              discapacidad</label>
+            <select v-if="beneficiary.hasDisability" v-model="beneficiary.disabilityType" id="disabilityType"
+              name="disabilityType" class="select select-bordered mt-2 w-full">
               <option v-for="type in disabilityTypes" :key="type.value" :value="type.value">{{ type.text }}</option>
             </select>
           </div>
 
           <div class="flex flex-col">
-            <label for="medicalService" class="font-semibold">Servicio médico</label>
-            <select v-model="beneficiary.medicalService" id="medicalService" name="medicalService"
-              class="select select-bordered mt-2">
-              <option v-for="service in medicalServices" :key="service.value" :value="service.value">{{ service.text }}
-              </option>
-            </select>
+            <label for="medicalService" class="font-semibold required">Servicio médico</label>
+            <div :class="{ error: v$.medicalService.$errors.length }">
+              <select v-model="beneficiary.medicalService" id="medicalService" name="medicalService"
+                class="select select-bordered mt-2 w-full">
+                <option v-for="service in medicalServices" :key="service.value" :value="service.value">
+                  {{ service.text }}
+                </option>
+              </select>
+              <div class="font-bold text-xs text-red-500 input-errors" v-for="error of v$.medicalService.$errors"
+                :key="error.$uid">
+                <div class="error-msg">{{ error.$message }}</div>
+              </div>
+            </div>
+
           </div>
 
           <div class="flex flex-col">
-            <label for="civilStatus" class="font-semibold">Estado civil</label>
-            <select v-model="beneficiary.civilStatus" id="civilStatus" name="civilStatus"
-              class="select select-bordered mt-2">
-              <option v-for="status in civilStatus" :key="status.value" :value="status.value">{{ status.text }}</option>
-            </select>
+            <label for="civilStatus" class="font-semibold required">Estado civil</label>
+            <div :class="{ error: v$.civilStatus.$errors.length }">
+              <select v-model="beneficiary.civilStatus" id="civilStatus" name="civilStatus"
+                class="select select-bordered mt-2 w-full">
+                <option v-for="status in civilStatus" :key="status.value" :value="status.value">{{ status.text }}
+                </option>
+              </select>
+              <div class="font-bold text-xs text-red-500 input-errors" v-for="error of v$.civilStatus.$errors" :key="error.$uid">
+                <div class="error-msg">{{ error.$message }}</div>
+              </div>
+            </div>
           </div>
 
           <div class="flex flex-col">
-            <label for="scholarship" class="font-semibold">Escolaridad</label>
+            <label for="scholarship" class="font-semibold required">Escolaridad</label>
+            <div :class="{ error: v$.scholarship.$errors.length }">
             <select v-model="beneficiary.scholarship" id="scholarship" name="scholarship"
-              class="select select-bordered mt-2">
+              class="select select-bordered mt-2 w-full">
               <option v-for="scholarship in scholarships" :key="scholarship.value" :value="scholarship.value">{{
                 scholarship.text }}</option>
             </select>
+            <div class="font-bold text-xs text-red-500 input-errors" v-for="error of v$.scholarship.$errors" :key="error.$uid">
+                <div class="error-msg">{{ error.$message }}</div>
+              </div>
+          </div>
           </div>
         </div>
 
@@ -123,60 +174,104 @@
                 <label for="rural" class="ml-2">Rural</label>
               </div>
               <div class="flex items-center">
-                <input type="radio" id="urbano" value="URBANO" v-model="beneficiary.address.communityType"
+                <input type="radio" id="urbano" value="URBANA" v-model="beneficiary.address.communityType"
                   class="radio mt-1 p-2" />
-                <label for="urbano" class="ml-2">Urbano</label>
+                <label for="urbano" class="ml-2">Urbana</label>
               </div>
             </div>
           </div>
 
           <div class="flex flex-col">
-            <label for="delegation" class="font-semibold">Delegación</label>
-            <select v-model="beneficiary.address.delegation" id="delegation" name="delegation"
-              class="select select-bordered mt-2" @change="getSubDelegations()">
-              <option v-for="delegation in delegations" :key="delegation.value" :value="delegation">{{ delegation.text
-                }}</option>
-            </select>
+            <label for="delegation" class="font-semibold required">Delegación</label>
+            <div :class="{ error: v$.address.delegation.$errors.length }">
+              <select v-model="beneficiary.address.delegation" id="delegation" name="delegation"
+                class="select select-bordered mt-2 w-full" @change="getSubDelegations()">
+                <option v-for="delegation in delegations" :key="delegation.value" :value="delegation">{{ delegation.text
+                  }}</option>
+              </select>
+              <div class="font-bold text-xs text-red-500 input-errors" v-for="error of v$.address.delegation.$errors" :key="error.$uid">
+                  <div class="error-msg">{{ error.$message }}</div>
+              </div>
+            </div>
           </div>
+
           <div class="flex flex-col">
-            <label for="subdelegation" class="font-semibold">Subdelegación</label>
-            <select v-model="beneficiary.address.subdelegation" id="subdelegation" name="subdelegation"
-              class="select select-bordered mt-2">
-              <option v-for="subdelegation in subdelegations" :key="subdelegation.value" :value="subdelegation.value">{{
-                subdelegation.text }}</option>
-            </select>
+            <label for="subdelegation" class="font-semibold required">Subdelegación</label>
+            <div :class="{ error: v$.address.subdelegation.$errors.length }">
+              <select v-model="beneficiary.address.subdelegation" id="subdelegation" name="subdelegation"
+                class="select select-bordered mt-2 w-full">
+                <option v-for="subdelegation in subdelegations" :key="subdelegation.value" :value="subdelegation.value">{{
+                  subdelegation.text }}</option>
+              </select>
+              <div class="font-bold text-xs text-red-500 input-errors" v-for="error of v$.address.subdelegation.$errors" :key="error.$uid">
+                  <div class="error-msg">{{ error.$message }}</div>
+              </div>
+            </div>
           </div>
+
+
           <div class="flex flex-col">
-            <label for="street" class="font-semibold">Calle</label>
-            <input v-model="beneficiary.address.street" id="street" type="text" class="mt-1 p-2 input input-bordered" />
+            <label for="street" class="font-semibold required">Calle</label>
+            <div :class="{ error: v$.address.street.$errors.length }">
+            <input v-model="beneficiary.address.street" id="street" type="text" class="mt-1 p-2 input input-bordered w-full" />
+            <div class="font-bold text-xs text-red-500 input-errors" v-for="error of v$.address.street.$errors" :key="error.$uid">
+                  <div class="error-msg">{{ error.$message }}</div>
+            </div>
           </div>
+          </div>
+
           <div class="flex flex-col">
             <label for="sideStreets" class="font-semibold">Entre calles</label>
             <input v-model="beneficiary.address.sideStreets" id="sideStreets" type="text"
-              class="mt-1 p-2 input input-bordered" />
+              class="mt-1 p-2 input input-bordered w-full" />
           </div>
+
           <div class="flex flex-col">
-            <label for="extNumb" class="font-semibold">Número exterior</label>
-            <input v-model="beneficiary.address.extNumb" id="extNumb" type="text"
-              class="mt-1 p-2 input input-bordered" />
+            <label for="extNum" class="font-semibold required">Número exterior</label>
+            <div :class="{ error: v$.address.extNum.$errors.length }">
+            <input v-model="beneficiary.address.extNum" id="extNum" type="text"
+              class="mt-1 p-2 input input-bordered w-full" />
+              <div class="font-bold text-xs text-red-500 input-errors" v-for="error of v$.address.extNum.$errors" :key="error.$uid">
+                  <div class="error-msg">{{ error.$message }}</div>
+             </div>
+            </div>
           </div>
+
           <div class="flex flex-col">
-            <label for="intNumb" class="font-semibold">Número interior</label>
-            <input v-model="beneficiary.address.intNumb" id="intNumb" type="text"
-              class="mt-1 p-2 input input-bordered" />
+            <label for="intNum" class="font-semibold">Número interior</label>
+            <input v-model="beneficiary.address.intNum" id="intNum" type="text"
+              class="mt-1 p-2 input input-bordered w-full" />
           </div>
+
           <div class="flex flex-col">
-            <label for="neighborhood" class="font-semibold">Colonia</label>
-            <input v-model="beneficiary.address.neighborhood" id="neighborhood" type="text"
-              class="mt-1 p-2 input input-bordered" />
+            <label for="cp" class="font-semibold required">Código postal</label>
+            <div :class="{ error: v$.address.cp.$errors.length }">
+            <input v-maska="'#####'" v-model="beneficiary.address.cp" id="cp" type="text"
+              class="mt-1 p-2 input input-bordered w-full" />
+              <div class="font-bold text-xs text-red-500 input-errors" v-for="error of v$.address.cp.$errors" :key="error.$uid">
+                  <div class="error-msg">{{ error.$message }}</div>
+             </div>
+            </div>
           </div>
+
           <div class="flex flex-col">
-            <label for="cp" class="font-semibold">Código postal</label>
-            <input v-model="beneficiary.address.cp" id="cp" type="number" class="mt-1 p-2 input input-bordered" />
+            <label for="neighborhood" class="font-semibold required">Colonia</label>
+            <div :class="{ error: v$.address.neighborhood.$errors.length }">
+            <input v-model="beneficiary.address.neighborhood" list="neighborhoods" name="neighborhood" id="neighborhood"
+              class="mt-1 p-2 input input-bordered w-full">
+            <datalist id="neighborhoods">
+              <option v-for="neighborhood in foundNeighborhoods" :key="neighborhood.nombre"
+                :value="neighborhood.nombre" />
+            </datalist>
+              <div class="font-bold text-xs text-red-500 input-errors" v-for="error of v$.address.neighborhood.$errors" :key="error.$uid">
+                  <div class="error-msg">{{ error.$message }}</div>
+              </div>
+            </div>
           </div>
+
           <div class="flex flex-col">
             <label for="city" class="font-semibold">Ciudad</label>
-            <input v-model="beneficiary.address.city" id="city" type="text" class="mt-1 p-2 input input-bordered" />
+            <input v-model="beneficiary.address.city" id="city" type="text" class="mt-1 p-2 input input-bordered w-full" />
           </div>
         </div>
 
@@ -196,7 +291,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { reactive, ref, watch, computed } from 'vue'
 import { toast } from 'vue3-toastify';
 import beneficiaryServices from '../../services/beneficiaryServices'
 import normalizeObjectText from '../../utilities/normalizeObjectText'
@@ -205,27 +300,33 @@ import medicalServices from '../../constants/medicalServices'
 import civilStatus from '../../constants/civilStatus'
 import scholarships from '../../constants/scholarships'
 import delegations from '../../constants/delegations'
+import neighborhoods from '../../constants/neighborhoods'
+import calculateAge from '../../utilities/calcBirthdate'
 import { useAuth } from '../../composables/useAuth';
+import { useVuelidate } from '@vuelidate/core'
+import { required, helpers } from '@vuelidate/validators'
+
 //props
 const props = defineProps({
   showModal: Boolean,
 })
 
 //emits
-const emits = defineEmits(['close:modal'])
+const emits = defineEmits(['close:modal', 'refresh:beneficiaries'])
 
 //data
 const newBeneficiaryModalRef = ref()
 const subdelegations = ref([])
 const loading = ref(false)
-const beneficiary = ref({
+const beneficiaryExists = ref(false)
+const beneficiary = reactive({
   name: '',
   fatherSurname: '',
   motherSurname: '',
   age: null,
   birthdate: '',
   birthplace: '',
-  sex: '',
+  sex: 'HOMBRE',
   curp: '',
   phone: '',
   hasDisability: false,
@@ -239,11 +340,11 @@ const beneficiary = ref({
     subdelegation: '',
     street: '',
     sideStreets: '',
-    extNumb: '',
-    intNumb: '',
+    extNum: '',
+    intNum: '',
     neighborhood: '',
     cp: '',
-    city: ''
+    city: 'La Paz'
   }
 })
 
@@ -260,24 +361,68 @@ watch(
   }
 )
 
+watch(() => beneficiary.birthdate, (value) => {
+  beneficiary.age = calculateAge(value)
+})
+
+//computed
+const foundNeighborhoods = computed(() => {
+  return neighborhoods.filter(neighborhood => neighborhood.cp.toString().toLowerCase() === beneficiary.address.cp.toString().toLowerCase())
+})
+
 // composables
 const { authHeader } = useAuth()
 
 //methods
+
+const checkBeneficiaryExists = async () => {
+  loading.value = true
+  try {
+  const response = await beneficiaryServices.checkBeneficiaryExistsByCurp(beneficiary.curp, authHeader.value)
+  if (response.code === "ERR_NETWORK") {
+      toast.error('No se pudo conectar con el servidor')
+    } else {
+      if (response.data) {
+        beneficiaryExists.value = true
+      } else {
+        beneficiaryExists.value = false
+      }
+    }
+  } catch (err) {
+    if (err instanceof AxiosError) {
+      toast.error(err.response?.data?.message)
+    } else {
+      toast.error(err)
+    }
+    beneficiaryExists.value = false
+  } finally {
+    loading.value = false
+  }
+}
+
 const getSubDelegations = () => {
-  subdelegations.value = beneficiary.value.address.delegation.subdelegations
+  subdelegations.value = beneficiary.address.delegation.subdelegations
 }
 
 const closeModal = () => {
+  emits('refresh:beneficiaries')
   emits('close:modal')
 }
 
 const submitForm = async () => {
+  const isFormCorrect = await v$.value.$validate()
+  console.log(v$.value.$errors)
+  if (!isFormCorrect) {
+    toast.error('Revise que todos los campos sean correctos')
+    return
+  }
+
   loading.value = true
   try {
-    const delegation = beneficiary.value.address.delegation.value
-    beneficiary.value.address.delegation = delegation
-    const response = await beneficiaryServices.createBeneficiary(normalizeObjectText(beneficiary.value), authHeader.value)
+    const delegation = beneficiary.address.delegation.value
+    beneficiary.address.delegation = delegation
+    const newBeneficiary = normalizeObjectText(beneficiary)
+    const response = await beneficiaryServices.createBeneficiary(newBeneficiary, authHeader.value)
     if (response.code === "ERR_NETWORK") {
       toast.error('No se pudo conectar con el servidor')
     } else {
@@ -294,6 +439,32 @@ const submitForm = async () => {
     loading.value = false
   }
 }
+
+const curpFormat = helpers.regex(/^[A-Z]{4}\d{6}[HM][A-Z]{5}[A-Z\d]{2}$/)
+
+const rules = {
+  name: { required: helpers.withMessage('Campo requerido', required) },
+  fatherSurname: { required: helpers.withMessage('Campo requerido', required) },
+  birthdate: { required: helpers.withMessage('Campo requerido', required) },
+  curp: { format: helpers.withMessage('El formato del CURP no válido', curpFormat), required: helpers.withMessage('Campo requerido', required) },
+  phone: { required: helpers.withMessage('Campo requerido', required) },
+  // hasDisability: { required: helpers.withMessage('Campo requerido', required) },
+  medicalService: { required: helpers.withMessage('Campo requerido', required) },
+  civilStatus: { required: helpers.withMessage('Campo requerido', required) },
+  scholarship: { required: helpers.withMessage('Campo requerido', required) },
+  address: {
+    delegation: { required: helpers.withMessage('Campo requerido', required) },
+    subdelegation: { required: helpers.withMessage('Campo requerido', required) },
+    street: { required: helpers.withMessage('Campo requerido', required) },
+    extNum: { required: helpers.withMessage('Campo requerido', required) },
+    neighborhood: { required: helpers.withMessage('Campo requerido', required) },
+    cp: { required: helpers.withMessage('Campo requerido', required) },
+  }
+}
+
+
+const v$ = useVuelidate(rules, beneficiary)
+
 </script>
 
 <style lang="scss" scoped></style>

@@ -21,16 +21,16 @@
                         class="input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
                 </div>
                 <div>
-                    <label for="contributionType" class="block text-sm font-medium text-gray-700">
+                    <label for="contributionCategory" class="block text-sm font-medium text-gray-700">
                         Tipo de Apoyo
                     </label>
-                    <select id="contributionType" v-model="contribution.contributionType"
+                    <select id="contributionCategory" v-model="contribution.contributionCategory"
                         @change="getContributionItemsByCategory"
                         class="input select mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                         required>
                         <option value="" disabled>Seleccione un tipo</option>
-                        <option v-for="type in contributionTypes" :key="type" :value="type.value">
-                            {{ type.text }}
+                        <option class="capitalize" v-for="category in contributionCategories" :key="category._id" :value="category">
+                            {{ category.name }}
                         </option>
                     </select>
                 </div>
@@ -139,15 +139,16 @@ const emits = defineEmits(['close:modal', 'update:list'])
 //data
 const newContributionModalRef = ref()
 const contributionItems = ref([])
+const contributionCategories = ref([])
 const loading = ref(false)
 const beneficiary = router.currentRoute.value.params.id
 
 const newContributionItem = ref({})
 
 const contribution = ref({
-    contributionType: '',
+    contributionCategory: '',
     contributionItems: [],
-    quantity: 0,
+    quantity: 1,
     comments: '',
     contributionDate: new Date()
 })
@@ -173,16 +174,37 @@ const updateList = () => {
     emits('update:list')
 }
 
+const getContributionCategories = async () => {
+    loading.value = true
+    try {
+        const response = await contributionServices.getCategories(authHeader.value)
+        if (response.code === "ERR_NETWORK") {
+            toast.error('No se pudo conectar con el servidor')
+        } else {
+            contributionCategories.value = response.data
+        }
+    } catch (err) {
+        if (err instanceof AxiosError) {
+            toast.error(err.response?.data?.message)
+        } else {
+            toast.error(err)
+        }
+    } finally {
+        loading.value = false
+    }
+}
+
 const getContributionItemsByCategory = async () => {
     loading.value = true
     try {
         const response = await contributionServices.getContributionItemsByCategory({
-            category: contribution.value.contributionType,
+            category: contribution.value.contributionCategory._id,
         }, authHeader.value)
         if (response.code === "ERR_NETWORK") {
             toast.error('No se pudo conectar con el servidor')
         } else {
             contributionItems.value = response.data
+            console.log(contributionItems.value)
         }
     } catch (err) {
         if (err instanceof AxiosError) {
@@ -233,6 +255,8 @@ const addItem = () => {
 const removeItem = (index) => {
     contribution.value.contributionItems.splice(index, 1);
 }
+
+getContributionCategories()
 
 </script>
 

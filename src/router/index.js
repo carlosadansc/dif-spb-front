@@ -43,7 +43,7 @@ const routes = [
         component: BeneficiaryView
       },
     ],
-  }
+  },
 ]
 
 const router = createRouter({

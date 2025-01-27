@@ -4,8 +4,8 @@ const contributionTypes = [
         value: 'ORTOPEDICO'
     },
     {
-        text: 'Despensa',
-        value: 'DESPENSA'
+        text: 'Alimenticio',
+        value: 'ALIMENTOS'
     },
     {
         text: 'Cuidado personal',

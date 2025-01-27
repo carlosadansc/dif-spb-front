@@ -34,7 +34,7 @@
       </template>
     </EasyDataTable>
 
-    <NewBeneficiarieModal :showModal="showModal" @close:modal="showModal = false" />
+    <NewBeneficiarieModal :showModal="showModal" @refresh:beneficiaries="getBeneficiariesData" @close:modal="showModal = false" />
 
   </div>
 </template>

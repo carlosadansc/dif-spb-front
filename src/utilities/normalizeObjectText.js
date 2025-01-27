@@ -4,6 +4,7 @@ function normalizeText(text) {
     .replace(/[\u0300-\u036f]/g, "")
     .toUpperCase();
 }
+
 function normalizeObjectTextProperties(obj) {
   const normalizedObj = {};
   for (const key in obj) {
@@ -17,7 +18,7 @@ function normalizeObjectTextProperties(obj) {
         !Array.isArray(value)
       ) {
         normalizedObj[key] = normalizeObjectTextProperties(value);
-      } else if (typeof value !== "boolean") {
+      } else {
         normalizedObj[key] = value;
       }
     }

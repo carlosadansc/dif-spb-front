@@ -16,6 +16,7 @@
             <!-- Sidebar content here -->
             <li class="text-red-800"><a @click="goTo('/dashboard')"><IconCategory2 /> Dashboard</a></li>
             <li class="text-red-800"><a  @click="goTo('/beneficiaries')"><IconUsers />Beneficiarios</a></li>
+            <li class="w-[90%] text-red-800 absolute bottom-5"><a  @click="logOut"><IconLogout />Cerrar sesión</a></li>
           </ul>
         </div>
       </div>
@@ -33,15 +34,22 @@
 </template>
 
 <script setup>
-import { IconMenu2, IconCategory2, IconUsers } from '@tabler/icons-vue'
+import { IconMenu2, IconCategory2, IconUsers, IconLogout } from '@tabler/icons-vue'
 import { useRouter } from 'vue-router'
+import { useAuth } from '../composables/useAuth'
 
 //composables
 const router = useRouter()
+const { logoutUser } = useAuth()
 
 //methods
 const goTo = (path) => {
   router.push(path)
+}
+
+const logOut = () => {
+  logoutUser()
+  router.push('/')
 }
 
 </script>

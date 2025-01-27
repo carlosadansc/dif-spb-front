@@ -20,3 +20,9 @@
 .vue3-easy-data-table__footer {
   padding: 1.6rem !important;
 }
+
+.required:after {
+  content: '*';
+  color: red;
+  margin-left: 0.5rem;
+}

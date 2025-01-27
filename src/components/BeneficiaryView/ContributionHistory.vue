@@ -36,7 +36,7 @@
                 <div v-for="(item, index) in contribution.contributionItems" :key="index"
                   class="flex items-center justify-between text-sm">
                   <div class="flex-1 min-w-0">
-                    <span class="font-medium text-gray-900">{{ item.contributionItem.category }}</span>
+                    <span class="font-medium text-gray-900">{{ item.contributionItem.category.name }}</span>
                     <span class="text-gray-500 mx-1">·</span>
                     <span class="text-gray-500">{{ item.contributionItem.description }}</span>
                   </div>
