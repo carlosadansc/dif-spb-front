@@ -27,20 +27,27 @@
         <span class="text-xs font-bold text-red-800">Sistema de Padrón de Beneficiarios</span>
       </div>
     </div>
-    <div class="navbar-end">
- 
+    <div class="navbar-end mr-2">
+      <div class="flex items-center justify-center">
+        <IconUser class="mr-2 h-8 w-8" />
+        <div class="flex flex-col items-start justify-center leading-0">
+          <p class="text-red-800 text-xs font-medium">{{ capitalize(user?.name) + ' ' + capitalize(user?.lastname) }}</p>
+          <p class="text-red-800 text-xs font-medium">{{ capitalize(user?.position) }}</p>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { IconMenu2, IconCategory2, IconUsers, IconLogout } from '@tabler/icons-vue'
+import { IconMenu2, IconCategory2, IconUsers, IconLogout, IconUser } from '@tabler/icons-vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '../composables/useAuth'
+import capitalize from '../utilities/capitalize'
 
 //composables
 const router = useRouter()
-const { logoutUser } = useAuth()
+const { logoutUser, user } = useAuth()
 
 //methods
 const goTo = (path) => {

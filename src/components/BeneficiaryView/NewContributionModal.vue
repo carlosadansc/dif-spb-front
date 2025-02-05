@@ -92,14 +92,17 @@
                     </div>
                 </div>
 
+                <!-- Quien revibe -->
+                <div>
+                    <label for="receiver" class="block text-sm font-medium text-gray-700">Recibe</label>
+                    <input type="text" v-model="contribution.receiver" id="receiver"
+                        class="input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
+                </div>
 
                 <!-- Comentarios -->
                 <div>
-                    <label for="comments" class="block text-sm font-medium text-gray-700">
-                        Notas / Comentarios
-                    </label>
-                    <textarea id="comments" v-model="contribution.comments" rows="4"
-                        class="input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>
+                    <label for="comments" class="block text-sm font-medium text-gray-700">Notas / Comentarios</label>
+                    <textarea id="comments" v-model="contribution.comments" rows="4" class="input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>
                 </div>
 
 
@@ -150,6 +153,7 @@ const contribution = ref({
     contributionItems: [],
     quantity: 1,
     comments: '',
+    receiver: '',
     contributionDate: new Date()
 })
 
@@ -226,6 +230,7 @@ const submitForm = async () => {
                 beneficiary: beneficiary,
                 comments: contribution.value.comments,
                 contributionDate: contribution.value.contributionDate,
+                receiver: contribution.value.receiver
             }
         ), authHeader.value)
         if (response.code === "ERR_NETWORK") {

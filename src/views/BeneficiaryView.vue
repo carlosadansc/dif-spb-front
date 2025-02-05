@@ -7,8 +7,12 @@
         <h1 class="text-3xl font-bold text-gray-900 mt-5"><span class="bg-white py-2 px-4 rounded-[10px] border border-gray-400">{{beneficiary.name + ' ' + beneficiary.fatherSurname + ' ' + beneficiary.motherSurname}}</span></h1>
         
         <div>
-          <button @click="toggleEditMode" id="edit-save" class="btn btn-square bg-red-800 font-black text-white mx-1"><IconEdit v-if="!isEditing" class="h-5 w-5" /> <IconDeviceFloppy v-else class="h-5 w-5" /></button>
-          <button class="btn btn-square bg-gray-500 font-black text-white mx-1" @click="exportToPDF"><IconPrinter class="h-5 w-5" /></button>
+          <div class="tooltip tooltip-bottom" :data-tip="!isEditing ? 'Editar': 'Guardar'">
+            <button @click="toggleEditMode" id="edit-save" class="btn btn-square bg-red-800 font-black text-white mx-1"><IconEdit v-if="!isEditing" class="h-5 w-5" /> <IconDeviceFloppy v-else class="h-5 w-5" /></button>
+          </div>
+          <div class="tooltip tooltip-bottom" data-tip="Exportar perfil a PDF">
+            <button class="btn btn-square bg-gray-500 font-black text-white mx-1" @click="exportToPDF"><IconFileTypePdf class="h-5 w-5" /></button>
+          </div>
         </div>
       </div>
      
@@ -224,7 +228,7 @@
               <label class="block text-sm font-medium text-gray-700">Relación</label>
               <select :disabled="!isEditing" v-model="beneficiary.spouseOrTutor.relationship"
                 class="select select-sm mt-1 block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                <option value="SPOUSE">Cónyuge</option>
+                <option value="CONYUGE">Cónyuge</option>
                 <option value="TUTOR">Tutor</option>
               </select>
             </div>
@@ -311,6 +315,16 @@
         <div v-if="activeSection === 'expenses'" class="space-y-6">
           <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
             <div>
+              <label class="block text-sm font-medium text-gray-700">Ocupación</label>
+              <input :disabled="!isEditing" type="text" v-model="beneficiary.occupation"
+                class="input input-sm mt-1 block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Descripción laboral</label>
+              <input :disabled="!isEditing" type="text" v-model="beneficiary.occupationDescription"
+                class="input input-sm mt-1 block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
+            </div>
+            <div>
               <label class="block text-sm font-medium text-gray-700">Ingresos / mes</label>
               <input :disabled="!isEditing" type="number" v-model="beneficiary.income"
                 class="input input-sm mt-1 block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
@@ -364,7 +378,7 @@ import router from '../router';
 import { ref, onMounted, watch } from 'vue';
 import { AxiosError } from 'axios';
 import { toast } from 'vue3-toastify';
-import { IconArrowNarrowLeft, IconEdit, IconPrinter, IconDeviceFloppy } from '@tabler/icons-vue';
+import { IconArrowNarrowLeft, IconEdit, IconPrinter, IconDeviceFloppy, IconFileTypePdf } from '@tabler/icons-vue';
 import beneficiaryServices from '../services/beneficiaryServices';
 import ContributionHistory from '@/components/BeneficiaryView/ContributionHistory.vue';
 import ProfilePDF from '../components/BeneficiaryView/ProfilePDF.vue';
@@ -450,7 +464,6 @@ const sections = [
 
 // composables
 const { authHeader } = useAuth()
-// const composableRouter = useRouter()
 
 
 //methods
@@ -498,10 +511,13 @@ const toggleEditMode = () => {
 
 const updateBeneficiary = async () => {
   loading.value = true
+  // Crear una copia del objeto sin el campo _id
+  let { _id, ...beneficiarySinId } = beneficiary.value;
+  let filter = beneficiary.value._id;
   try {
     const payload =  {
-      filter: beneficiaryId,
-      update: normalizeObjectText(beneficiary.value)
+      filter: filter,
+      update: normalizeObjectText(beneficiarySinId)
     }
     const response = await beneficiaryServices.updateBeneficiary(payload, authHeader.value)
     if (response.code === "ERR_NETWORK") {

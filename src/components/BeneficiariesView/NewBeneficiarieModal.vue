@@ -22,7 +22,7 @@
             <div class="font-bold text-xs text-red-500 input-errors" v-for="error of v$.curp.$errors" :key="error.$uid">
               <div class="error-msg">{{ error.$message }}</div>
             </div>
-            <span class="font-bold text-xs text-red-800" v-if="beneficiaryExists">Este beneficiario ya existe <a href="#" class="underline">Ver perfil</a></span>
+            <span class="font-bold text-xs text-red-800" v-if="beneficiaryExists">Este beneficiario ya existe <a @click="goTo(beneficiaryFinded._id)" class="underline">Ver perfil</a></span>
           </div>
         </div>
 
@@ -87,6 +87,7 @@
               </div>
             </div>
           </div>
+
           <div class="flex flex-col">
             <label for="phone" class="font-semibold required">Teléfono</label>
             <div :class="{ error: v$.phone.$errors.length }">
@@ -97,6 +98,24 @@
                 <div class="error-msg">{{ error.$message }}</div>
               </div>
             </div>
+          </div>
+
+          <div class="flex flex-col">
+            <label for="occupation" class="font-semibold required">Ocupación</label>
+            <div :class="{ error: v$.occupation.$errors.length }">
+              <input v-model="beneficiary.occupation" id="occupation" type="text"
+                class="mt-1 p-2 input input-bordered w-full" />
+              <div class="font-bold text-xs text-red-500 input-errors" v-for="error of v$.occupation.$errors"
+                :key="error.$uid">
+                <div class="error-msg">{{ error.$message }}</div>
+              </div>
+          </div>
+          </div>
+
+          <div class="flex flex-col">
+            <label for="occupationDescription" class="font-semibold">Descripcón laboral</label>
+            <input v-model="beneficiary.occupationDescription" id="occupationDescription" type="text"
+              class="mt-1 p-2 input input-bordered w-full" />
           </div>
 
           <div class="flex flex-col">
@@ -305,6 +324,7 @@ import calculateAge from '../../utilities/calcBirthdate'
 import { useAuth } from '../../composables/useAuth';
 import { useVuelidate } from '@vuelidate/core'
 import { required, helpers } from '@vuelidate/validators'
+import router from '../../router'
 
 //props
 const props = defineProps({
@@ -334,8 +354,10 @@ const beneficiary = reactive({
   medicalService: '',
   civilStatus: '',
   scholarship: '',
+  occupation: '',
+  occupationDescription: '',
   address: {
-    communityType: '',
+    communityType: 'RURAL',
     delegation: '',
     subdelegation: '',
     street: '',
@@ -347,7 +369,7 @@ const beneficiary = reactive({
     city: 'La Paz'
   }
 })
-
+const beneficiaryFinded= ref({});
 
 //watches
 watch(
@@ -383,6 +405,7 @@ const checkBeneficiaryExists = async () => {
       toast.error('No se pudo conectar con el servidor')
     } else {
       if (response.data) {
+        beneficiaryFinded.value = response.data
         beneficiaryExists.value = true
       } else {
         beneficiaryExists.value = false
@@ -442,16 +465,20 @@ const submitForm = async () => {
 
 const curpFormat = helpers.regex(/^[A-Z]{4}\d{6}[HM][A-Z]{5}[A-Z\d]{2}$/)
 
+const goTo = (beneficiaryId) => {
+  router.push(`/beneficiaries/${beneficiaryId}`)
+}
+
 const rules = {
   name: { required: helpers.withMessage('Campo requerido', required) },
   fatherSurname: { required: helpers.withMessage('Campo requerido', required) },
   birthdate: { required: helpers.withMessage('Campo requerido', required) },
   curp: { format: helpers.withMessage('El formato del CURP no válido', curpFormat), required: helpers.withMessage('Campo requerido', required) },
   phone: { required: helpers.withMessage('Campo requerido', required) },
-  // hasDisability: { required: helpers.withMessage('Campo requerido', required) },
   medicalService: { required: helpers.withMessage('Campo requerido', required) },
   civilStatus: { required: helpers.withMessage('Campo requerido', required) },
   scholarship: { required: helpers.withMessage('Campo requerido', required) },
+  occupation: { required: helpers.withMessage('Campo requerido', required) },
   address: {
     delegation: { required: helpers.withMessage('Campo requerido', required) },
     subdelegation: { required: helpers.withMessage('Campo requerido', required) },

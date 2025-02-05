@@ -24,20 +24,27 @@
           <!-- Contributions List -->
           <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div
-              v-for="contribution in contributions"
+              v-for="(contribution, index) in contributions"
               :key="`contribution-card-${contribution._id}`"
               class="bg-white border border-solid border-gray-100 rounded-lg p-4 flex flex-col"
             >
-              <span class="text-xs text-gray-500">
+
+              <div class="flex items-center gap-2">
+                <span class="text-xs text-gray-500">
                 {{ formatDate(contribution.contributionDate) }}
-              </span>
+                </span>
+                <span class="text-xs underline font-medium text-red-800 cursor-pointer" @click="generateTicketPDF(index)">Imprimir recibo</span>
+                <!-- <button class="btn btn-xs btn-square btn-ghost text-red-800 hover:text-red-900 me-0" @click="generateTicketPDF">
+                  <IconPrinter class="h-4 w-4" />
+                </button> -->
+              </div>
 
               <div class="space-y-1">
                 <div v-for="(item, index) in contribution.contributionItems" :key="index"
                   class="flex items-center justify-between text-sm">
                   <div class="flex-1 min-w-0">
                     <span class="font-medium text-gray-900">{{ item.contributionItem.category.name }}</span>
-                    <span class="text-gray-500 mx-1">·</span>
+                    <span class="text-gray-500 mx-1 font-black">·</span>
                     <span class="text-gray-500">{{ item.contributionItem.description }}</span>
                   </div>
                   <div class="text-red-900 font-medium ml-2">
@@ -46,11 +53,19 @@
                 </div>
               </div>
 
+              <div class="mt-1">
+                <p class="text-gray-500 text-sm">
+                  <span class="font-medium text-gray-900">Recibió: </span>
+                  {{ contribution.receiver }}
+                </p>
+              </div>
+
               <div v-if="contribution.comments" class="mt-1">
                 <p class="text-xs text-gray-500 italic">
                   {{ contribution.comments }}
                 </p>
               </div>
+              <ContributionTicketPDF ref="contributionTicketRef" :contribution="contribution" />
             </div>
           </div>
       </div>
@@ -62,9 +77,11 @@
 
 <script setup>
 import { computed, ref } from 'vue';
-import formatCurrency from '../../utilities/formatCurrency';
 import formatDate from '../../utilities/formatDate';
+import { IconPrinter } from '@tabler/icons-vue';
 import NewContributionModal from './NewContributionModal.vue';
+import ContributionTicketPDF from './ContributionTicketPDF.vue';
+
 
 //props
 const props = defineProps({
@@ -80,6 +97,14 @@ const showModal = ref(false);
 const totalAmount = computed(() => {
   return props.contributions.reduce((sum, contribution) => sum + (contribution.approxPrice * contribution.quantity), 0);
 });
+
+//methods
+
+// Eventos de PDF
+const contributionTicketRef = ref()
+const generateTicketPDF = (index) => {
+  contributionTicketRef.value[index].generateTicketPDF()
+}
 
 console.log(props.contributions)
 </script>
