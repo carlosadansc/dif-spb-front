@@ -1,26 +1,49 @@
 <template>
   <div id="contribution-ticket">
-    <div id="ticket-content" class="ticket-content">
-      <div class="header">
+    <div :id="`ticket-content-${contribution._id}`" class="ticket-content">
+      <div class="pdf-header">
         <img :src="logoDif" alt="Logo DIF" class="logo" />
-        <h6>Recibo de entrega de apoyo</h6>
+        <img :src="logoAyunta" alt="Logo Ayuntamieto" class="logo-ayunta" />
       </div>
-      <div class="content">
-        <p><strong>Beneficiario:</strong> {{ contribution.beneficiary.name }} {{ contribution.beneficiary.fatherSurname
-          }} {{ contribution.beneficiary.motherSurname }}</p>
-        <p><strong>CURP:</strong> {{ contribution.beneficiary.curp }}</p>
-        <p><strong>Fecha de Entrega:</strong> {{ formatDate(contribution.contributionDate) }}</p>
-        <div v-for="(item, index) in contribution.contributionItems" :key="index" class="contribution-item">
-          <p><strong>Tipo de Contribución:</strong> {{ item.contributionItem.category.name }}</p>
-          <p><strong>Descripción:</strong> {{ item.contributionItem.description }}</p>
-          <p><strong>Cantidad:</strong> {{ item.quantity }}</p>
+      <h1 class="pdf-title">RECIBO DE ENTREGA DE APOYO</h1>
+      <div class="content-container">
+        <h2 class="section-title">Información del Beneficiario</h2>
+        <div class="info-grid">
+          <p><strong>Beneficiario:</strong> {{ contribution.beneficiary.name }} {{ contribution.beneficiary.fatherSurname }} {{ contribution.beneficiary.motherSurname }}</p>
+          <p><strong>CURP:</strong> {{ contribution.beneficiary.curp }}</p>
+          <p><strong>Fecha de Entrega:</strong> {{ formatDate(contribution.contributionDate) }}</p>
         </div>
-        <p><strong>Recibió:</strong> {{ contribution.receiver }}</p>
-        <p v-if="contribution.comments"><strong>Comentarios:</strong> {{ contribution.comments }}</p>
-      </div>
-      <div class="footer">
-        <p>Firma del Beneficiario: ___________________________</p>
-        <p>Firma del Responsable: ___________________________</p>
+
+        <hr>
+
+        <h2 class="section-title">Detalles del Apoyo</h2>
+        <div class="list-grid">
+          <div v-for="(item, index) in contribution.contributionItems" :key="index" class="contribution-item">
+            <p><strong>Tipo de Contribución:</strong> {{ item.contributionItem.category.name }}</p>
+            <p><strong>Descripción:</strong> {{ item.contributionItem.description }}</p>
+            <p><strong>Cantidad:</strong> {{ item.quantity }}</p>
+          </div>
+        </div>
+
+        <hr>
+
+        <div class="info-grid">
+          <p v-if="contribution.comments"><strong>Comentarios:</strong> {{ contribution.comments }}</p>
+        </div>
+
+        <div class="footer">
+          <div class="info-grid">
+            <div>
+              <p>Recibido por: ___________________________</p>
+              <p class="name-receiver">{{ contribution.receiver }}</p>
+            </div>
+            <p>Firma del Responsable: ___________________________</p>
+          </div>
+          <p class="footer-text">
+            Documento generado por el Sistema Integral del Padron de Apoyos del DIF Municipal La Paz B.C.S.
+            <span>{{ formatDate(new Date()) }}</span>
+          </p>
+        </div>
       </div>
     </div>
   </div>
@@ -43,7 +66,8 @@ const props = defineProps({
 
 //methods
 const generateTicketPDF = async () => {
-  const element = document.getElementById('ticket-content');
+  console.log(props.contribution)
+  const element = document.getElementById(`ticket-content-${props.contribution._id}`);
   if (!element) return;
 
   await document.fonts.ready;
@@ -100,7 +124,7 @@ defineExpose({ generateTicketPDF });
 
 </script>
 
-<style lang="scss" scoped>
+<style>
 #contribution-ticket {
   font-family: 'Inter', sans-serif !important;
   position: fixed;
@@ -109,45 +133,113 @@ defineExpose({ generateTicketPDF });
 }
 
 .ticket-content {
-  padding: 20px;
-  background-color: #fff;
+  background-color: #ffffff;
+  border-radius: 0.5rem;
+  padding: 2rem;
+  text-align: left;
+  max-width: 816px;
+  margin: 0 auto;
 }
 
-.header {
-  text-align: center;
-  margin-bottom: 20px;
+.pdf-header {
+  display: flex;
+  justify-content: start;
+  margin-bottom: 0.5rem;
 }
 
 .logo {
-  width: 100px;
-  margin-bottom: 10px;
+  height: 36px;
+  width: auto;
 }
 
-.content {
-  margin-top: 20px;
+.logo-ayunta {
+  height: 36px;
+  width: auto;
+  margin-left: 1rem;
+}
+
+.pdf-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: rgb(153 27 27);
+}
+
+.content-container {
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.section-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-top: 0.8rem;
+  margin-bottom: 0.4rem;
+  color: rgb(153, 27, 27);
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.25rem;
+  margin-bottom: 0.8rem;
+}
+
+.list-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.25rem;
+  margin-bottom: 0.8rem;
+}
+
+.info-grid p {
+  font-size: 12px;
+  margin: 0;
+  line-height: 1;
+  padding: 2px 0;
+}
+
+.list-grid p {
+  font-size: 12px;
+  margin: 0;
+  line-height: 1;
+  padding: 2px 0;
+}
+
+.name-receiver {
+  width: 100%;
+  text-align: center;
 }
 
 .contribution-item {
-  margin-bottom: 10px;
+  margin-bottom: 0.25rem;
+}
+
+hr {
+  margin: 0.5rem 0;
+  border: 0;
+  border-top: 1px solid #e5e7eb;
 }
 
 .footer {
-  margin-top: 2rem;
-  padding-top: 2rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
   border-top: 1px solid #e5e7eb;
 }
 
 .footer p {
-  margin: 10px 0;
+  margin: 0.5rem 0;
+  font-size: 12px;
 }
 
-.btn {
-  margin-top: 1rem;
-  padding: 0.5rem 1rem;
-  background-color: #1f2937;
-  color: white;
-  border-radius: 0.375rem;
-  font-weight: 500;
+.footer-text {
+  font-size: 12px;
+  color: #6b7280;
+  text-align: center;
+}
+
+strong {
+  font-weight: 600;
 }
 
 @media print {

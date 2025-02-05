@@ -103,6 +103,7 @@ const totalAmount = computed(() => {
 // Eventos de PDF
 const contributionTicketRef = ref()
 const generateTicketPDF = (index) => {
+  console.log(contributionTicketRef.value[index])
   contributionTicketRef.value[index].generateTicketPDF()
 }
 
