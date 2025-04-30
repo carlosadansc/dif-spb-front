@@ -5,31 +5,41 @@ const createContribution = async (contribution, headers) => {
     return await api.post('/contribution/create', contribution, { headers }).then((response) =>  response.data ).catch((err) => err)
 }
 
-const getContributionItemsByCategory = async (params, headers) => {
-    return await api.get('/contribution-item/by-category', { params, headers } ).then((response) =>  response.data ).catch((err) => err)
+const getProductOrServicesByCategory = async (params, headers) => {
+    return await api.get('/product-or-service/by-category', { params, headers } ).then((response) =>  response.data ).catch((err) => err)
+}
+
+const getContributionsByBeneficiary = async (id, headers) => {
+    return await api.get(`/contribution/by-beneficiary/${id}`, { headers } ).then((response) =>  response.data ).catch((err) => err)
 }
 
 const getCategories = async (headers) => {
-    return await api.get('/contribution-item-categories', { headers } ).then((response) =>  response.data ).catch((err) => err)
+    return await api.get('/categories', { headers } ).then((response) =>  response.data ).catch((err) => err)
 }
 
 const getContributionYears = async (headers) => {
     return await api.get('/contribution/years', { headers } ).then((response) =>  response.data ).catch((err) => err)
 }
 
-const getSummaryByCategory = async (params, headers) => {
+const getContributionSummary = async (params, headers) => {
+    return await api.get('/contribution/summary', { params, headers } ).then((response) =>  response.data ).catch((err) => err)
+}
+
+const getContributionSummaryByCategory = async (params, headers) => {
     return await api.get('/contribution/summary-by-category', { params, headers } ).then((response) =>  response.data ).catch((err) => err)
 }
 
-const getContributionItemSummary = async (params, headers) => {
-    return await api.get('/contribution/contribution-item-summary-by-category', { params, headers } ).then((response) =>  response.data ).catch((err) => err)
+const getAllContributions = async (headers) => {
+    return await api.get('/contribution/get-all', { headers } ).then((response) =>  response.data ).catch((err) => err)
 }
 
 export default {
-    getContributionItemsByCategory,
+    getProductOrServicesByCategory,
+    getContributionsByBeneficiary,
     createContribution,
     getCategories, 
     getContributionYears,
-    getSummaryByCategory,
-    getContributionItemSummary 
+    getContributionSummary,
+    getContributionSummaryByCategory,
+    getAllContributions 
 }

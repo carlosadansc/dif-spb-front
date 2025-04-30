@@ -14,7 +14,14 @@ export function registerPlugins (app) {
   app
     .use(pinia)
     .use(router)
-    .use(Vue3Toasity, { autoClose: 3000})
+    .use(Vue3Toasity, {
+      autoClose: 3000,
+      position: "top-right",
+      // Valor muy alto para asegurar que esté por encima de todo
+      toastStyle: { zIndex: 10000 },
+      // Para compatibilidad con otras configuraciones de z-index en la aplicación
+      containerStyle: { zIndex: 10000 }
+    })
     .component('EasyDataTable', Vue3EasyDataTable)
     .directive('maska', vMaska)
 }

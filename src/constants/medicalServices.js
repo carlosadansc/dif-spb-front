@@ -1,21 +1,27 @@
+
 const medicalServices = [
     {
+        id:1,
         text: 'ISSSTE',
         value: 'ISSSTE'
     },
     {
+        id:2,
         text: 'IMSS',
         value: 'IMSS'
     },
     {
-        text: 'INSABI',
-        value: 'INSABI'
+        id:3,
+        text: 'IMMS Bienestar',
+        value: 'IMSS BIENESTAR'
     },
     {
-        text: 'Servicio militar',
-        value: 'MILITAR'
+        id:4,
+        text: 'Hospital Militar',
+        value: 'HOSPIAL MILITAR'
     },
     {
+        id:5,
         text: 'Ninguno',
         value: 'NINGUNO'
     }

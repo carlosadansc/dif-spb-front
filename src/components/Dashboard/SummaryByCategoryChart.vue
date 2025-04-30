@@ -1,6 +1,6 @@
 <template>
   <div class="h-[450px] bg-white p-4 rounded-lg border border-gray-300 flex flex-col">
-    <h6 class="font-semibold text-lg text-gray-500">Total de apoyos otorgados por categoría</h6>
+    <h6 class="font-semibold text-lg text-gray-500">Total de apoyos por tipo</h6>
 
     <select :value="selectedCategory._id" @change="handlerSelectCategory($event)"
       class="select select-sm rounded-lg border-gray-300 bg-white text-gray-700 my-5 ml-auto">
@@ -55,7 +55,7 @@ const selectedCategory = ref({
 
 //computed
 const data = computed(() => props.data)
-const backgroundChartColor = computed(() => { return selectedCategory.value.color ? selectedCategory.value.color : '#454545' })
+const backgroundChartColor = computed(() => { return selectedCategory.value.color ? selectedCategory.value.color : '#900C3F' })
 const chartLabel = computed(() => { return selectedCategory.value.name ? selectedCategory.value.name : 'Todas' })
 
 //emits
@@ -64,10 +64,10 @@ const emit = defineEmits(['update:category'])
 //chart config                                
 const chartData = computed(() => {
   return {
-    labels: data.value.map(d => d.description),
+    labels: data.value.map(d => d.name),
     datasets: [{
       label: chartLabel.value,
-      data: data.value.map(d => d.totalQuantity),
+      data: data.value.map(d => d.total),
       backgroundColor: backgroundChartColor.value,
       borderColor: '#000',
       tension: 0.1,

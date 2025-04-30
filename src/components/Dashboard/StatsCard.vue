@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white p-6 rounded-lg shadow-md">
+  <div class="bg-white p-6 rounded-lg ouline outline-1 outline-gray-200">
     <h3 class="text-sm font-medium text-gray-500">{{ props.title }}</h3>
     <div class="mt-2 flex items-baseline">
       <p class="text-2xl font-semibold text-gray-900">{{ props.value }}</p>

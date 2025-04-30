@@ -1,159 +1,340 @@
 <template>
-  <div id="pdf" ref="document">
-    <div id="element-to-convert" style="font-family: 'Inter', sans-serif;">
-      <div class="pdf-container">
-        <!-- Agregamos el header con el logo -->
-        <div class="pdf-header">
+  <div id="beneficiary-profile">
+    <div id="profile-content" class="ticket-content">
+      <!-- Encabezado con escudo y logos institucionales -->
+      <div class="pdf-header">
+        <div class="logo-container">
           <img :src="logoDif" alt="Logo DIF" class="logo" />
+          <div class="header-divider"></div>
           <img :src="logoAyunta" alt="Logo Ayuntamieto" class="logo-ayunta" />
         </div>
+        <div class="document-title-container">
+          <h1 class="document-type">PERFIL SOCIOECONOMICO</h1>
+          <h2 class="document-subtitle">REGISTRO DEL PADRON DE BENEFICIARIOS</h2>
+        </div>
+      </div>
 
-        <h1 class="pdf-title">BENEFICIARIO: <span style="color: black;">{{ beneficiary.name }} {{ beneficiary.fatherSurname }} {{ beneficiary.motherSurname }} / {{ beneficiary.curp }}</span></h1>
+      <!-- Información de folio y fecha -->
+      <div class="document-info">
+        <div class="folio-box">
+          <span class="folio-label">CURP</span>
+          <span class="folio-number">{{ props.beneficiary.curp }}</span>
+        </div>
+        <div class="date-box">
+          <span class="date-label">FECHA DE EMISIÓN</span>
+          <span class="date-value">{{ today()  }}</span>
+        </div>
+      </div>
 
-        <div class="content-container">
-          <!-- Información General -->
-          <h2 class="section-title">Información General</h2>
-          <div class="info-grid">
-            <!-- <p><strong>Nombre:</strong> </p> -->
-            <!-- <p><strong>CURP:</strong> </p> -->
-            <p><strong>Edad:</strong> {{ beneficiary.age }} años</p>
-            <p><strong>Fecha de Nacimiento:</strong> {{ formatDate(beneficiary.birthdate) }}</p>
-            <p><strong>Lugar de Nacimiento:</strong> {{ beneficiary.birthplace }}</p>
-            <p><strong>Sexo:</strong> {{ beneficiary.sex === 'HOMBRE' ? 'Hombre' : 'Mujer' }}</p>
-            <p><strong>Teléfono:</strong> {{ beneficiary.phone }}</p>
-            <p><strong>Estado Civil:</strong> {{ formatCivilStatus(beneficiary.civilStatus) }}</p>
-            <p><strong>Escolaridad:</strong> {{ beneficiary.scholarship }}</p>
-            <p v-if="beneficiary.hasDisability"><strong>Tipo de Discapacidad:</strong> {{ beneficiary.disabilityType }}</p>
+      <!-- Contenido principal -->
+      <div class="content-container">
+        <!-- Sección de información general -->
+        <div class="formal-section">
+          <h3 class="formal-section-title">INFORMACIÓN DEL BENEFICIARIO</h3>
+          <div class="formal-section-content">
+            <table class="info-table">
+              <tbody>
+                <tr>
+                  <td class="info-label">NOMBRE COMPLETO:</td>
+                  <td class="info-value" colspan="3">{{ props.beneficiary.name }} {{ props.beneficiary.fatherSurname }}
+                    {{ props.beneficiary.motherSurname }}</td>
+                </tr>
+                <tr>
+                  <td class="info-label">EDAD:</td>
+                  <td class="info-value">{{ props.beneficiary.age }} años</td>
+                  <td class="info-label">FECHA DE NACIMIENTO:</td>
+                  <td class="info-value">{{ formatDate(props.beneficiary.birthdate) }}</td>
+                </tr>
+                <tr>
+                  <td class="info-label">TELÉFONO:</td>
+                  <td class="info-value">{{ props.beneficiary.phone }}</td>
+                  <td class="info-label">LUGAR DE NACIMIENTO:</td>
+                  <td class="info-value">{{ props.beneficiary.birthplace }}</td>
+                </tr>
+                <tr>
+                  <td class="info-label">SEXO:</td>
+                  <td class="info-value">{{ props.beneficiary.sex === 'HOMBRE' ? 'Hombre' : 'Mujer' }}</td>
+                  <td class="info-label">ESTADO CIVIL:</td>
+                  <td class="info-value">{{ formatCivilStatus(props.beneficiary.civilStatus) }}</td>
+                </tr>
+                <tr>
+                  <td class="info-label">ESCOLARIDAD:</td>
+                  <td class="info-value">{{ props.beneficiary.scholarship }}</td>
+                  <td class="info-label">DISCAPACIDAD:</td>
+                  <td class="info-value">{{ props.beneficiary.hasDisability ? props.beneficiary.disabilityType :
+                    'Ninguna' }}</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
+        </div>
 
-          <!-- divider -->
-          <hr>
-
-          <!-- Dirección -->
-          <h2 class="section-title">Dirección</h2>
-          <div class="info-grid">
-            <p><strong>Tipo de Comunidad:</strong> {{ beneficiary.address.communityType === 'RURAL' ? 'Rural' : 'Urbana' }}</p>
-            <p><strong>Delegación:</strong> {{ beneficiary.address.delegation }}</p>
-            <p><strong>Subdelegación:</strong> {{ beneficiary.address.subdelegation }}</p>
-            <p><strong>Calle:</strong> {{ beneficiary.address.street }}</p>
-            <p><strong>Número Exterior:</strong> {{ beneficiary.address.extNum }}</p>
-            <p><strong>Número Interior:</strong> {{ beneficiary.address.intNum || 'N/A' }}</p>
-            <p><strong>Colonia:</strong> {{ beneficiary.address.neighborhood }}</p>
-            <p><strong>Código Postal:</strong> {{ beneficiary.address.cp }}</p>
-            <p><strong>Ciudad:</strong> {{ beneficiary.address.city }}</p>
+        <!-- Sección de dirección -->
+        <div class="formal-section">
+          <h3 class="formal-section-title">DIRECCIÓN</h3>
+          <div class="formal-section-content">
+            <table class="info-table">
+              <tbody>
+                <tr>
+                  <td class="info-label">CALLE:</td>
+                  <td class="info-value">{{ props.beneficiary.address.street }}</td>
+                  <td class="info-label">NUM. EXT:</td>
+                  <td class="info-value">{{ props.beneficiary.address.extNum }}</td>
+                </tr>
+                <tr>
+                  <td class="info-label">NUM. INT:</td>
+                  <td class="info-value">{{ props.beneficiary.address.intNum || 'N/A' }}</td>
+                  <td class="info-label">COLONIA:</td>
+                  <td class="info-value">{{ props.beneficiary.address.neighborhood }}</td>
+                </tr>
+                <tr>
+                  <td class="info-label">CÓDIGO POSTAL:</td>
+                  <td class="info-value">{{ props.beneficiary.address.cp }}</td>
+                  <td class="info-label">CIUDAD:</td>
+                  <td class="info-value">{{ props.beneficiary.address.city }}</td>
+                </tr>
+                <tr>
+                  <td class="info-label">DELEGACIÓN:</td>
+                  <td class="info-value">{{ props.beneficiary.address.delegation }}</td>
+                  <td class="info-label">SUBDELEGACIÓN:</td>
+                  <td class="info-value">{{ props.beneficiary.address.subdelegation }}</td>
+                </tr>
+                <tr>
+                  <td class="info-label">TIPO DE COMUNIDAD:</td>
+                  <td class="info-value" colspan="3">{{ props.beneficiary.address.communityType === 'RURAL' ? 'Rural' :
+                    'Urbana' }}</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
+        </div>
 
-          <!-- divider -->
-            <hr>
-
-          <!-- Información del Cónyuge/Tutor -->
-          <h2 class="section-title">Información del {{ beneficiary.spouseOrTutor.relationship === 'CONYUGE' ? 'Cónyuge' : 'Tutor' }}</h2>
-          <div class="info-grid">
-            <p><strong>Nombre:</strong> {{ beneficiary.spouseOrTutor.fullname }}</p>
-            <p><strong>Edad:</strong> {{ beneficiary.spouseOrTutor.age }} años</p>
-            <p><strong>Teléfono:</strong> {{ beneficiary.spouseOrTutor.phone }}</p>
-            <p><strong>Trabajo:</strong> {{ beneficiary.spouseOrTutor.work }}</p>
-            <p><strong>Ingresos:</strong> ${{ beneficiary.spouseOrTutor.income }}</p>
-            <p v-if="beneficiary.spouseOrTutor.comments"><strong>Comentarios:</strong> {{ beneficiary.spouseOrTutor.comments }}</p>
+        <!-- Información del Cónyuge/Tutor -->
+        <div class="formal-section">
+          <h3 class="formal-section-title">INFORMACIÓN DEL {{ props.beneficiary.spouseOrTutor.relationship === 'CONYUGE'
+            ? 'CÓNYUGE' : 'TUTOR' }}</h3>
+          <div class="formal-section-content">
+            <table class="info-table">
+              <tbody>
+                <tr>
+                  <td class="info-label">CURP:</td>
+                  <td class="info-value" colspan="2">{{ props.beneficiary.spouseOrTutor.curp }}</td>
+                </tr>
+                <tr>
+                  <td class="info-label">NOMBRE COMPLETO:</td>
+                  <td class="info-value" colspan="3">{{ props.beneficiary.spouseOrTutor.fullname }}</td>
+                </tr>
+                <tr>
+                  <td class="info-label">EDAD:</td>
+                  <td class="info-value">{{ props.beneficiary.spouseOrTutor.age }} años</td>
+                  <td class="info-label">TELÉFONO:</td>
+                  <td class="info-value">{{ props.beneficiary.spouseOrTutor.phone }}</td>
+                </tr>
+                <tr>
+                  <td class="info-label">TRABAJO:</td>
+                  <td class="info-value">{{ props.beneficiary.spouseOrTutor.work }}</td>
+                  <td class="info-label">INGRESOS:</td>
+                  <td class="info-value">${{ props.beneficiary.spouseOrTutor.income }}</td>
+                </tr>
+                <tr v-if="props.beneficiary.spouseOrTutor.comments">
+                  <td class="info-label">COMENTARIOS:</td>
+                  <td class="info-value" colspan="3">{{ props.beneficiary.spouseOrTutor.comments }}</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
+        </div>
 
-          <!-- divider -->
-          <hr>
-
-          <!-- Información de la Vivienda -->
-          <h2 class="section-title">Información de la Vivienda</h2>
-          <div class="info-grid">
-            <div>
-              <p><strong>Tipo:</strong> {{ beneficiary.home.type === 'CASA' ? 'Casa' : 'Departamento' }}</p>
-              <p><strong>Número de Habitaciones:</strong> {{ beneficiary.home.roomNumber }}</p>
-              <p><strong>Pertenencia:</strong> {{ formatBelonging(beneficiary.home.belonging) }}</p>
-            </div>
-
-            <div>
-              <p><strong>Servicios:</strong></p>
-            <ul class="services-list info-grid">
-              <li><strong>Baño:</strong>{{beneficiary.home.haveBathroom ? ' Si' : ' No'}}</li>
-              <li><strong>Sanitario:</strong>{{beneficiary.home.haveToilet ? ' Si' : ' No'}}</li>
-              <li><strong>Drenaje:</strong>{{beneficiary.home.haveDrainage ? ' Si' : ' No'}}</li>
-              <li><strong>Fósa séptica:</strong>{{beneficiary.home.haveSepticTank ? ' Si' : ' No'}}</li>
-              <li><strong>Agua potable:</strong>{{beneficiary.home.waterService ? ' Si' : ' No'}}</li>
-              <li><strong>Servicio eléctrico:</strong>{{beneficiary.home.electricService ? ' Si' : ' No'}}</li>
-              <li><strong>Aire acondicionado:</strong>{{beneficiary.home.haveAirConditioning ? ' Si' : ' No'}}</li>
-              <li><strong>Servicio de TV:</strong>{{beneficiary.home.haveTvService ? ' Si' : ' No'}}</li>
-            </ul>
-            </div>
-          </div>
-
-          <!-- divider -->
-          <hr>
-
-          <!-- Información Económica -->
-          <h2 class="section-title">Información Económica</h2>
-          <div class="info-grid">
-            <div>
-            <p><strong>Ocupación:</strong> {{ beneficiary.occupation }}</p>
-            <p><strong>Descripción laboral:</strong> {{ beneficiary.occupationDescription }}</p>
-            <p><strong>Ingresos Mensuales:</strong> {{ formatCurrency(beneficiary.income) }}</p>
-            </div>
-            
-            <div>
-              <p><strong>Gastos Mensuales:</strong></p>
-              <ul class="expenses-list info-grid">
-                <li><strong>Transporte:</strong> {{ formatCurrency(beneficiary.expenses.transport) }}</li>
-                <li><strong>Alimentación:</strong> {{ formatCurrency(beneficiary.expenses.meal) }}</li>
-                <li><strong>Servicio de TV:</strong> {{ formatCurrency(beneficiary.expenses.tvService) }}</li>
-                <li><strong>Servicio de Agua:</strong> {{ formatCurrency(beneficiary.expenses.waterService) }}</li>
-                <li><strong>Servicio Eléctrico:</strong> {{ formatCurrency(beneficiary.expenses.electricService) }}</li>
-                <li><strong>Otros Gastos:</strong> {{ formatCurrency(beneficiary.expenses.otherExpenses) }}</li>
-              </ul>
+        <!-- Información de la Vivienda -->
+        <div class="formal-section">
+          <h3 class="formal-section-title">INFORMACIÓN DE LA VIVIENDA</h3>
+          <div class="formal-section-content">
+            <div class="info-grid">
+              <div>
+                <table class="info-table">
+                  <tbody>
+                    <tr>
+                      <td class="info-label">TIPO:</td>
+                      <td class="info-value">{{ props.beneficiary.home.type === 'CASA' ? 'Casa' : 'Departamento' }}</td>
+                    </tr>
+                    <tr>
+                      <td class="info-label">HABITACIONES:</td>
+                      <td class="info-value">{{ props.beneficiary.home.roomNumber }}</td>
+                    </tr>
+                    <tr>
+                      <td class="info-label">PERTENENCIA:</td>
+                      <td class="info-value">{{ formatBelonging(props.beneficiary.home.belonging) }}</td>
+                    </tr>
+                    <tr>
+                      <td class="info-label">TIPO DE PISO:</td>
+                      <td class="info-value">{{ formatBelonging(props.beneficiary.home.floorType) }}</td>
+                    </tr>
+                    <tr>
+                      <td class="info-label">TIPO DE PARED:</td>
+                      <td class="info-value">{{ formatBelonging(props.beneficiary.home.wallType) }}</td>
+                    </tr>
+                    <tr>
+                      <td class="info-label">TIPO DE TECHO:</td>
+                      <td class="info-value">{{ formatBelonging(props.beneficiary.home.ceilingType) }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div>
+                <p><strong>SERVICIOS:</strong></p>
+                <ul class="services-list">
+                  <li><strong>Baño:</strong>{{ props.beneficiary.home.haveBathroom ? ' Si' : ' No' }}</li>
+                  <li><strong>Sanitario:</strong>{{ props.beneficiary.home.haveToilet ? ' Si' : ' No' }}</li>
+                  <li><strong>Drenaje:</strong>{{ props.beneficiary.home.haveDrainage ? ' Si' : ' No' }}</li>
+                  <li><strong>Fósa séptica:</strong>{{ props.beneficiary.home.haveSepticTank ? ' Si' : ' No' }}</li>
+                  <li><strong>Agua potable:</strong>{{ props.beneficiary.home.waterService ? ' Si' : ' No' }}</li>
+                  <li><strong>Servicio eléctrico:</strong>{{ props.beneficiary.home.electricService ? ' Si' : ' No' }}
+                  </li>
+                  <li><strong>Aire acondicionado:</strong>{{ props.beneficiary.home.haveAirConditioning ? ' Si' : ' No' }}
+                  </li>
+                  <li><strong>Servicio de TV:</strong>{{ props.beneficiary.home.haveTvService ? ' Si' : ' No' }}</li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
 
-        <div class="footer">
-          <p class="footer-text">
-            Documento generado por el Sistema Integral del Padron de Apoyos del DIF Municipal La Paz B.C.S. 
-            <span>{{ formatDate(new Date()) }}</span>
-          </p>
+        <!-- Información Económica -->
+        <div class="formal-section">
+          <h3 class="formal-section-title">INFORMACIÓN ECONÓMICA</h3>
+          <div class="formal-section-content">
+            <div class="info-grid">
+              <div>
+                <table class="info-table">
+                  <tbody>
+                    <tr>
+                      <td class="info-label">OCUPACIÓN:</td>
+                      <td class="info-value">{{ props.beneficiary.occupation }}</td>
+                    </tr>
+                    <tr>
+                      <td class="info-label">DESCRIPCIÓN LABORAL:</td>
+                      <td class="info-value">{{ props.beneficiary.occupationDescription }}</td>
+                    </tr>
+                    <tr>
+                      <td class="info-label">INGRESOS MENSUALES:</td>
+                      <td class="info-value">{{ formatCurrency(props.beneficiary.income) }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div>
+                <p><strong>GASTOS MENSUALES:</strong></p>
+                <ul class="expenses-list">
+                  <li><strong>Transporte:</strong> {{ formatCurrency(props.beneficiary.expenses.transport) }}</li>
+                  <li><strong>Alimentación:</strong> {{ formatCurrency(props.beneficiary.expenses.meal) }}</li>
+                  <li><strong>Servicio de TV:</strong> {{ formatCurrency(props.beneficiary.expenses.tvService) }}</li>
+                  <li><strong>Servicio de Agua:</strong> {{ formatCurrency(props.beneficiary.expenses.waterService) }}
+                  </li>
+                  <li><strong>Servicio Eléctrico:</strong> {{ formatCurrency(props.beneficiary.expenses.electricService)
+                    }}</li>
+                  <li><strong>Otros Gastos:</strong> {{ formatCurrency(props.beneficiary.expenses.otherExpenses) }}</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sección de comentarios si existen -->
+        <div class="formal-section" v-if="props.beneficiary.comments">
+          <h3 class="formal-section-title">COMENTARIOS / OBSERVACIONES</h3>
+          <div class="formal-section-content">
+            <div class="comments-box">
+              {{ props.beneficiary.comments }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Sección de firmas -->
+        <div class="formal-section signature-section">
+          <h3 class="formal-section-title">FIRMAS DE CONFORMIDAD</h3>
+          <div class="formal-section-content">
+            <div class="sign-text">
+              <p class="text-center"><i>"Manifiesto bajo protesta de decir verdad que la información proporcionada en
+                  este formato es verdadera y estoy de acuerdo a que se compruebe la veracidad de esta información."</i>
+              </p>
+            </div>
+
+            <div class="signatures-container">
+              <div class="signature-column">
+                <p class="signature-role">BENEFICIARIO</p>
+                <div class="signature-line"></div>
+                <p class="signature-name">{{ props.beneficiary.name }} {{ props.beneficiary.fatherSurname }} {{
+                  props.beneficiary.motherSurname }}</p>
+                <p class="signature-label">NOMBRE Y FIRMA</p>
+              </div>
+              <div class="signature-column">
+                <p class="signature-role">REALIZÓ</p>
+                <div class="signature-line"></div>
+                <p class="signature-name">{{ user.name }} {{ user.lastname }}</p>
+                <p class="signature-label">{{ user.position }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pie de página -->
+      <div class="footer">
+        <div class="official-seal">
+          <div class="seal-border">
+            <p class="seal-text">SELLO OFICIAL</p>
+          </div>
+        </div>
+        <div class="footer-text">
+          <p>Este documento es válido como ficha oficial de registro del beneficiario en el Sistema Integral del Padron
+            de Beneficiarios del DIF Municipal La Paz B.C.S.</p>
+          <p class="document-generated">Documento generado el {{ today() }} a través del Sistema Integral
+            del Padrón de Beneficiarios</p>
+          <p class="document-operator">Expedido por: {{ capitalize(user.name) }} {{ capitalize(user.lastname) }} / {{
+            user.position }}</p>
         </div>
       </div>
     </div>
-    <!-- <button class="btn" @click="exportToPDF">Exportar a PDF</button> -->
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import '@fontsource/inter'
-import { jsPDF } from 'jspdf'
-import html2canvas from 'html2canvas'
-import formatCurrency from '@/utilities/formatCurrency'
-import formatDate from '../../utilities/formatDate'
-import logoDif from '@/assets/img/logo-dif.png'
-import logoAyunta from '@/assets/img/logo-ayunta.png'
+import { ref, computed } from 'vue';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
+import formatCurrency from '@/utilities/formatCurrency';
+import formatDate from '../../utilities/formatDate';
+import capitalize from '../../utilities/capitalize';
+import logoDif from '@/assets/img/logo-dif.png';
+import logoAyunta from '@/assets/img/logo-ayunta.png';
+import { useAuth } from '../../composables/useAuth';
 
-//props
+// composables
+const { user } = useAuth();
+
+// props
 const props = defineProps({
   beneficiary: {
     type: Object,
     required: true
   }
-})
+});
 
-//computed
+// computed
 const beneficiaryFileName = computed(() => {
-  return `ficha-beneficiario-${props.beneficiary.name}-${props.beneficiary.fatherSurname}-${props.beneficiary.motherSurname}`
-})
+  return `ficha-beneficiario-${props.beneficiary.name}-${props.beneficiary.fatherSurname}-${props.beneficiary.motherSurname}`;
+});
 
+// methods
 const formatCivilStatus = (status) => {
   const statusMap = {
     'CASADO': 'Casado',
     'SOLTERO': 'Soltero',
     'VIUDO': 'Viudo',
     'UNION_LIBRE': 'Unión Libre'
-  }
-  return statusMap[status] || status
-}
+  };
+  return statusMap[status] || status;
+};
 
 const formatBelonging = (belonging) => {
   const belongingMap = {
@@ -161,216 +342,474 @@ const formatBelonging = (belonging) => {
     'RENTA': 'Renta',
     'HIPOTECADA': 'Hipotecada',
     'PRESTADA': 'Prestada'
-  }
-  return belongingMap[belonging] || belonging
-}
+  };
+  return belongingMap[belonging] || belonging;
+};
 
-const exportToPDF = async () => {
-  try {
-    const element = document.getElementById('element-to-convert')
-    if (!element) return
+const today = () => {
+  const fecha = new Date();
+  const offset = fecha.getTimezoneOffset();
+  const fechaUTC = new Date(fecha.getTime() - offset * 60 * 1000);
 
-    await document.fonts.ready
+  return formatDate(fechaUTC);
+};
 
-    const canvas = await html2canvas(element, {
-      scale: 2,  // Aumentamos la escala para mejor calidad
-      useCORS: true,
-      logging: true,
-      backgroundColor: '#ffffff',
-      windowWidth: 816, // Ancho de carta en pixels (8.5 x 96)
-      windowHeight: 1056, // Alto de carta en pixels (11 x 96)
-      onclone: (clonedDoc) => {
-        const styles = clonedDoc.getElementsByTagName('style')
-        for (let style of styles) {
-          if (style.innerHTML.includes('@tailwind') || style.innerHTML.includes('oklch')) {
-            style.remove()
-          }
-        }
-        clonedDoc.body.style.fontFamily = "'Inter', sans-serif"
+const generateProfilePDF = async () => {
+  const element = document.getElementById('profile-content');
+  if (!element) return;
+
+  await document.fonts.ready;
+
+  // Función helper para limpiar estilos problemáticos
+  const cleanStylesForCanvas = (doc) => {
+    // Buscar y limpiar estilos problemáticos en el DOM clonado
+    const allElements = doc.querySelectorAll('*');
+    allElements.forEach(el => {
+      const style = window.getComputedStyle(el);
+      const computedStyles = {};
+
+      // Convertir estilos inline a RGB si contienen oklch
+      if (el.style && el.style.cssText) {
+        const newStyle = el.style.cssText.replace(/oklch\([^)]+\)/g, 'rgb(0, 0, 0)');
+        el.style.cssText = newStyle;
       }
-    })
 
-    const imgData = canvas.toDataURL('image/jpeg', 1.0)
-    const pdf = new jsPDF({
-      orientation: 'portrait',
-      unit: 'mm',  // Cambiamos a milímetros
-      format: 'letter'
-    })
+      // Asegurar fuente consistente
+      el.style.fontFamily = "'Arial', sans-serif";
+    });
 
-    const pageWidth = pdf.internal.pageSize.getWidth()
-    const pageHeight = pdf.internal.pageSize.getHeight()
-    
-    // Calculamos las dimensiones manteniendo la proporción
-    const imgWidth = pageWidth - 20  // 10mm de margen en cada lado
-    const imgHeight = (canvas.height * imgWidth) / canvas.width
-    
-    let heightLeft = imgHeight
-    let position = 5 // 10mm de margen superior
+    // Eliminar o modificar hojas de estilo que puedan contener oklch
+    const styleSheets = doc.getElementsByTagName('style');
+    for (let i = 0; i < styleSheets.length; i++) {
+      const style = styleSheets[i];
+      if (style.innerHTML.includes('oklch') || style.innerHTML.includes('@tailwind')) {
+        // Intentar reemplazar los valores oklch en lugar de eliminar toda la hoja de estilos
+        style.innerHTML = style.innerHTML.replace(/oklch\([^)]+\)/g, 'rgb(0, 0, 0)');
+      }
+    }
+  };
 
-    // Primera página
-    pdf.addImage(imgData, 'JPEG', 10, position, imgWidth, imgHeight)
-    heightLeft -= pageHeight
+  // Crear el documento PDF
+  const pdf = new jsPDF({
+    orientation: 'portrait',
+    unit: 'mm',
+    format: 'letter'
+  });
 
-    // Páginas adicionales
-    while (heightLeft >= 0) {
-      position = heightLeft - imgHeight + 5
-      pdf.addPage()
-      pdf.addImage(imgData, 'JPEG', 10, position, imgWidth, imgHeight)
-      heightLeft -= pageHeight
+  // Obtener dimensiones de la página
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const pageHeight = pdf.internal.pageSize.getHeight();
+  const margin = 10; // 10mm de margen en todos los lados
+  const contentWidth = pageWidth - (margin * 2);
+  const contentHeight = pageHeight - (margin * 2);
+
+  // Identificar todas las secciones
+  const sections = element.querySelectorAll('.formal-section');
+
+  // Procesar cada sección por separado
+  let currentPage = 1;
+  let yPosition = margin;
+  let isFirstSection = true;
+
+  // Opciones base para html2canvas
+  const canvasOptions = {
+    scale: 2,
+    useCORS: true,
+    backgroundColor: '#ffffff',
+    onclone: (clonedDoc) => {
+      cleanStylesForCanvas(clonedDoc);
+    }
+  };
+
+  try {
+    // Agregar encabezado y folio solo en la primera página
+    const headerElement = element.querySelector('.pdf-header');
+    const documentInfo = element.querySelector('.document-info');
+
+    if (headerElement && documentInfo) {
+      // Procesar el encabezado
+      const headerCanvas = await html2canvas(headerElement, canvasOptions);
+
+      const headerImgData = headerCanvas.toDataURL('image/jpeg', 1.0);
+      const headerImgWidth = contentWidth;
+      const headerImgHeight = (headerCanvas.height * headerImgWidth) / headerCanvas.width;
+
+      pdf.addImage(headerImgData, 'JPEG', margin, yPosition, headerImgWidth, headerImgHeight);
+      yPosition += headerImgHeight + 5;
+
+      // Procesar la información del documento
+      const infoCanvas = await html2canvas(documentInfo, canvasOptions);
+
+      const infoImgData = infoCanvas.toDataURL('image/jpeg', 1.0);
+      const infoImgWidth = contentWidth;
+      const infoImgHeight = (infoCanvas.height * infoImgWidth) / infoCanvas.width;
+
+      pdf.addImage(infoImgData, 'JPEG', margin, yPosition, infoImgWidth, infoImgHeight);
+      yPosition += infoImgHeight + 10;
     }
 
-    pdf.save(`ficha-beneficiario-${props.beneficiary.name}-${props.beneficiary.fatherSurname}-${props.beneficiary.motherSurname}.pdf`)
-  } catch (err) {
-    console.error('Error generating PDF:', err)
+    // Procesar cada sección formal
+    for (let i = 0; i < sections.length; i++) {
+      const section = sections[i];
+
+      try {
+        // Renderizar la sección actual a un canvas
+        const sectionCanvas = await html2canvas(section, canvasOptions);
+
+        // Calcular dimensiones de la imagen
+        const sectionImgWidth = contentWidth;
+        const sectionImgHeight = (sectionCanvas.height * sectionImgWidth) / sectionCanvas.width;
+
+        // Verificar si cabe en la página actual o necesitamos una nueva
+        if (!isFirstSection && (yPosition + sectionImgHeight > pageHeight - margin)) {
+          // No cabe, añadir nueva página
+          pdf.addPage();
+          currentPage++;
+          yPosition = margin;
+
+          // Opcional: Agregar un encabezado simplificado en las páginas adicionales
+          if (currentPage > 1) {
+            pdf.setFontSize(8);
+            pdf.text(`Perfil Socioeconómico - ${props.beneficiary.name} ${props.beneficiary.fatherSurname} - Página ${currentPage}`, margin, margin - 3);
+            pdf.line(margin, margin - 1, pageWidth - margin, margin - 1);
+          }
+        }
+
+        // Añadir la sección al PDF
+        const sectionImgData = sectionCanvas.toDataURL('image/jpeg', 1.0);
+        pdf.addImage(sectionImgData, 'JPEG', margin, yPosition, sectionImgWidth, sectionImgHeight);
+
+        // Actualizar la posición Y para la siguiente sección
+        yPosition += sectionImgHeight + 5;
+        isFirstSection = false;
+      } catch (sectionError) {
+        console.error(`Error processing section ${i}:`, sectionError);
+        // Continuar con la siguiente sección si hay un error
+        isFirstSection = false;
+        continue;
+      }
+    }
+
+    // Añadir pie de página
+    const footerElement = element.querySelector('.footer');
+    if (footerElement) {
+      try {
+        // Si no cabe en la página actual, añadir nueva página
+        const footerCanvas = await html2canvas(footerElement, canvasOptions);
+
+        const footerImgWidth = contentWidth;
+        const footerImgHeight = (footerCanvas.height * footerImgWidth) / footerCanvas.width;
+
+        if (yPosition + footerImgHeight > pageHeight - margin) {
+          pdf.addPage();
+          yPosition = margin;
+        }
+
+        const footerImgData = footerCanvas.toDataURL('image/jpeg', 1.0);
+        pdf.addImage(footerImgData, 'JPEG', margin, yPosition, footerImgWidth, footerImgHeight);
+      } catch (footerError) {
+        console.error("Error processing footer:", footerError);
+      }
+    }
+
+    // Agregar metadatos al PDF
+    pdf.setProperties({
+      title: `Ficha de Beneficiario - ${props.beneficiary.name} ${props.beneficiary.fatherSurname}`,
+      subject: 'Ficha Oficial de Beneficiario DIF Municipal',
+      author: 'DIF Municipal La Paz B.C.S.',
+      keywords: 'beneficiario, ficha, oficial',
+      creator: 'Sistema del Padron de Beneficiarios'
+    });
+
+    pdf.save(`${beneficiaryFileName.value}-${formatDate(new Date())}.pdf`);
+
+  } catch (error) {
+    console.error("Error generating PDF:", error);
+    // Puedes mostrar un mensaje de error al usuario aquí
+    alert("Hubo un error al generar el PDF. Por favor intenta de nuevo.");
   }
-}
+};
 
-//expose
-defineExpose({ exportToPDF });
-
-
-//onMounted
-onMounted(() => {
-  document.fonts.ready.then(() => {
-    // console.log('Fonts loaded')
-  })
-})
-
+// expose
+defineExpose({ generateProfilePDF });
 </script>
 
 <style>
-#element-to-convert {
-  font-family: 'Inter', sans-serif !important;
+#beneficiary-profile {
+  font-family: 'Arial', sans-serif !important;
   position: fixed;
   left: -9999px;
   top: -9999px;
 }
 
-#pdf {
-  margin-top: 60px;
-  text-align: center;
-}
-
-.pdf-container {
+.ticket-content {
   background-color: #ffffff;
-  border-radius: 0.5rem;
-  padding: 2rem;
-  text-align: left;
-  max-width: 816px; /* Ancho de carta */
+  max-width: 816px;
   margin: 0 auto;
+  padding: 2rem;
+  color: #333333;
 }
 
+/* ENCABEZADO FORMAL */
 .pdf-header {
   display: flex;
-  justify-content: start;
-  margin-bottom: 0.5rem;  /* Reducido de 1rem */
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
 }
 
-.logo {
-  height: 36px;  /* Reducido de 36px */
-  width: auto;
+.logo-container {
+  display: flex;
+  align-items: center;
 }
 
+.logo,
 .logo-ayunta {
-  height: 36px;  /* Reducido de 36px */
+  height: 50px;
   width: auto;
-  margin-left: 1rem;  /* Aumentado de 0.5rem */
 }
 
-.pdf-title {
-  font-size: 16px;  /* Reducido de 16px */
-  font-weight: 700;
-  margin-bottom: 1rem;  /* Reducido de 1.5rem */
-  color: rgb(153 27 27);
+.header-divider {
+  width: 1px;
+  height: 40px;
+  background-color: #333;
+  margin: 0 15px;
 }
 
-.content-container {
-  font-size: 14px;  /* Reducido de 16px */
-  line-height: 1.4;
+.document-title-container {
+  text-align: right;
+  margin-left: auto;
 }
 
-.section-title {
-  font-size: 14px;  /* Reducido de 14px */
-  font-weight: 600;
-  margin-top: 0.8rem;  /* Reducido de 1rem */
-  margin-bottom: 0.4rem;  /* Reducido de 0.5rem */
-  color: rgb(153, 27, 27);
+.document-type {
+  font-size: 20px;
+  font-weight: bold;
+  margin: 0;
+  color: #000;
 }
 
+.document-subtitle {
+  font-size: 16px;
+  margin: 5px 0 0 0;
+  color: #666;
+}
+
+/* INFORMACIÓN DE DOCUMENTO */
+.document-info {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid #333;
+  border-top: 2px solid #333;
+  padding: 10px 0;
+}
+
+.folio-box,
+.date-box {
+  display: flex;
+  flex-direction: column;
+}
+
+.folio-label,
+.date-label {
+  font-size: 12px;
+  color: #666;
+}
+
+.folio-number,
+.date-value {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+/* SECCIONES FORMALES */
+.formal-section {
+  margin-bottom: 1.5rem;
+}
+
+.formal-section-title {
+  font-size: 14px;
+  font-weight: bold;
+  margin: 0 0 10px 0;
+  padding: 5px 10px;
+  background-color: #f0f0f0;
+  border-left: 4px solid #000;
+  text-transform: uppercase;
+}
+
+.formal-section-content {
+  padding: 0 10px;
+}
+
+/* TABLAS DE INFORMACIÓN */
+.info-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.info-table td {
+  padding: 5px;
+  vertical-align: top;
+}
+
+.info-label {
+  font-weight: bold;
+  width: 20%;
+}
+
+.info-value {
+  width: 30%;
+}
+
+/* GRID CONTAINER */
 .info-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 0.25rem;  /* Reducido de 0.35rem */
-  margin-bottom: 0.8rem;  /* Reducido de 1rem */
+  gap: 10px;
 }
 
-.info-grid p {
+/* TABLA FORMAL */
+.formal-table {
+  width: 100%;
+  border-collapse: collapse;
   font-size: 12px;
-  margin: 0;  /* Eliminamos el margen */
-  line-height: 1;  /* Reducimos aún más el interlineado */
-  padding: 2px 0;  /* Agregamos un pequeño padding en lugar de margin */
 }
 
-.section-title {
-  font-size: 14px;
-  font-weight: 600;
-  margin-top: 0.5rem;  /* Reducido de 1.5rem */
-  margin-bottom: 0.3rem;  /* Reducido de 1rem */
-  color: rgb(153, 27, 27);
+.table-header {
+  background-color: #f0f0f0;
+  border: 1px solid #ddd;
+  padding: 8px;
+  font-weight: bold;
+  text-align: left;
 }
 
-.services-list, .expenses-list {
+.table-cell {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+.text-center {
+  text-align: center;
+}
+
+/* SECCIÓN DE COMENTARIOS */
+.comments-box {
+  padding: 10px;
+  border: 1px solid #ddd;
+  background-color: #f9f9f9;
+  font-size: 12px;
+  min-height: 60px;
+}
+
+/* SECCIÓN DE FIRMAS */
+.signature-section {
+  margin-top: 2rem;
+}
+
+.signatures-container {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+}
+
+.signature-column {
+  width: 45%;
+  text-align: center;
+}
+
+.official-signature {
+  width: 60%;
+  margin: 1rem auto 0 auto;
+  text-align: center;
+}
+
+.sign-text {
+  margin: 0 0 2rem 0;
+  text-align: center;
+}
+
+.signature-role {
+  font-size: 12px;
+  font-weight: bold;
+  margin-bottom: 40px;
+}
+
+.signature-line {
+  border-bottom: 1px solid #000;
+  margin: 0 auto 5px auto;
+  width: 90%;
+}
+
+.signature-name {
+  font-size: 12px;
+  font-weight: bold;
+  margin: 5px 0 2px 0;
+}
+
+.signature-label {
+  font-size: 10px;
   margin: 0;
-  line-height: 1.2;
-  padding: 1px 0;  /* Reducido de 2px */
+  color: #666;
 }
 
-.services-list li, .expenses-list li {
-  font-size: 12px;  /* Reducido de 16px */
+/* LISTAS DE SERVICIOS Y GASTOS */
+.services-list,
+.expenses-list {
+  list-style-type: none;
+  padding-left: 0;
   margin: 0;
-  line-height: 1.2;
-  padding: 1px 0;  /* Reducido de 2px */
+}
+
+.services-list li,
+.expenses-list li {
+  font-size: 12px;
+  margin: 3px 0;
+}
+
+/* PIE DE PÁGINA */
+.footer {
+  margin-top: 2rem;
+  display: flex;
+  border-top: 1px solid #ddd;
+  padding-top: 1rem;
+}
+
+.official-seal {
+  width: 100px;
+  margin-right: 20px;
+}
+
+.seal-border {
+  border: 1px dashed #666;
+  border-radius: 50%;
+  height: 100px;
+  width: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.seal-text {
+  font-size: 10px;
+  text-align: center;
+  color: #666;
 }
 
 .footer-text {
-  font-size: 12px;  /* Reducido de 14px */
-  color: #6b7280;
-  text-align: center;
-}
-
-hr {
-  margin: 0.5rem 0;  /* Reducido de 1rem */
-  border: 0;
-  border-top: 1px solid #e5e7eb;
-}
-
-/* .footer-text {
+  flex: 1;
   font-size: 10px;
-} */
-
-strong {
-  font-weight: 600;
+  color: #333;
 }
 
-.footer {
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid #e5e7eb;
+.document-generated {
+  font-style: italic;
+  color: #666;
+  margin-top: 15px;
 }
 
-/*.footer-text {
-  font-size: 0.875rem;
-  color: #6b7280;
-  text-align: center;
-}*/
-
-.btn {
-  margin-top: 1rem;
-  padding: 0.5rem 1rem;
-  background-color: #1f2937;
-  color: white;
-  border-radius: 0.375rem;
-  font-weight: 500;
+.document-operator {
+  font-weight: bold;
 }
 
 @media print {

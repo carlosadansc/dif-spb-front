@@ -21,7 +21,7 @@ const formatDate = (dateString) => {
   const month = monthNames[utcDate.getUTCMonth()];
   const year = utcDate.getUTCFullYear();
   
-  return `${day} / ${month} / ${year}`;
+  return `${day} - ${month} - ${year}`;
 }
 
 export default formatDate;

@@ -1,24 +1,28 @@
 <template>
-  <span v-if="loading" class="loading loading-spinner loading-lg"></span>
-  <div v-else class="px-4 sm:px-6 lg:px-8">
+  <div class="px-4 sm:px-6 lg:px-8">
     <div class="max-w-7xl mx-auto">
 
-      <div class="flex justify-between items-center">
+      <span v-if="loading" class="loading loading-spinner loading-lg absolute top-1/2 left-1/2"></span>
+
+      <div v-if="!loading" class="flex justify-between items-center">
         <h1 class="text-3xl font-bold text-gray-900 mt-5"><span class="bg-white py-2 px-4 rounded-[10px] border border-gray-400">{{beneficiary.name + ' ' + beneficiary.fatherSurname + ' ' + beneficiary.motherSurname}}</span></h1>
         
-        <div>
+        <div class="flex justify-between items-center">
+          <div class="tooltip tooltip-bottom" data-tip="Cancelar">
+            <button v-if="isEditing" class="btn btn-square bg-gray-300 font-black text-white mx-1" @click="isEditing = false"><IconCancel class="h-5 w-5 text-red-800" /></button>
+          </div>
           <div class="tooltip tooltip-bottom" :data-tip="!isEditing ? 'Editar': 'Guardar'">
-            <button @click="toggleEditMode" id="edit-save" class="btn btn-square bg-red-800 font-black text-white mx-1"><IconEdit v-if="!isEditing" class="h-5 w-5" /> <IconDeviceFloppy v-else class="h-5 w-5" /></button>
+            <button @click.prevent="toggleEditMode" id="edit-save" class="btn btn-square bg-red-800 font-black text-white mx-1"><span v-if="loadingSave" class="loading loading-spinner"></span> <IconEdit v-if="!isEditing && !loadingSave" class="h-5 w-5" /> <IconDeviceFloppy v-if="isEditing && !loadingSave"  class="h-5 w-5" /></button>
           </div>
           <div class="tooltip tooltip-bottom" data-tip="Exportar perfil a PDF">
-            <button class="btn btn-square bg-gray-500 font-black text-white mx-1" @click="exportToPDF"><IconFileTypePdf class="h-5 w-5" /></button>
+            <button :disabled="loadingPrint" class="btn btn-square bg-gray-500 font-black text-white mx-1" @click.prevent="exportToPDF"><IconFileTypePdf v-if="!loadingPrint" class="h-5 w-5" /> <span v-if="loadingPrint" class="loading loading-spinner"></span></button>
           </div>
         </div>
       </div>
      
      
       <!-- Navigation Tabs -->
-      <div class="mt-4">
+      <div v-if="!loading" class="mt-4">
         <nav class="-mb-px flex space-x-4" aria-label="Tabs">
           <button class="btn btn-square btn-ghost" @click="goBack">
             <IconArrowNarrowLeft class="w-6 h-6" />
@@ -38,7 +42,7 @@
       </div>
 
       <!-- Content Sections -->
-      <div class="mt-6 bg-white border border-gray-400 rounded-lg p-6">
+      <div v-if="!loading" class="mt-6 bg-white border border-gray-400 rounded-lg p-6">
         <!-- General Information -->
         <div v-if="activeSection === 'general'" class="space-t-6">
           <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
@@ -109,13 +113,23 @@
                 </option>
               </select>
             </div>
-          </div>
-          <div class="space-y-4">
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Servicio médico</label>
+              <select :disabled="!isEditing" v-model="beneficiary.medicalService"
+                class="select select-sm mt-1 block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <option v-for="medicalService in medicalServices" :key="medicalService.id" :value="medicalService.value">
+                  {{ medicalService.text }}
+                </option>
+              </select>
+            </div>
+
             <div class="flex items-center">
               <input :disabled="!isEditing" type="checkbox" v-model="beneficiary.hasDisability"
                 class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded" />
               <label class="ml-2 block text-sm text-gray-700">¿Tiene alguna discapacidad?</label>
             </div>
+
             <div v-if="beneficiary.hasDisability">
               <label class="block text-sm font-medium text-gray-700">Tipo de Discapacidad</label>
               <select :disabled="!isEditing" v-model="beneficiary.disabilityType"
@@ -126,6 +140,12 @@
               </select>
             </div>
           </div>
+
+          <div class="mt-5">
+              <label class="block text-sm font-medium text-gray-700">Comentarios / Observaciones</label>
+              <textarea :disabled="!isEditing" v-model="beneficiary.comments" 
+                class="textarea h-24 mt-1 block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
+            </div>
         </div>
 
         <!-- Address -->
@@ -200,6 +220,11 @@
         <div v-if="activeSection === 'spouse'" class="space-y-6">
           <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
             <div>
+              <label class="block text-sm font-medium text-gray-700">CURP</label>
+              <input :disabled="!isEditing" type="text" v-model="beneficiary.spouseOrTutor.curp"
+                class="input input-sm mt-1 block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
+            </div>
+            <div>
               <label class="block text-sm font-medium text-gray-700">Nombre Completo</label>
               <input :disabled="!isEditing" type="text" v-model="beneficiary.spouseOrTutor.fullname"
                 class="input input-sm mt-1 block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
@@ -232,13 +257,18 @@
                 <option value="TUTOR">Tutor</option>
               </select>
             </div>
-            <div class="sm:col-span-2">
+            <!-- <div class="sm:col-span-2">
               <label class="block text-sm font-medium text-gray-700">Comentarios</label>
               <textarea :disabled="!isEditing" v-model="beneficiary.spouseOrTutor.comments" rows="3"
                 class="input input-sm mt-1 block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></textarea>
-            </div>
+            </div> -->
           </div>
         </div>
+
+        <!-- Family -->
+         <div v-if="activeSection === 'family'" class="space-y-6">
+          <FamilyList :beneficiaryId="beneficiaryId" />
+         </div>
 
         <!-- Home -->
         <div v-if="activeSection === 'home'" class="space-y-6">
@@ -264,6 +294,36 @@
                 <option value="RENTA">Renta</option>
                 <option value="HIPOTECADA">Hipotecada</option>
                 <option value="PRESTADA">Prestada</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Tipo de piso</label>
+              <select :disabled="!isEditing" v-model="beneficiary.home.floorType"
+                class="select select-sm mt-1 block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <option v-for="floorType in floorTypes" :key="floorType.id" :value="floorType.value">
+                  {{ floorType.text }}
+                </option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Tipo de pared</label>
+              <select :disabled="!isEditing" v-model="beneficiary.home.wallType"
+                class="select select-sm mt-1 block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <option v-for="wallType in wallTypes" :key="wallType.id" :value="wallType.value">
+                  {{ wallType.text }}
+                </option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Tipo de techo</label>
+              <select :disabled="!isEditing" v-model="beneficiary.home.ceilingType"
+                class="select select-sm mt-1 block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <option v-for="ceilingType in ceilingTypes" :key="ceilingType.id" :value="ceilingType.value">
+                  {{ ceilingType.text }}
+                </option>
               </select>
             </div>
           </div>
@@ -364,8 +424,14 @@
 
         <!-- Contributions -->
         <div v-if="activeSection === 'contributions'" class="space-y-6">
-          <ContributionHistory :contributions="beneficiary.contributions" @update:list="getBeneficiary" />
+          <ContributionHistory :contributions="beneficiary.contributions" :beneficiary="beneficiary" @update:list="getBeneficiary" />
         </div>
+        
+      </div>
+
+      <div v-if="!loading" class="flex flex-col">
+        <p class="text-gray-500 text-xs ms-2 mt-5">Registro creado: <span class="font-bold">{{formatDate(beneficiary.createdAt)}}</span> por: <span class="font-bold">{{beneficiary.createdBy?.name + ' ' + beneficiary.createdBy?.lastname}}</span></p>
+        <p class="text-gray-500 text-xs ms-2 mt-1">Ultima modificación: <span class="font-bold">{{formatDate(beneficiary.updatedAt)}}</span> por: <span class="font-bold">{{ beneficiary.updatedBy ? beneficiary?.updatedBy?.name + ' ' + beneficiary?.updatedBy?.lastname : '' }}</span></p>
       </div>
 
       <ProfilePDF ref="profilePDFRef" :beneficiary="beneficiary" />
@@ -378,16 +444,22 @@ import router from '../router';
 import { ref, onMounted, watch } from 'vue';
 import { AxiosError } from 'axios';
 import { toast } from 'vue3-toastify';
-import { IconArrowNarrowLeft, IconEdit, IconPrinter, IconDeviceFloppy, IconFileTypePdf } from '@tabler/icons-vue';
+import { IconArrowNarrowLeft, IconEdit, IconDeviceFloppy, IconFileTypePdf, IconCancel } from '@tabler/icons-vue';
 import beneficiaryServices from '../services/beneficiaryServices';
 import ContributionHistory from '@/components/BeneficiaryView/ContributionHistory.vue';
+import FamilyList from '@/components/BeneficiaryView/FamilyList.vue';
 import ProfilePDF from '../components/BeneficiaryView/ProfilePDF.vue';
 import { useAuth } from '../composables/useAuth';
 // import { useRouter } from 'vue-router';
 import scholarships from '../constants/scholarships';
+import medicalServices from '../constants/medicalServices';
 import disabilityTypes from '../constants/disabilityTypes';
+import floorTypes from '../constants/floorTypes';
+import wallTypes from '../constants/wallTypes';
+import ceilingTypes from '../constants/ceilingTypes';
 import delegations from '../constants/delegations';
 import formatDate from '../utilities/formatDate';
+import capitalize from '../utilities/capitalize';
 import normalizeObjectText from '../utilities/normalizeObjectText';
 
 //data
@@ -403,6 +475,11 @@ const beneficiary = ref({
   curp: '',
   phone: '',
   hasDisability: false,
+  medicalService: '',
+  disabilityType: '',
+  civilStatus: '',
+  scholarship: '',
+  comments: '',
   address: {
     communityType: 'RURAL',
     delegation: '',
@@ -416,21 +493,21 @@ const beneficiary = ref({
     city: ''
   },
   spouseOrTutor: {
+    curp: '',
     fullname: '',
     age: 0,
     phone: '',
     work: '',
     income: 0,
-    comments: '',
     relationship: ''
   },
   home: {
     type: 'CASA',
     roomNumber: 0,
     belonging: '',
-    floorType: '',
-    wallType: '',
-    ceilingType: '',
+    floorType: '', //tipo de piso
+    wallType: '', // tipo de pared
+    ceilingType: '', // tipo de techo
     haveBathroom: false,
     haveToilet: false,
     haveDrainage: false,
@@ -451,12 +528,15 @@ const beneficiary = ref({
 })
 const subdelegations = ref([])
 const loading = ref(false)
+const loadingPrint = ref(false)
+const loadingSave = ref(false)
 const isEditing = ref(false)
 const activeSection = ref('general')
 const sections = [
   { title: 'Información General', id: 'general' },
   { title: 'Dirección', id: 'address' },
   { title: 'Datos del Cónyuge/Tutor', id: 'spouse' },
+  { title: 'Integración familiar', id: 'family' },
   { title: 'Vivienda', id: 'home' },
   { title: 'Situación económica', id: 'expenses' },
   { title: 'Historial de apoyos', id: 'contributions' }
@@ -484,7 +564,6 @@ const getBeneficiary = async () => {
         }
       }
       getSubdelegations()
-      console.log(beneficiary.value)
     }
   } catch (err) {
     if (err instanceof AxiosError) {
@@ -510,9 +589,9 @@ const toggleEditMode = () => {
 }
 
 const updateBeneficiary = async () => {
-  loading.value = true
+  loadingSave.value = true
   // Crear una copia del objeto sin el campo _id
-  let { _id, ...beneficiarySinId } = beneficiary.value;
+  let { _id, families, contributions, ...beneficiarySinId } = beneficiary.value;
   let filter = beneficiary.value._id;
   try {
     const payload =  {
@@ -534,7 +613,7 @@ const updateBeneficiary = async () => {
       toast.error(err)
     }
   } finally {
-    loading.value = false
+    loadingSave.value = false
   }
 }
 
@@ -567,8 +646,10 @@ const goBack = () => {
 
 // Eventos de PDF
 const profilePDFRef = ref()
-const exportToPDF = () => {
-  profilePDFRef.value.exportToPDF()
+const exportToPDF = async () => {
+  loadingPrint.value = true
+  await profilePDFRef.value.generateProfilePDF()
+  loadingPrint.value = false
 }
 </script>
 

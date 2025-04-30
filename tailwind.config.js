@@ -2,7 +2,7 @@ const { default: daisyui } = require('daisyui');
 
 // tailwind.config.js
 module.exports = {
-    purge: ['./index.html', './src/**/*.{vue,js,ts,jsx,tsx}'],
+    content: ['./index.html', './src/**/*.{vue,js,ts,jsx,tsx}'],
     media: false, // or 'media' or 'class'
     theme: {
       extend: {
@@ -28,6 +28,11 @@ module.exports = {
     plugins: [
       require('daisyui'),
     ],
+    corePlugins: {
+      textOpacity: false,
+      backgroundOpacity: false,
+      borderOpacity: false
+    },
     daisyui: {
       themes: ['light'],
     }

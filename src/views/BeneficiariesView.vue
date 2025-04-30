@@ -1,7 +1,8 @@
 <template>
   <div class="container mx-auto px-4">
+    <h1 class="text-2xl font-semibold text-gray-900  mb-8">Beneficiarios</h1>
 
-    <div class="flex justify-between items-center mt-[5rem] mb-[2rem]">
+    <div class="flex justify-between items-center mb-[2rem]">
       
       <label class="input input-bordered w-[40%] flex items-center gap-2">
         <input v-model="search" @keyup.enter="searchBeneficiaries()" type="text" class="grow" placeholder="Buscar ..." />
@@ -10,10 +11,10 @@
 
       <div class="flex items-center gap-3">
         <div class="tooltip tooltip-left" data-tip="Exportar padrón a excel">
-          <button @click.prevent="exportToExcel" class="btn btn-square bg-gray-800 font-black text-white text-[1.2rem]"><IconFileSpreadsheet/></button>
+          <button :disabled="loadindExport" @click.prevent="exportToExcel" class="btn btn-square bg-gray-800 font-black text-white text-[1.2rem]"><IconFileSpreadsheet v-if="!loadindExport"/><span v-if="loadindExport" class="loading loading-spinner loading-sm"></span></button>
         </div>
         <div class="tooltip tooltip-left" data-tip="Crear nuevo beneficiario">
-          <button @click.prevent="showModal = true" class="btn btn-square bg-red-800 font-black text-white text-[1.2rem]">+</button>
+          <button @click.prevent="showModal = true" class="btn btn-square bg-red-800 font-black text-white text-[1.2rem]"><IconUserPlus /></button>
         </div>
       </div>
     </div>
@@ -52,13 +53,12 @@
 import { ref, onMounted, watch } from 'vue';
 import router from '../router';
 import { toast } from 'vue3-toastify';
-import { IconSearch, IconFileExport, IconFileSpreadsheet } from '@tabler/icons-vue';
+import { IconSearch, IconFileExport, IconFileSpreadsheet, IconUserPlus } from '@tabler/icons-vue';
 import beneficiaryServices from '../services/beneficiaryServices'
-import NewBeneficiarieModal from '../components/BeneficiariesView/NewBeneficiarieModal.vue'
+import NewBeneficiarieModal from '../components/BeneficiariesView/NewBeneficiaryModal.vue'
 import { AxiosError } from 'axios';
 import { useAuth } from '../composables/useAuth';
 import * as XLSX from 'xlsx';
-import formatDate from '../utilities/formatDate';
 
 // composables
 const { authHeader } = useAuth()
@@ -68,7 +68,7 @@ const showModal = ref(false)
 
 const serverItemsLength = ref(0)
 const rowsItems = [5, 10, 15, 20]
-const serverOptions = ref({
+const   serverOptions = ref({
   page: 1,
   rowsPerPage: 5,
   sortBy: null,
@@ -92,6 +92,7 @@ const headers = [
 
 const data = ref([])
 const loading = ref(false)
+const loadindExport = ref(false)
 const search = ref('')
 
 //watch
@@ -113,7 +114,6 @@ const getBeneficiariesData = async () => {
     } else {
       data.value = response.data
       serverItemsLength.value = response.totalItems
-      console.log(response.data)
     }
   } catch (err) {
     if (err instanceof AxiosError) {
@@ -128,11 +128,11 @@ const getBeneficiariesData = async () => {
 
 const searchBeneficiaries = async () => {
   serverOptions.value.page = 1
-  getBeneficiariesData()
+  await getBeneficiariesData()
 }
 
-onMounted(() => {
-  getBeneficiariesData()
+onMounted(async() => {
+  await getBeneficiariesData()
 })
 
 const openBeneficiaryView = (id) => {
@@ -166,21 +166,57 @@ const json_fields = {
 };
 
 const exportToExcel = async () => {
-  serverOptions.value.page = null
-  serverOptions.value.rowsPerPage = null
-  await getBeneficiariesData()
+  loadindExport.value = true;
+  serverOptions.value.page = null;
+  serverOptions.value.rowsPerPage = null;
+  
+  await getBeneficiariesData();
+  
   const dataExcel = data.value.map(beneficiary => {
     const row = {};
     for (const [key, value] of Object.entries(json_fields)) {
-      row[key] = value.split('.').reduce((o, i) => o[i], beneficiary);
+      try {
+        // Obtener el valor de la propiedad anidada
+        const cellValue = value.split('.').reduce((o, i) => o?.[i], beneficiary);
+        
+        // Formatear solo si es el campo de fecha de nacimiento
+        if (key === 'Fecha de nacimiento' && cellValue) {
+          const parsedDate = new Date(cellValue);
+          if (!isNaN(parsedDate)) {
+            // Formatear como DD/MM/YYYY
+            row[key] = parsedDate.toLocaleDateString('es-ES', {
+              day: '2-digit',
+              month: '2-digit',
+              year: 'numeric'
+            });
+          } else {
+            row[key] = cellValue;
+          }
+        } else {
+          row[key] = cellValue ?? '';
+        }
+      } catch (error) {
+        console.warn(`Error procesando campo ${key}:`, error);
+        row[key] = '';
+      }
     }
     return row;
   });
 
+  // Crear hoja de cálculo
   const worksheet = XLSX.utils.json_to_sheet(dataExcel);
+  
+  // Opcional: Asegurar que la columna de fecha tenga ancho adecuado
+  worksheet['!cols'] = worksheet['!cols'] || [];
+  const fechaIndex = Object.keys(json_fields).indexOf('Fecha de nacimiento');
+  if (fechaIndex !== -1) {
+    worksheet['!cols'][fechaIndex] = { wch: 15 }; // Ancho de columna
+  }
+  
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, 'Beneficiarios');
-  XLSX.writeFile(workbook, 'beneficiarios.xlsx');
+  XLSX.writeFile(workbook, 'padron-beneficiarios-smdif-la-paz.xlsx');
+  loadindExport.value = false;
 };
 </script>
 

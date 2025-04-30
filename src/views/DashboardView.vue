@@ -1,63 +1,84 @@
 <template>
-    <div class="container mx-auto px-4">
-        <h1 class="text-2xl font-semibold text-gray-900 mb-8">Total de apoyos: <span class="font-bold">{{ contributionTotal }}</span></h1>
-
-        <DateSelector v-model="dateFilter" />
-
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-            <CategoryDistributionChart :data="contributionsData" />
-            <ContributionChart @update:category="selectCategoryFilter" :data="contributionItemsData" />
-        </div>
+  <div class="container mx-auto px-4">
+    <span v-if="loading" class="loading loading-spinner loading-lg absolute top-1/2 left-1/2"></span>
+    <div class="flex justify-between items-center">
+      <DateSelector v-model="dateFilter" />
+        <button @click.prevent="exportToExcel" class="btn btn-sm bg-red-500 text-xs text-white">Descargar padrón de apoyos<IconFileDownload v-if="!loadingExport"/><span v-if="loadingExport" class="loading loading-spinner loading-sm"></span></button>
     </div>
+
+    <div v-if="!loading" class="mb-8">
+      <ContributionStats :beneficiariesCount="beneficiariesCount" :contributionsCount="contributionsCount" />
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+      <SummaryChart v-if="!loading" :data="contibutionsSummaryData" />
+      <SummaryByCategoryChart v-if="!loading" @update:category="selectCategoryFilter" :data="contributionSummaryByCategoryData" />
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+      <BeneficiariesByDelegationChart v-if="!loading" :data="beneficiariesByDelegationData" />
+      <BeneficiariesBySexChart v-if="!loading" :data="beneficiariesBySexData" />
+    </div>
+  </div>
 </template>
 
 <script setup>
-import { ref, watch, computed} from 'vue';
+import { ref, watch, computed, onMounted } from 'vue';
+import { IconFileDownload } from '@tabler/icons-vue';
 import DateSelector from '../components/dashboard/DateSelector.vue';
-import ContributionChart from '../components/dashboard/ContributionChart.vue';
+import SummaryByCategoryChart from '@/components/dashboard/SummaryByCategoryChart.vue';
 import ContributionStats from '../components/dashboard/ContributionStats.vue';
-import CategoryDistributionChart from '../components/dashboard/CategoryDistributionChart.vue';
+import SummaryChart from '@/components/dashboard/SummaryChart.vue';
+import BeneficiariesByDelegationChart from '@/components/dashboard/BeneficiariesByDelegationChart.vue';
+import BeneficiariesBySexChart from '@/components/dashboard/BeneficiariesBySexChart.vue';
 import contributionServices from '@/services/contributionServices';
+import beneficiaryServices from '@/services/beneficiaryServices';
 import { toast } from 'vue3-toastify';
 import { AxiosError } from 'axios';
 import { useAuth } from '@/composables/useAuth';
+import * as XLSX from 'xlsx';
 
 // composables
 const { authHeader } = useAuth()
 
 // data
 const dateFilter = ref({
-    year: null,
-    month: null
+  year: null,
+  month: null
 });
 
 const categoryFilter = ref(null)
 
 const loading = ref(false)
+const loadingExport = ref(false)
 
+const contibutionsSummaryData = ref([])
+const contributionSummaryByCategoryData = ref([])
+const beneficiariesByDelegationData = ref({})
+const beneficiariesBySexData = ref({})
+const beneficiariesCount = ref(0)
 const contributionsData = ref([])
-const contributionItemsData = ref([])
 
 //computed
-const contributionTotal = computed(() =>{
-  return contributionsData.value.reduce((acc, item) => acc + item.totalQuantity, 0)
+const contributionsCount = computed(() => {
+  if (contibutionsSummaryData.value.length === 0) return 0
+  return contibutionsSummaryData.value.reduce((acc, item) => acc + item.total, 0)
 });
 
 //watch
 watch(dateFilter, () => {
-  getSummaryByCategory()
-  getContributionItemSummary()
+  getContributionSummary()
+  getContributionSummaryByCategory()
+  getBeneficiariesTotal()
 })
 
 //methods
-const getSummaryByCategory = async () => {
-    try {
+const getContributionSummary = async () => {
+  try {
     loading.value = true
-    const response = await contributionServices.getSummaryByCategory({ year: dateFilter.value.year, month: dateFilter.value.month },  authHeader.value);
+    const response = await contributionServices.getContributionSummary({ year: dateFilter.value.year, month: dateFilter.value.month }, authHeader.value);
     if (response.code === "ERR_NETWORK") {
       toast.error('No se pudo conectar con el servidor')
     } else {
-        contributionsData.value = response.data
+      contibutionsSummaryData.value = response.data
     }
   } catch (err) {
     if (err instanceof AxiosError) {
@@ -70,14 +91,14 @@ const getSummaryByCategory = async () => {
   }
 }
 
-const getContributionItemSummary = async (category = '') => {
-    try {
+const getContributionSummaryByCategory = async (category = '') => {
+  try {
     loading.value = true
-    const response = await contributionServices.getContributionItemSummary({ category, year: dateFilter.value.year, month: dateFilter.value.month },  authHeader.value);
+    const response = await contributionServices.getContributionSummaryByCategory({ categoryId: category, year: dateFilter.value.year, month: dateFilter.value.month }, authHeader.value);
     if (response.code === "ERR_NETWORK") {
       toast.error('No se pudo conectar con el servidor')
     } else {
-      contributionItemsData.value = response.data
+      contributionSummaryByCategoryData.value = response.data
     }
   } catch (err) {
     if (err instanceof AxiosError) {
@@ -89,17 +110,193 @@ const getContributionItemSummary = async (category = '') => {
     loading.value = false
   }
 }
+
+const getBeneficiariesTotal = async () => {
+  try {
+    loading.value = true
+    const response = await beneficiaryServices.getBeneficiariesCount({ year: dateFilter.value.year, month: dateFilter.value.month }, authHeader.value);
+    if (response.code === "ERR_NETWORK") {
+      toast.error('No se pudo conectar con el servidor')
+    } else {
+      beneficiariesCount.value = response.data.count
+    }
+  } catch (err) {
+    if (err instanceof AxiosError) {
+      toast.error(err.response?.data?.message)
+    } else {
+      toast.error(err)
+    }
+  } finally {
+    loading.value = false
+  }
+}
+
+const getBeneficiariesByDelegation = async () => {
+  try {
+    loading.value = true
+    const response = await beneficiaryServices.getBeneficiariesByDelegation(authHeader.value);
+    if (response.code === "ERR_NETWORK") {
+      toast.error('No se pudo conectar con el servidor')
+    } else {
+      beneficiariesByDelegationData.value = response.data
+    }
+  } catch (err) {
+    if (err instanceof AxiosError) {
+      toast.error(err.response?.data?.message)
+    } else {
+      toast.error(err)
+    } 
+  } finally {
+      loading.value = false
+    }
+}
+
+const getBeneficiariesBySex = async () => {
+  try {
+    loading.value = true
+    const response = await beneficiaryServices.getBeneficiariesBySex(authHeader.value);
+    if (response.code === "ERR_NETWORK") {
+      toast.error('No se pudo conectar con el servidor')
+    } else {
+      beneficiariesBySexData.value = response.data
+    }
+  } catch (err) {
+    if (err instanceof AxiosError) {
+      toast.error(err.response?.data?.message)
+    } else {
+      toast.error(err)
+    }
+  } finally {
+    loading.value = false
+  }
+}
+
+const getAllContributions = async () => {
+  try {
+    loadingExport.value = true
+    const response = await contributionServices.getAllContributions(authHeader.value);
+    if (response.code === "ERR_NETWORK") {
+      toast.error('No se pudo conectar con el servidor')
+    } else {
+      contributionsData.value = response.data
+    }
+  } catch (err) {
+      if (err instanceof AxiosError) {
+        toast.error(err.response?.data?.message)
+      } else {
+        toast.error(err)
+      }
+  } finally {
+    loadingExport.value = false 
+  }
+  }
+
+  // Export to Excel
+// Export to Excel
+const json_fields = {
+  "folio": "folio",
+  "CURP": "curp",
+  "Nombre": "nombre",
+  "Apellido paterno": "apellido paterno",
+  "Apellido materno": "apellido materno",
+  "Fecha de nacimiento": "fecha de nacimiento",
+  "Sexo": "sexo",
+  "Edad": "edad",
+  "Calle": "calle",
+  "Número": "numero",
+  "Colonia": "colonia",
+  "Delegación": "delegacion",
+  "Subdelegación": "subdilegacion",
+  "Código postal": "codigo postal",
+  "Fecha de apoyo": "fecha de apoyo",
+  "Quien recibió": "quien recibio",
+  "Quien entregó": "quien entrego",
+  "Tipo de apoyo": "tipo de apoyo",
+  "Apoyo otorgado": "apoyo otorgado",
+  "Cantidad": "cantidad"
+};
+
+const exportToExcel = async () => {
+  loadingExport.value = true;
+  
+  try {
+    await getAllContributions();
+    
+    const dataExcel = contributionsData.value.map(contribution => {
+      const row = {};
+      for (const [key, value] of Object.entries(json_fields)) {
+        try {
+          // Los campos no están anidados, así que accedemos directamente
+          const cellValue = contribution[value];
+          
+          // Formatear fechas si es necesario
+          if ((key === 'Fecha de nacimiento' || key === 'Fecha de apoyo') && cellValue) {
+            // Suponiendo que las fechas ya vienen formateadas como DD/MM/YYYY
+            row[key] = cellValue;
+          } else {
+            row[key] = cellValue ?? '';
+          }
+        } catch (error) {
+          console.warn(`Error procesando campo ${key}:`, error);
+          row[key] = '';
+        }
+      }
+      return row;
+    });
+
+    // Crear hoja de cálculo
+    const worksheet = XLSX.utils.json_to_sheet(dataExcel);
+    
+    // Ajustar anchos de algunas columnas
+    worksheet['!cols'] = [
+      { wch: 15 }, // Folio
+      { wch: 18 }, // CURP
+      { wch: 15 }, // Nombre
+      { wch: 15 }, // Apellido paterno
+      { wch: 15 }, // Apellido materno
+      { wch: 15 }, // Fecha de nacimiento
+      { wch: 10 }, // Sexo
+      { wch: 8 },  // Edad
+      { wch: 15 }, // Calle
+      { wch: 10 }, // Número
+      { wch: 15 }, // Colonia
+      { wch: 15 }, // Delegación
+      { wch: 15 }, // Subdelegación
+      { wch: 10 }, // Código postal
+      { wch: 15 }, // Fecha de apoyo
+      { wch: 15 }, // Quien recibió
+      { wch: 15 }, // Quien entregó
+      { wch: 15 }, // Tipo de apoyo
+      { wch: 25 }, // Apoyo otorgado
+      { wch: 10 }  // Cantidad
+    ];
+    
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Apoyos');
+    XLSX.writeFile(workbook, 'registro-apoyos-otorgados-smdif-la-paz.xlsx');
+  } catch (error) {
+    console.error('Error al exportar a Excel:', error);
+    // Aquí podrías mostrar una notificación de error al usuario
+  } finally {
+    loadingExport.value = false;
+  }
+};
 
 const selectCategoryFilter = (category) => {
-    categoryFilter.value = category
-    if(category._id === 1) {
-        getContributionItemSummary()
-        return
-    }
-    getContributionItemSummary(category._id)
+  categoryFilter.value = category
+  if (category._id === 1) {
+    getContributionSummaryByCategory()
+    return
+  }
+  getContributionSummaryByCategory(category._id)
 }
 
+onMounted(() => {
+  getContributionSummaryByCategory()
+  getContributionSummary()
+  getBeneficiariesTotal()
+  getBeneficiariesByDelegation()
+  getBeneficiariesBySex()
+})
 
-getContributionItemSummary()
-getSummaryByCategory()
 </script>

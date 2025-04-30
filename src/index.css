@@ -26,3 +26,24 @@
   color: red;
   margin-left: 0.5rem;
 }
+
+
+
+/* En tu archivo CSS global */
+.Vue3Toastify__toast-container {
+  z-index: 9999 !important;
+}
+
+.Vue3Toastify__toast {
+  z-index: 9999 !important;
+}
+
+/* Si tienes modal o drawer con z-index alto, asegúrate que las notificaciones estén por encima */
+.Vue3Toastify {
+  z-index: 10000 !important;
+}
+
+/* Para garantizar que el overlay de notificaciones esté siempre al frente */
+.Vue3Toastify__overlay {
+  z-index: 9998 !important;
+}
