@@ -1,5 +1,6 @@
 <template>
-  <div class="h-[450px] bg-white p-4 rounded-lg border border-gray-300">
+  <div v-if="isLoading" class="skeleton h-[450px] w-full"></div>
+  <div v-else class="h-[450px] bg-white p-4 rounded-lg border border-gray-300">
     <h6 class="font-semibold text-lg text-gray-500 mb-[3rem]">Apoyos por categoría</h6>
     <div class="w-full h-[300px]">
       <Pie :data="chartData" :options="chartOptions" />
@@ -8,7 +9,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted } from 'vue';
+import { computed } from 'vue';
 import { Pie } from 'vue-chartjs';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 
@@ -17,6 +18,10 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 const props = defineProps({
   data: {
     type: Array,
+    required: true
+  },
+  isLoading: {
+    type: Boolean,
     required: true
   }
 });

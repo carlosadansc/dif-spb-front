@@ -1,5 +1,6 @@
 <template>
-  <div class="h-[450px] bg-white p-4 rounded-lg border border-gray-300 flex flex-col">
+  <div v-if="isLoading" class="skeleton h-[450px]"></div>
+  <div v-else class="h-[450px] bg-white p-4 rounded-lg border border-gray-300 flex flex-col">
     <h6 class="font-semibold text-lg text-gray-500">Total de apoyos por tipo</h6>
 
     <select :value="selectedCategory._id" @change="handlerSelectCategory($event)"
@@ -41,7 +42,8 @@ const props = defineProps({
   data: {
     type: Array,
     required: true
-  }
+  },
+  isLoading: Boolean
 });
 
 //data

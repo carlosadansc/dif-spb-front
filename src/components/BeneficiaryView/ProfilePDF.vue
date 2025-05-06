@@ -22,7 +22,7 @@
         </div>
         <div class="date-box">
           <span class="date-label">FECHA DE EMISIÓN</span>
-          <span class="date-value">{{ today()  }}</span>
+          <span class="date-value">{{ getCurrentDate(true) }}</span>
         </div>
       </div>
 
@@ -134,7 +134,7 @@
                   <td class="info-label">TRABAJO:</td>
                   <td class="info-value">{{ props.beneficiary.spouseOrTutor.work }}</td>
                   <td class="info-label">INGRESOS:</td>
-                  <td class="info-value">${{ props.beneficiary.spouseOrTutor.income }}</td>
+                  <td class="info-value">{{ formatCurrency(props.beneficiary.spouseOrTutor.income) }}</td>
                 </tr>
                 <tr v-if="props.beneficiary.spouseOrTutor.comments">
                   <td class="info-label">COMENTARIOS:</td>
@@ -288,7 +288,7 @@
         <div class="footer-text">
           <p>Este documento es válido como ficha oficial de registro del beneficiario en el Sistema Integral del Padron
             de Beneficiarios del DIF Municipal La Paz B.C.S.</p>
-          <p class="document-generated">Documento generado el {{ today() }} a través del Sistema Integral
+          <p class="document-generated">Documento generado el {{ getCurrentDate() }} a través del Sistema Integral
             del Padrón de Beneficiarios</p>
           <p class="document-operator">Expedido por: {{ capitalize(user.name) }} {{ capitalize(user.lastname) }} / {{
             user.position }}</p>
@@ -303,7 +303,7 @@ import { ref, computed } from 'vue';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import formatCurrency from '@/utilities/formatCurrency';
-import formatDate from '../../utilities/formatDate';
+import { useDate } from '@/utilities/dateTool';
 import capitalize from '../../utilities/capitalize';
 import logoDif from '@/assets/img/logo-dif.png';
 import logoAyunta from '@/assets/img/logo-ayunta.png';
@@ -311,6 +311,7 @@ import { useAuth } from '../../composables/useAuth';
 
 // composables
 const { user } = useAuth();
+const { formatDatetime, getCurrentDate, formatDate } = useDate();
 
 // props
 const props = defineProps({
@@ -344,14 +345,6 @@ const formatBelonging = (belonging) => {
     'PRESTADA': 'Prestada'
   };
   return belongingMap[belonging] || belonging;
-};
-
-const today = () => {
-  const fecha = new Date();
-  const offset = fecha.getTimezoneOffset();
-  const fechaUTC = new Date(fecha.getTime() - offset * 60 * 1000);
-
-  return formatDate(fechaUTC);
 };
 
 const generateProfilePDF = async () => {
@@ -521,7 +514,7 @@ const generateProfilePDF = async () => {
       creator: 'Sistema del Padron de Beneficiarios'
     });
 
-    pdf.save(`${beneficiaryFileName.value}-${formatDate(new Date())}.pdf`);
+    pdf.save(`${beneficiaryFileName.value}.pdf`);
 
   } catch (error) {
     console.error("Error generating PDF:", error);

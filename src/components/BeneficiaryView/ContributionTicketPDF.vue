@@ -21,7 +21,7 @@
           <span class="folio-number">{{ contribution.folio }}</span>
         </div>
         <div class="date-box">
-          <span class="date-label">FECHA DE EMISIÓN</span>
+          <span class="date-label">FECHA DE ENTREGA</span>
           <span class="date-value">{{ formatDate(contribution.contributionDate) }}</span>
         </div>
       </div>
@@ -57,7 +57,7 @@
 
         <!-- Sección de apoyos entregados -->
         <div class="formal-section">
-          <h3 class="formal-section-title">DETALLE DE APOYOS ENTREGADOS</h3>
+          <h3 class="formal-section-title">DETALLES DEL APOYO</h3>
           <div class="formal-section-content">
             <table class="formal-table">
               <thead>
@@ -90,7 +90,7 @@
 
         <!-- Sección de firmas -->
         <div class="formal-section signature-section">
-          <h3 class="formal-section-title">FIRMAS DE CONFORMIDAD</h3>
+          <h3 class="formal-section-title">FIRMAS</h3>
           <div class="formal-section-content">
             <div class="signatures-container">
               <div class="signature-column">
@@ -126,7 +126,7 @@
         </div>
         <div class="footer-text">
           <p>Este documento es válido como comprobante oficial de entrega de apoyo social otorgado por el DIF Municipal La Paz B.C.S.</p>
-          <p class="document-generated">Documento generado el {{ today() }} a través del Sistema Integral del Padrón de Beneficiarios</p>
+          <p class="document-generated">Documento generado el {{ getCurrentDate() }} a través del Sistema Integral del Padrón de Beneficiarios</p>
           <p class="document-operator">Expedido por: {{ capitalize(user.name) }} {{ capitalize(user.lastname) }} / {{ user.position }}</p>
         </div>
       </div>
@@ -138,7 +138,7 @@
 import { ref } from 'vue';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-import formatDate from '../../utilities/formatDate';
+import { useDate } from '@/utilities/dateTool';
 import capitalize from '../../utilities/capitalize';
 import logoDif from '@/assets/img/logo-dif.png';
 import logoAyunta from '@/assets/img/logo-ayunta.png';
@@ -146,6 +146,7 @@ import { useAuth } from '../../composables/useAuth'
 
 // composables
 const { user } = useAuth()
+const { formatDate, getCurrentDate } = useDate()
 
 // props
 const props = defineProps({
@@ -160,14 +161,6 @@ const props = defineProps({
 });
 
 // methods
-
-const today = () => {
-  const fecha = new Date();
-  const offset = fecha.getTimezoneOffset();
-  const fechaUTC = new Date(fecha.getTime() - offset * 60 * 1000);
-
-  return formatDate(fechaUTC);
-};
 
 const generateTicketPDF = async () => {
   const element = document.getElementById(`ticket-content-${props.contribution._id}`);
@@ -225,14 +218,14 @@ const generateTicketPDF = async () => {
 
   // Agregar metadatos al PDF
   pdf.setProperties({
-    title: `Recibo Oficial de Apoyo - ${props.beneficiary.name} ${props.beneficiary.fatherSurname}`,
-    subject: 'Recibo Oficial de Apoyo Social DIF Municipal',
+    title: `Recibo de Entrega de Apoyo - ${props.beneficiary.name} ${props.beneficiary.fatherSurname}`,
+    subject: 'Recibo de Entrega de Apoyo Social DIF Municipal',
     author: 'DIF Municipal La Paz B.C.S.',
     keywords: 'apoyo, recibo, beneficiario, oficial',
-    creator: 'Sistema Integral del Padron de Apoyos'
+    creator: 'Sistema de Padron de Beneficiarios'
   });
 
-  pdf.save(`recibo-oficial-${props.beneficiary.name.toLowerCase()}-${props.beneficiary.fatherSurname.toLowerCase()}-${formatDate(new Date())}.pdf`);
+  pdf.save(`recibo-entrega-apoyo-${props.beneficiary.name.toLowerCase()}-${props.beneficiary.fatherSurname.toLowerCase()}-${props.contribution.folio}.pdf`);
 };
 
 // expose

@@ -27,13 +27,6 @@
       rows-per-page-message="Se muestran"
       alternating
     >
-      <!-- <template #item-birthdate="{ birthdate }">
-        {{ formatDate(birthdate) }}
-      </template> -->
-
-      <!-- <template #item-address="{ address }">
-        {{ address.street + ' #' + address.extNum + ' , ' + address.city + ' , ' + address.cp }}
-      </template> -->
 
       <template #item-profile="{ _id: id }">
         <div class="tooltip tooltip-left" data-tip="Ver expediente">

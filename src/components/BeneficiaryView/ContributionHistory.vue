@@ -79,13 +79,14 @@
 import { computed, ref, onMounted } from 'vue';
 import { AxiosError } from 'axios';
 import { useAuth } from '@/composables/useAuth';
-import formatDate from '@/utilities/formatDate';
+import { useDate } from '@/utilities/dateTool';
 import contributionServices from '@/services/contributionServices';
 import NewContributionModal from './NewContributionModal.vue';
 import ContributionTicketPDF from './ContributionTicketPDF.vue';
 
 // composables
 const { authHeader } = useAuth();
+const { formatDate } = useDate();
 
 //props
 const props = defineProps({

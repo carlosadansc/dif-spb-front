@@ -1,5 +1,6 @@
 <template>
-    <div class="h-[450px] bg-white p-4 rounded-lg border border-gray-300">
+  <div v-if="isLoading" class="skeleton h-[450px]"></div>
+  <div v-else class="h-[450px] bg-white p-4 rounded-lg border border-gray-300">
       <h6 class="font-semibold text-lg text-gray-500 mb-[3rem]">Beneficiarios por sexo</h6>
       <div class="w-full h-[300px]">
         <Doughnut :data="chartData" :options="chartOptions" />
@@ -18,7 +19,8 @@ const props = defineProps({
   data: {
     type: Object,
     required: true
-  }
+  },
+  isLoading: Boolean
 });
 
 //data

@@ -1,5 +1,6 @@
 <template>
-     <div class="h-[450px] bg-white p-4 rounded-lg border border-gray-300 flex flex-col">
+  <div v-if="isLoading" class="skeleton h-[450px]"></div>
+  <div v-else class="h-[450px] bg-white p-4 rounded-lg border border-gray-300 flex flex-col">
       <h6 class="font-semibold text-lg text-gray-500 mb-[3rem]">Beneficiarios por delegación</h6>
 
       <div class="w-full h-[300px]">
@@ -32,7 +33,8 @@ const props = defineProps({
   data: {
     type: Object,
     required: true
-  }
+  },
+  isLoading: Boolean
 });
 
 //data

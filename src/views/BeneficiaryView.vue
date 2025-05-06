@@ -430,8 +430,8 @@
       </div>
 
       <div v-if="!loading" class="flex flex-col">
-        <p class="text-gray-500 text-xs ms-2 mt-5">Registro creado: <span class="font-bold">{{formatDate(beneficiary.createdAt)}}</span> por: <span class="font-bold">{{beneficiary.createdBy?.name + ' ' + beneficiary.createdBy?.lastname}}</span></p>
-        <p class="text-gray-500 text-xs ms-2 mt-1">Ultima modificación: <span class="font-bold">{{formatDate(beneficiary.updatedAt)}}</span> por: <span class="font-bold">{{ beneficiary.updatedBy ? beneficiary?.updatedBy?.name + ' ' + beneficiary?.updatedBy?.lastname : '' }}</span></p>
+        <p class="text-gray-500 text-xs ms-2 mt-5">Registro creado: <span class="font-bold">{{formatDatetime(beneficiary.createdAt)}}</span> por: <span class="font-bold">{{beneficiary.createdBy?.name + ' ' + beneficiary.createdBy?.lastname}}</span></p>
+        <p class="text-gray-500 text-xs ms-2 mt-1">Ultima modificación: <span class="font-bold">{{formatDatetime(beneficiary.updatedAt)}}</span> por: <span class="font-bold">{{ beneficiary.updatedBy ? beneficiary?.updatedBy?.name + ' ' + beneficiary?.updatedBy?.lastname : '' }}</span></p>
       </div>
 
       <ProfilePDF ref="profilePDFRef" :beneficiary="beneficiary" />
@@ -458,9 +458,11 @@ import floorTypes from '../constants/floorTypes';
 import wallTypes from '../constants/wallTypes';
 import ceilingTypes from '../constants/ceilingTypes';
 import delegations from '../constants/delegations';
-import formatDate from '../utilities/formatDate';
+import { useDate } from '../utilities/dateTool';
 import capitalize from '../utilities/capitalize';
 import normalizeObjectText from '../utilities/normalizeObjectText';
+
+const { formatDatetime } = useDate()
 
 //data
 const beneficiaryId = router.currentRoute.value.params.id;
@@ -618,10 +620,10 @@ const updateBeneficiary = async () => {
 }
 
 //Formatted birthdate
-const formattedBirthdate = ref(formatDate(beneficiary.value.birthdate));
+const formattedBirthdate = ref(formatDatetime(beneficiary.value.birthdate));
 
 watch(() => beneficiary.value.birthdate, (newDate) => {
-  formattedBirthdate.value = formatDate(newDate);
+  formattedBirthdate.value = formatDatetime(newDate);
 });
 
 const parseDate = (dateString) => {

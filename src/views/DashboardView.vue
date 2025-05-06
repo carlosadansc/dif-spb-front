@@ -1,21 +1,20 @@
 <template>
   <div class="container mx-auto px-4">
-    <span v-if="loading" class="loading loading-spinner loading-lg absolute top-1/2 left-1/2"></span>
     <div class="flex justify-between items-center">
       <DateSelector v-model="dateFilter" />
         <button @click.prevent="exportToExcel" class="btn btn-sm bg-red-500 text-xs text-white">Descargar padrón de apoyos<IconFileDownload v-if="!loadingExport"/><span v-if="loadingExport" class="loading loading-spinner loading-sm"></span></button>
     </div>
 
-    <div v-if="!loading" class="mb-8">
-      <ContributionStats :beneficiariesCount="beneficiariesCount" :contributionsCount="contributionsCount" />
+    <div class="mb-8">
+      <ContributionStats :loadingContributions="loadingSummary" :beneficiariesCount="beneficiariesCount" :contributionsCount="contributionsCount" />
     </div>
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-      <SummaryChart v-if="!loading" :data="contibutionsSummaryData" />
-      <SummaryByCategoryChart v-if="!loading" @update:category="selectCategoryFilter" :data="contributionSummaryByCategoryData" />
+      <SummaryChart :data="contibutionsSummaryData" :isLoading="loadingSummary" />
+      <SummaryByCategoryChart @update:category="selectCategoryFilter" :isLoading="loadingSummaryByCategory" :data="contributionSummaryByCategoryData" />
     </div>
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-      <BeneficiariesByDelegationChart v-if="!loading" :data="beneficiariesByDelegationData" />
-      <BeneficiariesBySexChart v-if="!loading" :data="beneficiariesBySexData" />
+      <BeneficiariesByDelegationChart :data="beneficiariesByDelegationData" :isLoading="loadingBeneficiariesByDelegation" />
+      <BeneficiariesBySexChart :data="beneficiariesBySexData" :isLoading="loadingBeneficiariesBySex" />
     </div>
   </div>
 </template>
@@ -34,6 +33,7 @@ import beneficiaryServices from '@/services/beneficiaryServices';
 import { toast } from 'vue3-toastify';
 import { AxiosError } from 'axios';
 import { useAuth } from '@/composables/useAuth';
+import { omitUndefined } from '@/utilities/omitUndefined';
 import * as XLSX from 'xlsx';
 
 // composables
@@ -48,6 +48,12 @@ const dateFilter = ref({
 const categoryFilter = ref(null)
 
 const loading = ref(false)
+const loadingSummary = ref(false)
+const loadingSummaryByCategory = ref(false)
+const loadingBeneficiariesByDelegation = ref(false)
+const loadingBeneficiariesBySex = ref(false)
+const loadingBeneficiariesCount = ref(false)
+const loadingContributions = ref(false)
 const loadingExport = ref(false)
 
 const contibutionsSummaryData = ref([])
@@ -73,8 +79,9 @@ watch(dateFilter, () => {
 //methods
 const getContributionSummary = async () => {
   try {
-    loading.value = true
-    const response = await contributionServices.getContributionSummary({ year: dateFilter.value.year, month: dateFilter.value.month }, authHeader.value);
+    loadingSummary.value = true
+    const filter = omitUndefined({ year: dateFilter.value.year, month: dateFilter.value.month })
+    const response = await contributionServices.getContributionSummary(filter, authHeader.value);
     if (response.code === "ERR_NETWORK") {
       toast.error('No se pudo conectar con el servidor')
     } else {
@@ -87,14 +94,16 @@ const getContributionSummary = async () => {
       toast.error(err)
     }
   } finally {
-    loading.value = false
+    loadingSummary.value = false
   }
 }
 
 const getContributionSummaryByCategory = async (category = '') => {
   try {
-    loading.value = true
-    const response = await contributionServices.getContributionSummaryByCategory({ categoryId: category, year: dateFilter.value.year, month: dateFilter.value.month }, authHeader.value);
+    loadingSummaryByCategory.value = true
+    await new Promise(resolve => setTimeout(resolve, 3000));
+    const filter = omitUndefined({ year: dateFilter.value.year, month: dateFilter.value.month })
+    const response = await contributionServices.getContributionSummaryByCategory({ categoryId: category, ...filter }, authHeader.value);
     if (response.code === "ERR_NETWORK") {
       toast.error('No se pudo conectar con el servidor')
     } else {
@@ -107,14 +116,15 @@ const getContributionSummaryByCategory = async (category = '') => {
       toast.error(err)
     }
   } finally {
-    loading.value = false
+    loadingSummaryByCategory.value = false
   }
 }
 
 const getBeneficiariesTotal = async () => {
   try {
-    loading.value = true
-    const response = await beneficiaryServices.getBeneficiariesCount({ year: dateFilter.value.year, month: dateFilter.value.month }, authHeader.value);
+    loadingBeneficiariesCount.value = true
+    const filter = omitUndefined({ year: dateFilter.value.year, month: dateFilter.value.month })
+    const response = await beneficiaryServices.getBeneficiariesCount(filter, authHeader.value);
     if (response.code === "ERR_NETWORK") {
       toast.error('No se pudo conectar con el servidor')
     } else {
@@ -127,13 +137,14 @@ const getBeneficiariesTotal = async () => {
       toast.error(err)
     }
   } finally {
-    loading.value = false
+    loadingBeneficiariesCount.value = false
   }
 }
 
 const getBeneficiariesByDelegation = async () => {
   try {
-    loading.value = true
+    loadingBeneficiariesByDelegation.value = true
+    await new Promise(resolve => setTimeout(resolve, 3000));
     const response = await beneficiaryServices.getBeneficiariesByDelegation(authHeader.value);
     if (response.code === "ERR_NETWORK") {
       toast.error('No se pudo conectar con el servidor')
@@ -147,13 +158,14 @@ const getBeneficiariesByDelegation = async () => {
       toast.error(err)
     } 
   } finally {
-      loading.value = false
+      loadingBeneficiariesByDelegation.value = false
     }
 }
 
 const getBeneficiariesBySex = async () => {
   try {
-    loading.value = true
+    loadingBeneficiariesBySex.value = true
+    await new Promise(resolve => setTimeout(resolve, 3000));
     const response = await beneficiaryServices.getBeneficiariesBySex(authHeader.value);
     if (response.code === "ERR_NETWORK") {
       toast.error('No se pudo conectar con el servidor')
@@ -167,7 +179,7 @@ const getBeneficiariesBySex = async () => {
       toast.error(err)
     }
   } finally {
-    loading.value = false
+    loadingBeneficiariesBySex.value = false
   }
 }
 

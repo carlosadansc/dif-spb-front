@@ -341,6 +341,7 @@ import { useAuth } from '../../composables/useAuth';
 import { useVuelidate } from '@vuelidate/core'
 import { required, helpers } from '@vuelidate/validators'
 import router from '../../router'
+import { AxiosError } from 'axios'
 
 //props
 const props = defineProps({
@@ -482,16 +483,23 @@ const submitForm = async () => {
     const delegation = beneficiary.address.delegation.value
     beneficiary.address.delegation = delegation
     const newBeneficiary = normalizeObjectText(beneficiary)
-    const response = await beneficiaryServices.createBeneficiary(newBeneficiary, authHeader.value)
-    if (response.code === "ERR_NETWORK") {
-      toast.error('No se pudo conectar con el servidor')
-    } else {
-      toast.success('Registro creado exitosamente')
-      closeModal()
-    }
+    await beneficiaryServices.createBeneficiary(newBeneficiary, authHeader.value)
+    toast.success('Registro creado exitosamente')
+    closeModal()
+
   } catch (err) {
+    console.log(err)
     if (err instanceof AxiosError) {
-      toast.error(err.response?.data?.message)
+      err.response?.data?.errors.forEach(error => {
+        if(error.code === 'ERR0007')
+      {
+        toast.error('El CURP ya se encuentra registrado')
+      }
+      else
+      {
+        toast.error(error.description)
+      }
+      })
     } else {
       toast.error(err)
     }
