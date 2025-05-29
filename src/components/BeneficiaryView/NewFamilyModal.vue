@@ -207,6 +207,7 @@ const submitForm = async () => {
     if (response.code === "ERR_NETWORK") {
       toast.error('No se pudo conectar con el servidor')
     } else {
+      console.log(response)
       toast.success('Registro creado exitosamente')
       updateList()
       closeModal()

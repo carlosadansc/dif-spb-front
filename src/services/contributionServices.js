@@ -13,6 +13,10 @@ const getContributionsByBeneficiary = async (id, headers) => {
     return await api.get(`/contribution/by-beneficiary/${id}`, { headers } ).then((response) =>  response.data ).catch((err) => err)
 }
 
+const getContributionsByBeneficiaryForExport = async (id, headers) => {
+    return await api.get(`/contribution/by-beneficiary/${id}/export`, { headers } ).then((response) =>  response.data ).catch((err) => err)
+}
+
 const getCategories = async (headers) => {
     return await api.get('/categories', { headers } ).then((response) =>  response.data ).catch((err) => err)
 }
@@ -36,6 +40,7 @@ const getAllContributions = async (headers) => {
 export default {
     getProductOrServicesByCategory,
     getContributionsByBeneficiary,
+    getContributionsByBeneficiaryForExport,
     createContribution,
     getCategories, 
     getContributionYears,

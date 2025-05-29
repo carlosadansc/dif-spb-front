@@ -28,8 +28,16 @@ const createFamily = async (beneficiaryId, family, headers) => {
     return await api.post(`/beneficiary/${beneficiaryId}/family-create/`, family, { headers }).then((response) =>  response.data ).catch((err) => {throw err})
 }
 
-const getBeneficiaryFamilies = async (beneficiaryId, headers) => {
+const deleteFamily = async (beneficiaryId, familyId, headers) => {
+    return await api.delete(`/beneficiary/${beneficiaryId}/family-delete/${familyId}`, { headers }).then((response) =>  response.data ).catch((err) => {throw err})
+}
+
+const getBeneficiaryFamily = async(beneficiaryId, headers) => {
     return await api.get(`/beneficiary/${beneficiaryId}/family`, { headers }).then((response) =>  response.data ).catch((err) => {throw err})
+}
+
+const getBeneficiaryFamilyNames = async (beneficiaryId, headers) => {
+    return await api.get(`/beneficiary/${beneficiaryId}/family-names`, { headers }).then((response) =>  response.data ).catch((err) => {throw err})
 }
 
 const getFamilyByBeneficiary = async (id, headers) => {
@@ -55,8 +63,10 @@ export default {
     updateBeneficiary,
     checkBeneficiaryExistsByCurp,
     createFamily,
+    deleteFamily,
     getBeneficiariesCount,
-    getBeneficiaryFamilies,
+    getBeneficiaryFamily,
+    getBeneficiaryFamilyNames,
     getFamilyByBeneficiary,
     generateProvisionalCurp,
     getBeneficiariesByDelegation,

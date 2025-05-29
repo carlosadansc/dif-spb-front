@@ -13,16 +13,16 @@
           {{ name + ' ' + lastname }}
       </template>
 
-      <template #item-profile="{ _id: id }">
+      <template v-if="user.userType === 'admin'" #item-profile="{ _id: id }">
         <div class="tooltip tooltip-left" data-tip="Eliminar">
-          <button class="btn btn-square btn-sm my-2 mx-auto text-red-800" @click="">
+          <button class="btn btn-square btn-sm my-2 mx-auto text-red-800" @click="deleteFamily(id)">
             <IconX class="h-5 w-5" />
           </button>
         </div>
       </template>
     </EasyDataTable>
 
-    <NewFamilyModal v-model:show-modal="showModal" :beneficiaryId="props.beneficiaryId" @close:modal="showModal = false" @update:list="updateList" />
+    <NewFamilyModal v-model:show-modal="showModal" :beneficiaryId="props.beneficiaryId" @close:modal="showModal = false" @update:list="getFamilyData" />
   </div>
 </template>
 
@@ -37,7 +37,7 @@ import beneficiaryServices from './../../services/beneficiaryServices';
 import NewFamilyModal from './NewFamilyModal.vue';
 
 // composables
-const { authHeader } = useAuth()
+const { authHeader, user } = useAuth()
 
 //props
 const props = defineProps({
@@ -78,14 +78,34 @@ watch(serverOptions, (value) => { getFamilyData() }, { deep: true });
 
 //methods
 const getFamilyData = async () => {
-  console.log('beneficiaryId', props.beneficiaryId)
   loading.value = true
   try {
-    const response = await beneficiaryServices.getFamilyByBeneficiary(props.beneficiaryId, authHeader.value)
+    const response = await beneficiaryServices.getBeneficiaryFamily(props.beneficiaryId, authHeader.value)
     if (response.code === "ERR_NETWORK") {
       toast.error('No se pudo conectar con el servidor')
     } else {
       familyData.value = response.data
+    }
+  } catch (err) {
+    if (err instanceof AxiosError) {
+      toast.error(err.response?.data?.message)
+    } else {
+      toast.error(err)
+    }
+  } finally {
+    loading.value = false
+  }
+}
+
+const deleteFamily = async (familyId) => {
+  loading.value = true
+  try {
+    const response = await beneficiaryServices.deleteFamily(props.beneficiaryId, familyId, authHeader.value)
+    if (response.code === "ERR_NETWORK") {
+      toast.error('No se pudo conectar con el servidor')
+    } else {
+      toast.success('Familiar eliminado correctamente')
+      getFamilyData()
     }
   } catch (err) {
     if (err instanceof AxiosError) {

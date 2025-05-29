@@ -14,7 +14,7 @@
           <input type="password" v-model="credentials.password" placeholder="Contraseña"
             class="w-full input input-bordered" />
         </div>
-        <a href="#" class="text-xs text-gray-600 hover:underline hover:text-blue-600">Perdí mi contraseña</a>
+        <!-- <a href="#" class="text-xs text-gray-600 hover:underline hover:text-blue-600">Perdí mi contraseña</a> -->
         <div>
           <button type="submit" class="btn w-full text-white bg-red-800 rounded-[.8rem]">
             {{ loading ? '' : 'Iniciar sesión' }}

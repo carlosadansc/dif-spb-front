@@ -37,29 +37,37 @@
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <!-- Descripción -->
           <div class="col-span-2">
-      <label for="productOrService" class="block text-sm font-medium text-gray-700 required">
-        Descripción
-      </label>
-      <select id="productOrService" v-model="newProductOrService"
-        class="input select mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-        required>
-        <option value="" disabled>Seleccione el apoyo otorgado</option>
-        <option v-for="item in selectedCategory.productOrServices" :key="item._id" :value="item">
-          {{ item.name }}
-        </option>
-      </select>
-      
-      <!-- Campo para nombre de medicamento (solo visible cuando es medicamento) -->
-      <div v-if="isMedicineSelected" class="mt-2">
-        <label for="medicineName" class="block text-sm font-medium text-gray-700 required">
-          Nombre específico del medicamento
-        </label>
-        <input type="text" id="medicineName" v-model="medicineName"
-          class="input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-          placeholder="Ej: Paracetamol 500mg"
-          required>
-      </div>
-    </div>
+            <label for="productOrService" class="block text-sm font-medium text-gray-700 required">
+              Descripción
+            </label>
+            <select id="productOrService" v-model="newProductOrService"
+              class="input select mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              required>
+              <option value="" disabled>Seleccione el apoyo otorgado</option>
+              <option v-for="item in selectedCategory.productOrServices" :key="item._id" :value="item">
+                {{ item.name }}
+              </option>
+            </select>
+
+            <!-- Campo para nombre de medicamento (solo visible cuando es medicamento) -->
+            <div v-if="isMedicineSelected" class="mt-2">
+              <label for="medicineName" class="block text-sm font-medium text-gray-700 required">
+                Nombre específico del medicamento
+              </label>
+              <input type="text" id="medicineName" v-model="medicineName"
+                class="input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                placeholder="Ej: Paracetamol 500mg">
+            </div>
+
+            <div v-if="isOtherSelected" class="mt-2">
+              <label for="otherName" class="block text-sm font-medium text-gray-700 required">
+                Nombre específico del apoyo
+              </label>
+              <input type="text" id="otherName" v-model="otherName"
+                class="input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                placeholder="Especifique el apoyo">
+            </div>
+          </div>
 
           <!-- Cantidad -->
           <div>
@@ -104,7 +112,8 @@
         <!-- Quien revibe -->
         <div>
           <label for="receiver" class="block text-sm font-medium text-gray-700 required">Recibe</label>
-          <input v-model="contribution.receiver" id="receiver" list="families" class="input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
+          <input v-model="contribution.receiver" id="receiver" list="families"
+            class="input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
           <datalist id="families">
             <option v-for="(item, index) in families" :key="index" :value="item.name">
               {{ item.name }}
@@ -156,6 +165,7 @@ const emits = defineEmits(['close:modal', 'update:list'])
 //data
 const newContributionModalRef = ref()
 const medicineName = ref('');
+const otherName = ref('');
 const categories = ref([])
 const loading = ref(false)
 const beneficiary = router.currentRoute.value.params.id
@@ -181,8 +191,13 @@ const contribution = ref({
 
 // computed
 const isMedicineSelected = computed(() => {
-  return newProductOrService.value?.type === 'medicine' || 
-         newProductOrService.value?.name?.toLowerCase().includes('medicamento');
+  return newProductOrService.value?.type === 'medicine' ||
+    newProductOrService.value?.name?.toLowerCase().includes('medicamento');
+});
+
+const isOtherSelected = computed(() => {
+  return newProductOrService.value?.type === 'other' ||
+    newProductOrService.value?.name?.toLowerCase().includes('otro');
 });
 
 //watches
@@ -226,8 +241,8 @@ const getCategories = async () => {
   }
 }
 
-const getFamilies = async () => {
-  const response = await beneficiaryServices.getBeneficiaryFamilies(beneficiary, authHeader.value)
+const getFamilyNames = async () => {
+  const response = await beneficiaryServices.getBeneficiaryFamilyNames(beneficiary, authHeader.value)
   try {
     if (response.code === "ERR_NETWORK") {
       toast.error('No se pudo conectar con el servidor')
@@ -342,6 +357,7 @@ const resetForm = () => {
   };
   newProductOrService.value = {};
   medicineName.value = '';
+  otherName.value = '';
 };
 
 const addItem = () => {
@@ -349,24 +365,32 @@ const addItem = () => {
     toast.warning('Seleccione un apoyo primero');
     return;
   }
-  
-  if (isMedicineSelected.value && !medicineName.value) {
-    toast.warning('Debe especificar el nombre del medicamento');
-    return;
-  }
 
-  const description = isMedicineSelected.value 
+  // if (isMedicineSelected.value && !medicineName.value) {
+  //   toast.warning('Debe especificar el nombre del medicamento');
+  //   return;
+  // }
+
+  // if (isOtherSelected.value && !otherName.value) {
+  //   toast.warning('Debe especificar el nombre del apoyo');
+  //   return;
+  // }
+
+  const description = isMedicineSelected.value
     ? `${newProductOrService.value.name}: ${medicineName.value}`
-    : newProductOrService.value.name;
+    : isOtherSelected.value ? `${newProductOrService.value.name}: 
+    ${otherName.value}` : newProductOrService.value.name;
+
 
   contribution.value.productOrServices.push({
     productOrService: newProductOrService.value,
     description: description,
     quantity: contribution.value.quantity
   });
-  
+
   // Resetear campos después de añadir
   medicineName.value = '';
+  otherName.value = '';
 };
 
 
@@ -380,11 +404,9 @@ const getSelectedCategory = () => {
 
 onMounted(() => {
   getCategories()
-  getFamilies()
+  getFamilyNames()
 })
 
 </script>
 
-<style lang="css" scoped>
-
-</style>
+<style lang="css" scoped></style>

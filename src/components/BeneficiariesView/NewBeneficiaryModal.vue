@@ -23,9 +23,9 @@
             <div class="font-bold text-xs text-red-500 input-errors" v-for="error of v$.curp.$errors" :key="error.$uid">
               <div class="error-msg">{{ error.$message }}</div>
             </div>
-            <span class="font-bold text-xs text-red-800" v-if="beneficiaryExists">Este beneficiario ya existe <a
+            <span class="font-bold text-xs text-red-800 cursor-pointer" v-if="beneficiaryExists" @click="goTo(beneficiaryFinded._id)">Este beneficiario ya existe <a
                 @click="goTo(beneficiaryFinded._id)" class="underline">Ver perfil</a></span>
-            <button class="btn-text text-[0.7rem] text-blue-800 underline font-bold" @click.prevent="generateCurp">Generar CURP (provisional)</button>
+            <button class="btn-text text-[0.7rem] text-blue-800 underline font-bold" v-if="!beneficiaryExists" @click.prevent="generateCurp">Generar CURP (provisional)</button>
           </div>
         </div>
 
@@ -415,28 +415,30 @@ const { authHeader } = useAuth()
 //methods
 
 const checkBeneficiaryExists = async () => {
-  loading.value = true
-  try {
-    const response = await beneficiaryServices.checkBeneficiaryExistsByCurp(beneficiary.curp, authHeader.value)
-    if (response.code === "ERR_NETWORK") {
-      toast.error('No se pudo conectar con el servidor')
-    } else {
-      if (response.data) {
-        beneficiaryFinded.value = response.data
-        beneficiaryExists.value = true
+  if (beneficiary.curp) {
+    loading.value = true
+    try {
+      const response = await beneficiaryServices.checkBeneficiaryExistsByCurp(beneficiary.curp, authHeader.value)
+      if (response.code === "ERR_NETWORK") {
+        toast.error('No se pudo conectar con el servidor')
       } else {
-        beneficiaryExists.value = false
+        if (response.data) {
+          beneficiaryFinded.value = response.data
+          beneficiaryExists.value = true
+        } else {
+          beneficiaryExists.value = false
+        }
       }
+    } catch (err) {
+      if (err instanceof AxiosError) {
+        toast.error(err.response?.data?.message)
+      } else {
+        toast.error(err)
+      }
+      beneficiaryExists.value = false
+    } finally {
+      loading.value = false
     }
-  } catch (err) {
-    if (err instanceof AxiosError) {
-      toast.error(err.response?.data?.message)
-    } else {
-      toast.error(err)
-    }
-    beneficiaryExists.value = false
-  } finally {
-    loading.value = false
   }
 }
 

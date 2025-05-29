@@ -579,7 +579,7 @@ const getBeneficiary = async () => {
 }
 
 const getSubdelegations = async () => {
-  subdelegations.value = delegations.find(delegation => delegation.value === beneficiary.value.address.delegation).subdelegations
+  subdelegations.value = delegations.find(delegation => delegation.value === beneficiary.value.address.delegation)?.subdelegations
 }
 
 const toggleEditMode = () => {
