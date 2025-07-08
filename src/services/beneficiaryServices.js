@@ -56,6 +56,17 @@ const getBeneficiariesBySex = async (headers) => {
     return await api.get('/beneficiaries/by-sex', { headers }).then((response) =>  response.data ).catch((err) => {throw err})
 }
 
+const uploadImage = async (image, headers) => {
+    return await api.post('/image/upload', image, { headers }).then((response) =>  response.data ).catch((err) => {throw err})
+}
+
+const deleteImage = async (filePath, headers) => {
+    return await api.delete('/image/delete', { 
+      data: { filePath },
+      headers: headers 
+    }).then((response) => response.data).catch((err) => { throw err });
+}
+
 export default {
     getBeneficiary,
     getBeneficiaries,
@@ -71,5 +82,6 @@ export default {
     generateProvisionalCurp,
     getBeneficiariesByDelegation,
     getBeneficiariesBySex,
-    
+    uploadImage,
+    deleteImage 
 }

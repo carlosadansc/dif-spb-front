@@ -45,6 +45,8 @@
       <div v-if="!loading" class="mt-6 bg-white border border-gray-400 rounded-lg p-6">
         <!-- General Information -->
         <div v-if="activeSection === 'general'" class="space-t-6">
+          <PhotoPicker class="mb-6" :beneficiaryId="beneficiaryId" :defaultPhoto="photoUrl" @photo-selected="beneficiary.photo = $event" />
+ 
           <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
             <div>
               <label class="block text-sm font-medium text-gray-700">CURP</label>
@@ -441,7 +443,7 @@
 
 <script setup>
 import router from '../router';
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, computed } from 'vue';
 import { AxiosError } from 'axios';
 import { toast } from 'vue3-toastify';
 import { IconArrowNarrowLeft, IconEdit, IconDeviceFloppy, IconFileTypePdf, IconCancel } from '@tabler/icons-vue';
@@ -450,7 +452,6 @@ import ContributionHistory from '@/components/BeneficiaryView/ContributionHistor
 import FamilyList from '@/components/BeneficiaryView/FamilyList.vue';
 import ProfilePDF from '../components/BeneficiaryView/ProfilePDF.vue';
 import { useAuth } from '../composables/useAuth';
-// import { useRouter } from 'vue-router';
 import scholarships from '../constants/scholarships';
 import medicalServices from '../constants/medicalServices';
 import disabilityTypes from '../constants/disabilityTypes';
@@ -459,14 +460,17 @@ import wallTypes from '../constants/wallTypes';
 import ceilingTypes from '../constants/ceilingTypes';
 import delegations from '../constants/delegations';
 import { useDate } from '../utilities/dateTool';
-import capitalize from '../utilities/capitalize';
 import normalizeObjectText from '../utilities/normalizeObjectText';
+import PhotoPicker from '@/components/BeneficiaryView/PhotoPicker.vue';
 
 const { formatDatetime } = useDate()
 
 //data
+const apiEndpoint = import.meta.env.VITE_API_ENDPOINT || "http://localhost:3000";
+const photoUrl = ref('');
 const beneficiaryId = router.currentRoute.value.params.id;
 const beneficiary = ref({
+  photo: '',
   name: '',
   fatherSurname: '',
   motherSurname: '',
@@ -547,7 +551,6 @@ const sections = [
 // composables
 const { authHeader } = useAuth()
 
-
 //methods
 
 const getBeneficiary = async () => {
@@ -565,6 +568,7 @@ const getBeneficiary = async () => {
           ...response.data.spouseOrTutor
         }
       }
+      photoUrl.value = apiEndpoint + beneficiary.value.photo;
       getSubdelegations()
     }
   } catch (err) {
