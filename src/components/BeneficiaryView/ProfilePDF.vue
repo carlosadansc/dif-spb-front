@@ -302,12 +302,12 @@
 import { ref, computed } from 'vue';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-import formatCurrency from '@/utilities/formatCurrency';
-import { useDate } from '@/utilities/dateTool';
-import capitalize from '../../utilities/capitalize';
+import formatCurrency from '@/utils/formatCurrency';
+import { useDate } from '@/utils/dateTool';
+import capitalize from '@/utils/capitalize';
 import logoDif from '@/assets/img/logo-dif.png';
 import logoAyunta from '@/assets/img/logo-ayunta.png';
-import { useAuth } from '../../composables/useAuth';
+import { useAuth } from '@/composables/useAuth';
 
 // composables
 const { user } = useAuth();

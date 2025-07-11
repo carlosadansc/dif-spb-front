@@ -34,6 +34,7 @@ import { storeToRefs } from 'pinia'
 import router from '../../router'
 import userServices from '../../services/userServices'
 import { useAuthStore } from "../../stores/authStore"
+import { getTranslatedError } from '../../utils/errorManager'
 
 const authStore = useAuthStore()
 const { user, authToken } = storeToRefs(authStore)
@@ -42,37 +43,27 @@ const { user, authToken } = storeToRefs(authStore)
 const credentials = ref({ username: "", password: "" })
 const loading = ref(false);
 
-//rules
-const usernameRules = [value => {
-  if (value?.length >= 3) return true
-  return 'First name must be at least 3 characters.'
-},]
-
 
 //methods
 const login = async () => {
-  loading.value = true
-
+  loading.value = true;
   try {
-    const response = await userServices.login(credentials.value)
-    if (response.code === "ERR_NETWORK") {
-      toast.error('No se pudo conectar con el servidor')
+    const data = await userServices.login(credentials.value);
+    if (data && data.token && data.user) {
+      authStore.setAuthToken(data.token);
+      authStore.setUser(data.user);
+      router.push('/');
     } else {
-      authStore.setAuthToken(response.data.token)
-      authStore.setUser(response.data.user)
-      loading.value = false
-      router.push('/')
+      // Si 'data' no tiene la estructura esperada, lanzamos un error.
+      throw new Error('Respuesta de inicio de sesión inválida');
     }
   } catch (err) {
-    if (err instanceof AxiosError) {
-      toast.error(err.response?.data?.message)
-    } else {
-      toast.error(err)
-    }
+    const errorMessage = getTranslatedError(err);
+    toast.error(errorMessage);
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 
 
 </script>

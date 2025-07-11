@@ -63,7 +63,7 @@
 import { IconMenu2, IconCategory2, IconUsers, IconUser, IconChevronDown, IconUserCog, IconFilters } from '@tabler/icons-vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '../composables/useAuth'
-import capitalize from '../utilities/capitalize'
+import capitalize from '../utils/capitalize'
 
 //composables
 const router = useRouter()

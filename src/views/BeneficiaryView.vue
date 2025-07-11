@@ -459,8 +459,8 @@ import floorTypes from '../constants/floorTypes';
 import wallTypes from '../constants/wallTypes';
 import ceilingTypes from '../constants/ceilingTypes';
 import delegations from '../constants/delegations';
-import { useDate } from '../utilities/dateTool';
-import normalizeObjectText from '../utilities/normalizeObjectText';
+import { useDate } from '../utils/dateTool';
+import normalizeObjectText from '../utils/normalizeObjectText';
 import PhotoPicker from '@/components/BeneficiaryView/PhotoPicker.vue';
 
 const { formatDatetime } = useDate()

@@ -329,14 +329,14 @@
 import { reactive, ref, watch, computed } from 'vue'
 import { toast } from 'vue3-toastify';
 import beneficiaryServices from '../../services/beneficiaryServices'
-import normalizeObjectText from '../../utilities/normalizeObjectText'
+import normalizeObjectText from '../../utils/normalizeObjectText'
 import disabilityTypes from '../../constants/disabilityTypes'
 import medicalServices from '../../constants/medicalServices'
 import civilStatus from '../../constants/civilStatus'
 import scholarships from '../../constants/scholarships'
 import delegations from '../../constants/delegations'
 import neighborhoods from '../../constants/neighborhoods'
-import calculateAge from '../../utilities/calcBirthdate'
+import calculateAge from '../../utils/calcBirthdate'
 import { useAuth } from '../../composables/useAuth';
 import { useVuelidate } from '@vuelidate/core'
 import { required, helpers } from '@vuelidate/validators'

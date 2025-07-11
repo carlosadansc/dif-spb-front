@@ -96,7 +96,7 @@ import { toast } from 'vue3-toastify';
 import * as XLSX from 'xlsx';
 import { IconFileSpreadsheet, IconPlus } from '@tabler/icons-vue';
 import { useAuth } from '@/composables/useAuth';
-import { useDate } from '@/utilities/dateTool';
+import { useDate } from '@/utils/dateTool';
 import contributionServices from '@/services/contributionServices';
 import NewContributionModal from './NewContributionModal.vue';
 import ContributionTicketPDF from './ContributionTicketPDF.vue';

@@ -15,7 +15,7 @@
 
 <script setup>
 import { computed } from 'vue';
-import formatCurrency from '../../utilities/formatCurrency'
+import formatCurrency from '../../utils/formatCurrency'
 
 const props = defineProps({
   contributionsCount: Number,

@@ -134,10 +134,10 @@ import { AxiosError } from 'axios'
 import { useAuth } from '@/composables/useAuth'
 import { useVuelidate } from '@vuelidate/core'
 import { required, helpers } from '@vuelidate/validators'
-import normalizeObjectText from '@/utilities/normalizeObjectText'
+import normalizeObjectText from '@/utils/normalizeObjectText'
 import scholarships from '@/constants/scholarships'
 import relationships from '@/constants/relationships'
-import beneficiaryServices from '../../services/beneficiaryServices'
+import beneficiaryServices from '@/services/beneficiaryServices'
 
 // composables
 const { authHeader } = useAuth()

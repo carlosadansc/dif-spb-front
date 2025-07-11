@@ -48,7 +48,7 @@ import { ref } from 'vue';
 import { toast } from 'vue3-toastify';
 import { AxiosError } from 'axios';
 import { useAuth } from '@/composables/useAuth';
-import { createLabel } from '@/utilities/createLabel';
+import { createLabel } from '@/utils/createLabel';
 import categoriesServices from '@/services/categoriesServices';
 
 const { authHeader } = useAuth();

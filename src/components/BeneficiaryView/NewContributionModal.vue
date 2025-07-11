@@ -144,11 +144,11 @@
 <script setup>
 import { ref, watch, computed, onMounted } from 'vue';
 import { toast } from 'vue3-toastify';
-import contributionServices from '../../services/contributionServices';
-import { useAuth } from '../../composables/useAuth';
+import contributionServices from '@/services/contributionServices';
+import { useAuth } from '@/composables/useAuth';
 import { useRouter } from 'vue-router';
-import normalizeObjectText from '../../utilities/normalizeObjectText'
-import beneficiaryServices from '../../services/beneficiaryServices'
+import normalizeObjectText from '@/utils/normalizeObjectText'
+import beneficiaryServices from '@/services/beneficiaryServices'
 
 // composables
 const { authHeader } = useAuth()

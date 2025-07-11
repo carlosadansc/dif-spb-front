@@ -33,7 +33,7 @@ import beneficiaryServices from '@/services/beneficiaryServices';
 import { toast } from 'vue3-toastify';
 import { AxiosError } from 'axios';
 import { useAuth } from '@/composables/useAuth';
-import { omitUndefined } from '@/utilities/omitUndefined';
+import { omitUndefined } from '@/utils/omitUndefined';
 import * as XLSX from 'xlsx';
 
 // composables

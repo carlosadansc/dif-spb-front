@@ -27,7 +27,6 @@
       rows-per-page-message="Se muestran"
       alternating
     >
-
       <template #item-profile="{ _id: id }">
         <div class="tooltip tooltip-left" data-tip="Ver expediente">
           <button class="btn btn-square btn-sm my-2 mx-auto text-red-800" @click="openBeneficiaryView(id)">

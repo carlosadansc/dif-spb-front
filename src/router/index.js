@@ -10,6 +10,7 @@ import BeneficiariesView from '../views/BeneficiariesView.vue'
 import BeneficiaryView from '../views/BeneficiaryView.vue'
 import UsersView from '../views/UsersView.vue'
 import CategoriesView from '../views/CategoriesView.vue'
+import NotFoundView from '../views/NotFoundView.vue'
 
 //Routes
 const routes = [
@@ -62,6 +63,11 @@ const routes = [
       },
     ],
   },
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'NotFound',
+    component: NotFoundView
+  }
 ]
 
 const router = createRouter({
