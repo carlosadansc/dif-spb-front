@@ -22,12 +22,12 @@
 <script setup>
 import { ref, watch, computed, onMounted } from 'vue';
 import { IconFileDownload } from '@tabler/icons-vue';
-import DateSelector from '@/components/dashboard/DateSelector.vue';
-import SummaryByCategoryChart from '@/components/dashboard/SummaryByCategoryChart.vue';
-import ContributionStats from '@/components/dashboard/ContributionStats.vue';
-import SummaryChart from '@/components/dashboard/SummaryChart.vue';
-import BeneficiariesByDelegationChart from '@/components/dashboard/BeneficiariesByDelegationChart.vue';
-import BeneficiariesBySexChart from '@/components/dashboard/BeneficiariesBySexChart.vue';
+import DateSelector from '@/components/DashboardView/DateSelector.vue';
+import SummaryByCategoryChart from '@/components/DashboardView/SummaryByCategoryChart.vue';
+import ContributionStats from '@/components/DashboardView/ContributionStats.vue';
+import SummaryChart from '@/components/DashboardView/SummaryChart.vue';
+import BeneficiariesByDelegationChart from '@/components/DashboardView/BeneficiariesByDelegationChart.vue';
+import BeneficiariesBySexChart from '@/components/DashboardView/BeneficiariesBySexChart.vue';
 import contributionServices from '@/services/contributionServices';
 import beneficiaryServices from '@/services/beneficiaryServices';
 import { toast } from 'vue3-toastify';
