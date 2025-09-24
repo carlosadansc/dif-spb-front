@@ -67,6 +67,10 @@ const deleteImage = async (filePath, headers) => {
     }).then((response) => response.data).catch((err) => { throw err });
 }
 
+const deleteBeneficiary = async (id, headers) => {
+    return await api.delete(`/beneficiary/delete/${id}`, { headers }).then((response) => response.data).catch((err) => { throw err });
+}
+
 export default {
     getBeneficiary,
     getBeneficiaries,
@@ -83,5 +87,6 @@ export default {
     getBeneficiariesByDelegation,
     getBeneficiariesBySex,
     uploadImage,
-    deleteImage 
+    deleteImage,
+    deleteBeneficiary
 }

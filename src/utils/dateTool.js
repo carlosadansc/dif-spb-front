@@ -27,7 +27,8 @@ export const useDate = () => {
 
   const formatDate = (date) => {
     if (!date) return ''
-    return dayjs(date).format('D [de] MMMM [de] YYYY')
+    // Use UTC mode to prevent timezone-related date shifting
+    return dayjs.utc(date).format('D [de] MMMM [de] YYYY')
   }
 
   const formatDateShort = (date) => {

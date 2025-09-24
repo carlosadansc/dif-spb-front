@@ -18,7 +18,7 @@ const scholarships = [
     {
         id: 4,
         text: 'Media superior',
-        value: 'MEDIA SUPERIOR'
+        value: 'MEDIA_SUPERIOR'
     },
     {
         id: 5,

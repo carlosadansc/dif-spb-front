@@ -44,6 +44,7 @@
             </p>
 
             <div class="flex items-center gap-2">
+              <span class="font-medium text-xs text-gray-900">Fecha de entrega: </span>
               <span class="text-xs text-gray-500">
                 {{ formatDate(contribution.contributionDate) }}
               </span>
@@ -54,7 +55,7 @@
 
             <div class="space-y-1">
               <div v-for="(item, index) in contribution.productOrServices" :key="index"
-                class="flex items-center justify-between text-sm">
+                class="flex items-center justify-between text-xs">
                 <div class="flex-1 min-w-0">
                   <span class="font-medium text-gray-900">{{ item.productOrService.category.name }}</span>
                   <span class="text-gray-500 mx-1 font-black">·</span>
@@ -67,13 +68,14 @@
             </div>
 
             <div class="mt-1">
-              <p class="text-gray-500 text-sm">
+              <p class="text-gray-500 text-xs">
                 <span class="font-medium text-gray-900">Recibió: </span>
                 {{ contribution.receiver }}
               </p>
             </div>
 
             <div v-if="contribution.comments" class="mt-1">
+              <span class="font-medium text-xs text-gray-900">Observaciones: </span>
               <p class="text-xs text-gray-500 italic">
                 {{ contribution.comments }}
               </p>

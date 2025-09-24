@@ -20,9 +20,9 @@ export const useAuth = () => {
         authStore.setUser({})
     }
 
-    function isLoggedIn() {
+    const isLoggedIn = computed(() => {
         return !!authToken.value && !isTokenExpired(authToken.value)
-    }
+    })
 
     function getTokenExpirationDate(encodedToken) {
         let token = jwtDecode(encodedToken)
@@ -41,11 +41,47 @@ export const useAuth = () => {
         return expirationDate < new Date()
     }
 
+    // Verificar si el usuario es administrador
+    const isAdmin = computed(() => {
+        return user.value?.userType === 'admin'
+    })
+
+    // Verificar si el usuario es ejecutivo
+    const isExecutive = computed(() => {
+        return user.value?.userType === 'executive' || isAdmin.value
+    })
+
+    // Verificar si el usuario es usuario estándar
+    const isStandardUser = computed(() => {
+        return user.value?.userType === 'user' || isExecutive.value
+    })
+
+    // Obtener el nivel de usuario (1: user, 2: executive, 3: admin)
+    const getUserLevel = computed(() => {
+        switch(user.value?.userType) {
+            case 'admin': return 3
+            case 'executive': return 2
+            case 'user': 
+            default: return 1
+        }
+    })
+
+    // Verificar si el usuario tiene al menos el nivel requerido
+    const hasAccessLevel = (requiredLevel) => {
+        const userLevel = getUserLevel.value
+        return userLevel >= requiredLevel
+    }
+
     return {
         user,
         authToken,
         isLoggedIn,
         logoutUser,
-        authHeader
+        authHeader,
+        isAdmin,
+        isExecutive,
+        isStandardUser,
+        getUserLevel,
+        hasAccessLevel
     }
 }

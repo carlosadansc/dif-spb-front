@@ -12,8 +12,18 @@ const createProductOrService = async (product, headers) => {
     return await api.post('/category/create-product-or-service', product, { headers }).then((response) =>  response.data ).catch((err) => err)
 }
 
+const quitProductOrService = async (product, headers) => {
+    return await api.post('/category/quit-product-or-service', product, { headers }).then((response) =>  response.data ).catch((err) => err)
+}
+
+const updateCategory = async (category, update, headers) => {
+    return await api.put('/category/update/' + category , update, { headers }).then((response) =>  response.data ).catch((err) => err)
+}
+
 export default {
     getCategories,
     createCategory,
-    createProductOrService
+    createProductOrService,
+    quitProductOrService,
+    updateCategory
 }

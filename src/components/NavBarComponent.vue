@@ -13,17 +13,20 @@
           <label for="my-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
           <ul class="menu bg-base-200 text-base-content min-h-full w-80 p-4">
             <!-- Sidebar content here -->
-            <li class="text-red-800"><a @click="goTo('/dashboard')">
-                <IconCategory2 /> Inicio
+            <li v-if="isExecutive" class="text-red-800"><a @click="goTo('/dashboard')">
+                <IconCategory2 /> Dashboard
               </a></li>
-            <li class="text-red-800"><a @click="goTo('/beneficiaries')">
+            <li v-if="isStandardUser" class="text-red-800"><a @click="goTo('/beneficiaries')">
                 <IconUsers />Beneficiarios
               </a></li>
-            <li class="text-red-800"><a @click="goTo('/categories')">
+            <li v-if="isAdmin" class="text-red-800"><a @click="goTo('/categories')">
                 <IconFilters />Categorias
               </a></li>
-            <li class="text-red-800"><a @click="goTo('/users')">
+            <li v-if="isAdmin" class="text-red-800"><a @click="goTo('/users')">
                 <IconUserCog />Usuarios
+              </a></li>
+            <li v-if="isAdmin" class="text-red-800"><a @click="goTo('/areas')">
+                <IconSitemap />Areas
               </a></li>
             <li class="text-red-800 text-[0.7rem] leading-0 font-bold absolute bottom-5">Sistema para el Desarrollo
               Integral de la Familia del Municipio de La Paz - SPB v1.0.0 {{ new Date().getFullYear() }}</li>
@@ -47,7 +50,9 @@
         </div>
 
         <div class="dropdown dropdown-end ms-2 me-5">
-          <div tabindex="0" role="button" class="btn btn-ghost btn-square btn-xs m-1"><IconChevronDown class="h-5 w-5 text-red-800" /></div>
+          <div tabindex="0" role="button" class="btn btn-ghost btn-square btn-xs m-1">
+            <IconChevronDown class="h-5 w-5 text-red-800" />
+          </div>
           <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm">
             <li @click="logOut" class="font-medium text-xs"><a>Cerrar sesión</a></li>
           </ul>
@@ -60,14 +65,14 @@
 </template>
 
 <script setup>
-import { IconMenu2, IconCategory2, IconUsers, IconUser, IconChevronDown, IconUserCog, IconFilters } from '@tabler/icons-vue'
+import { IconMenu2, IconCategory2, IconUsers, IconUser, IconChevronDown, IconUserCog, IconFilters, IconSitemap } from '@tabler/icons-vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '../composables/useAuth'
 import capitalize from '../utils/capitalize'
 
 //composables
 const router = useRouter()
-const { logoutUser, user } = useAuth()
+const { logoutUser, user, isAdmin, isExecutive, isStandardUser } = useAuth()
 
 //methods
 const goTo = (path) => {
@@ -76,7 +81,7 @@ const goTo = (path) => {
 
 const logOut = () => {
   logoutUser()
-  router.push('/')
+  router.push('/login')
 }
 
 </script>

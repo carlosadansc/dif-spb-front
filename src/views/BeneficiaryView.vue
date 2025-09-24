@@ -70,13 +70,31 @@
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700">Edad</label>
-              <input :disabled="!isEditing" v-maska="'###'" type="number" v-model="beneficiary.age"
-                class="input input-sm mt-1 block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
+              <input 
+                :disabled="!isEditing" 
+                type="number" 
+                v-model.number="beneficiary.age"
+                min="0"
+                max="120"
+                @input="(e) => {
+                  // Ensure the value is a valid number between 0 and 120
+                  const value = parseInt(e.target.value);
+                  if (isNaN(value) || value < 0) e.target.value = 0;
+                  if (value > 120) e.target.value = 120;
+                }"
+                class="input input-sm mt-1 block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" 
+              />
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700">Fecha de Nacimiento</label>
-              <input :disabled="!isEditing" type="text" v-model="formattedBirthdate" @blur="updateBirthdate"
-                class="input input-sm mt-1 block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
+              <input 
+                :disabled="!isEditing" 
+                type="date" 
+                v-model="birthdateInput"
+                :max="new Date().toISOString().split('T')[0]"
+                class="input input-sm mt-1 block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" 
+              />
+              <p v-if="formattedBirthdate" class="text-xs text-gray-500 mt-1">{{ formattedBirthdate }}</p>
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700">Lugar de Nacimiento</label>
@@ -139,6 +157,33 @@
                 <option v-for="disabilityType in disabilityTypes" :key="disabilityType.id" :value="disabilityType.value">
                   {{ disabilityType.text }}
                 </option>
+              </select>
+            </div>
+            
+            <div class="flex items-center">
+              <input :disabled="!isEditing" type="checkbox" v-model="beneficiary.isIndigenousCommunity"
+                class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded" />
+              <label class="ml-2 block text-sm text-gray-700">¿Pertenece a una comunidad indígena?</label>
+            </div>
+            <div v-if="beneficiary.isIndigenousCommunity">
+              <label class="block text-sm font-medium text-gray-700">Especifique la comunidad indígena</label>
+              <input :disabled="!isEditing" type="text" v-model="beneficiary.indigenousCommunity"
+                class="input input-sm mt-1 block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
+            </div>
+            <div class="flex items-center">
+              <input :disabled="!isEditing" type="checkbox" v-model="beneficiary.isLgbtq"
+                class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded" />
+              <label class="ml-2 block text-sm text-gray-700">¿Pertenece a la comunidad LGBTQ+?</label>
+            </div>
+            <div v-if="beneficiary.isLgbtq">
+              <label class="block text-sm font-medium text-gray-700">Orientación sexual</label>
+              <select :disabled="!isEditing" v-model="beneficiary.sexualOrientation"
+                class="select select-sm mt-1 block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <option value="HETEROSEXUAL">Heterosexual</option>
+                <option value="HOMOSEXUAL">Homosexual</option>
+                <option value="BISEXUAL">Bisexual</option>
+                <option value="PANSEXUAL">Pansexual</option>
+                <option value="OTRO">Otro</option>
               </select>
             </div>
           </div>
@@ -460,10 +505,10 @@ import wallTypes from '../constants/wallTypes';
 import ceilingTypes from '../constants/ceilingTypes';
 import delegations from '../constants/delegations';
 import { useDate } from '../utils/dateTool';
-import normalizeObjectText from '../utils/normalizeObjectText';
+import { normalizeObjectTextProperties } from '../utils/normalizeObjectText';
 import PhotoPicker from '@/components/BeneficiaryView/PhotoPicker.vue';
 
-const { formatDatetime } = useDate()
+const { formatDate, formatDatetime } = useDate()
 
 //data
 const apiEndpoint = import.meta.env.VITE_API_ENDPOINT || "http://localhost:3000";
@@ -478,6 +523,10 @@ const beneficiary = ref({
   birthdate: new Date(),
   birthplace: '',
   sex: 'HOMBRE',
+  isIndigenousCommunity: false,
+  indigenousCommunity: '',
+  isLgbtq: false,
+  sexualOrientation: 'HETEROSEXUAL',
   curp: '',
   phone: '',
   hasDisability: false,
@@ -599,10 +648,26 @@ const updateBeneficiary = async () => {
   // Crear una copia del objeto sin el campo _id
   let { _id, families, contributions, ...beneficiarySinId } = beneficiary.value;
   let filter = beneficiary.value._id;
+  
+  // Create a deep copy of the beneficiary data to avoid modifying the original
+  const beneficiaryToUpdate = JSON.parse(JSON.stringify(beneficiarySinId));
+  
+  // Ensure birthdate is properly formatted as an ISO string
+  if (beneficiaryToUpdate.birthdate instanceof Date) {
+    beneficiaryToUpdate.birthdate = beneficiaryToUpdate.birthdate.toISOString();
+  } else if (beneficiaryToUpdate.birthdate && typeof beneficiaryToUpdate.birthdate === 'object') {
+    // If it's already an object (like from date picker), convert to ISO string
+    beneficiaryToUpdate.birthdate = new Date(
+      beneficiaryToUpdate.birthdate.year,
+      beneficiaryToUpdate.birthdate.month - 1,
+      beneficiaryToUpdate.birthdate.day
+    ).toISOString();
+  }
+  
   try {
     const payload =  {
       filter: filter,
-      update: normalizeObjectText(beneficiarySinId)
+      update: normalizeObjectTextProperties(beneficiaryToUpdate)
     }
     const response = await beneficiaryServices.updateBeneficiary(payload, authHeader.value)
     if (response.code === "ERR_NETWORK") {
@@ -623,24 +688,82 @@ const updateBeneficiary = async () => {
   }
 }
 
-//Formatted birthdate
-const formattedBirthdate = ref(formatDatetime(beneficiary.value.birthdate));
+// Birthdate handling
+const formatDateForInput = (date) => {
+  if (!date) return '';
+  const d = new Date(date);
+  return d.toISOString().split('T')[0];
+};
 
-watch(() => beneficiary.value.birthdate, (newDate) => {
-  formattedBirthdate.value = formatDatetime(newDate);
+// Function to calculate age from birthdate
+const calculateAge = (birthDate) => {
+  if (!birthDate) return 0;
+  
+  const today = new Date();
+  const birth = new Date(birthDate);
+  let age = today.getFullYear() - birth.getFullYear();
+  const monthDiff = today.getMonth() - birth.getMonth();
+  
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+    age--;
+  }
+  
+  return age > 0 ? age : 0;
+};
+
+// Function to calculate birthdate from age
+const calculateBirthdateFromAge = (age) => {
+  if (!age || isNaN(age)) return null;
+  
+  const today = new Date();
+  const birthYear = today.getFullYear() - parseInt(age);
+  return new Date(birthYear, today.getMonth(), today.getDate());
+};
+
+const birthdateInput = ref(formatDateForInput(beneficiary.value.birthdate));
+const formattedBirthdate = computed(() => {
+  if (!beneficiary.value.birthdate) return '';
+  return formatDate(beneficiary.value.birthdate);
 });
 
-const parseDate = (dateString) => {
-  const [day, month, year] = dateString.split('/').map(Number);
-  if (!day || !month || !year) {
-    throw new Error('Invalid date format');
+// Watch for changes in the date input
+watch(birthdateInput, (newDate) => {
+  if (newDate) {
+    const [year, month, day] = newDate.split('-').map(Number);
+    const newBirthdate = new Date(year, month - 1, day);
+    beneficiary.value.birthdate = newBirthdate;
+    
+    // Update age when birthdate changes
+    beneficiary.value.age = calculateAge(newBirthdate);
+  } else {
+    beneficiary.value.birthdate = null;
+    beneficiary.value.age = 0;
   }
-  return new Date(year, month - 1, day);
-}
+});
 
-const updateBirthdate = () => {
-  beneficiary.value.birthdate = parseDate(formattedBirthdate.value);
-}
+// Watch for changes in the age input
+watch(() => beneficiary.value.age, (newAge, oldAge) => {
+  // Only update if age is a valid number and different from previous value
+  if (newAge && !isNaN(newAge) && newAge !== oldAge) {
+    const newBirthdate = calculateBirthdateFromAge(newAge);
+    if (newBirthdate) {
+      beneficiary.value.birthdate = newBirthdate;
+      birthdateInput.value = formatDateForInput(newBirthdate);
+    }
+  }
+});
+
+// Watch for external changes to the birthdate
+watch(() => beneficiary.value.birthdate, (newDate) => {
+  if (newDate) {
+    birthdateInput.value = formatDateForInput(newDate);
+    // Update age when birthdate changes externally
+    beneficiary.value.age = calculateAge(newDate);
+  } else {
+    birthdateInput.value = '';
+    beneficiary.value.age = 0;
+  }
+}, { immediate: true });
 
 onMounted(() => {
   getBeneficiary()

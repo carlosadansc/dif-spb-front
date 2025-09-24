@@ -329,7 +329,7 @@
 import { reactive, ref, watch, computed } from 'vue'
 import { toast } from 'vue3-toastify';
 import beneficiaryServices from '../../services/beneficiaryServices'
-import normalizeObjectText from '../../utils/normalizeObjectText'
+import { normalizeObjectTextProperties } from '../../utils/normalizeObjectText'
 import disabilityTypes from '../../constants/disabilityTypes'
 import medicalServices from '../../constants/medicalServices'
 import civilStatus from '../../constants/civilStatus'
@@ -484,7 +484,7 @@ const submitForm = async () => {
   try {
     const delegation = beneficiary.address.delegation.value
     beneficiary.address.delegation = delegation
-    const newBeneficiary = normalizeObjectText(beneficiary)
+    const newBeneficiary = normalizeObjectTextProperties(beneficiary)
     await beneficiaryServices.createBeneficiary(newBeneficiary, authHeader.value)
     toast.success('Registro creado exitosamente')
     closeModal()

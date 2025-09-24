@@ -9,15 +9,15 @@ const contributionTypes = [
     },
     {
         text: 'Cuidado personal',
-        value: 'CUIDADO PERSONAL'
+        value: 'CUIDADO_PERSONAL'
     },
     {
         text: 'Médicamentos',
         value: 'MEDICAMENTOS'
     },
-    {
+    {   
         text: 'Consulta médica',
-        value: 'CONSULTA MEDICA'
+        value: 'CONSULTA_MEDICA'
     }
 ]
 

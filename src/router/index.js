@@ -2,7 +2,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuth } from '../composables/useAuth'
 
-//Components
+// Components
 import HomeView from "../views/HomeView.vue"
 import LoginView from "../views/login/SignInView.vue"
 import DashboardView from '../views/DashboardView.vue'
@@ -10,9 +10,10 @@ import BeneficiariesView from '../views/BeneficiariesView.vue'
 import BeneficiaryView from '../views/BeneficiaryView.vue'
 import UsersView from '../views/UsersView.vue'
 import CategoriesView from '../views/CategoriesView.vue'
+import AreasView from '../views/AreasView.vue'
 import NotFoundView from '../views/NotFoundView.vue'
 
-//Routes
+// Routes
 const routes = [
   {
     path: '/login',
@@ -33,24 +34,33 @@ const routes = [
       {
         path: '/dashboard',
         name: 'Dashboard',
-        component: DashboardView
+        component: DashboardView,
+        meta: {
+          requiresExecutive: true // Accesible para ejecutivos y superiores
+        }
       },
       {
         path: '/beneficiaries',
         name: 'Beneficiaries',
         component: BeneficiariesView,
+        meta: {
+          requiresStandardUser: true // Accesible para todos los usuarios autenticados
+        }
       },
       {
         path: '/beneficiaries/:id',
         name: 'Beneficiary',
-        component: BeneficiaryView
+        component: BeneficiaryView,
+        meta: {
+          requiresStandardUser: true
+        }
       },
       {
         path: '/users',
         name: 'Users',
         component: UsersView,
         meta: {
-          requiresAdmin: true
+          requiresAdmin: true // Solo administradores
         }
       },
       {
@@ -58,7 +68,15 @@ const routes = [
         name: 'Categories',
         component: CategoriesView,
         meta: {
-          requiresAdmin: true
+          requiresAdmin: true // Solo administradores
+        }
+      },
+      {
+        path: '/areas',
+        name: 'Areas',
+        component: AreasView,
+        meta: {
+          requiresAdmin: true // Solo administradores
         }
       },
     ],
@@ -75,32 +93,58 @@ const router = createRouter({
   routes,
 })
 
-router.beforeEach((to, from, next) => {
-  const { isLoggedIn, user } = useAuth()
-  
-  // Check if user is logged in and trying to access login or home page
-  if ((to.name === 'Login' || to.name === 'Home') && isLoggedIn()) {
-    return next({ path: '/dashboard' })
-  }
-  // Check if route requires authentication but user is not logged in
-  else if (to.meta.requiresAuth && !isLoggedIn()) {
-    return next({
-      path: '/login',
-      query: { redirect: to.fullPath }
-    })
-  }
-  // Check if route requires admin privileges but user is not an admin
-  else if (to.meta.requiresAdmin && user.value?.userType !== 'admin') {
-    return next({
-      path: '/dashboard',
-      query: { error: 'No tienes permiso para acceder a esta ruta' }
-    })
-  }
-  // Allow navigation
-  else {
-    return next()
-  }
-})
+// Función para obtener el nivel del usuario
+const getUserLevel = (userType) => ({
+  'admin': 3,
+  'executive': 2,
+  'user': 1
+})[userType] || 0
 
+router.beforeEach((to, from, next) => {
+  const { isLoggedIn, user } = useAuth();
+  const userLevel = isLoggedIn.value ? getUserLevel(user.value.userType) : 0;
+
+  const requiresAuth = to.matched.some(record => 
+    record.meta.requiresAdmin || record.meta.requiresExecutive || record.meta.requiresStandardUser
+  );
+
+  // --- Lógica de Redirección para Usuarios Autenticados ---
+  if (isLoggedIn.value) {
+    // Si intenta acceder a Login, redirigir a su dashboard
+    if (to.name === 'Login') {
+      const redirectPath = userLevel === 1 ? '/beneficiaries' : '/dashboard';
+      return next({ path: redirectPath });
+    }
+
+    // Si intenta acceder a la ruta raíz, redirigir a su dashboard
+    if (to.name === 'Home' && to.path === '/') {
+        const redirectPath = userLevel === 1 ? '/beneficiaries' : '/dashboard';
+        return next({ path: redirectPath });
+    }
+
+  } else { 
+    // --- Lógica para Usuarios NO Autenticados ---
+    // Si no está autenticado y la ruta requiere autenticación, redirigir a Login
+    if (requiresAuth) {
+      return next({
+        name: 'Login',
+        query: { redirect: to.fullPath },
+      });
+    }
+  }
+
+  // --- Lógica de Autorización (Permisos por Nivel) ---
+  if (requiresAuth) {
+    if ((to.meta.requiresAdmin && userLevel < 3) ||
+        (to.meta.requiresExecutive && userLevel < 2) ||
+        (to.meta.requiresStandardUser && userLevel < 1)) {
+      // Si no tiene el nivel requerido, enviar a NotFound
+      return next({ name: 'NotFound' });
+    }
+  }
+
+  // Si pasa todas las validaciones, permitir el acceso
+  next();
+});
 
 export default router

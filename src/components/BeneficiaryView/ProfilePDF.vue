@@ -32,40 +32,47 @@
         <div class="formal-section">
           <h3 class="formal-section-title">INFORMACIÓN DEL BENEFICIARIO</h3>
           <div class="formal-section-content">
-            <table class="info-table">
-              <tbody>
-                <tr>
-                  <td class="info-label">NOMBRE COMPLETO:</td>
-                  <td class="info-value" colspan="3">{{ props.beneficiary.name }} {{ props.beneficiary.fatherSurname }}
-                    {{ props.beneficiary.motherSurname }}</td>
-                </tr>
-                <tr>
-                  <td class="info-label">EDAD:</td>
-                  <td class="info-value">{{ props.beneficiary.age }} años</td>
-                  <td class="info-label">FECHA DE NACIMIENTO:</td>
-                  <td class="info-value">{{ formatDate(props.beneficiary.birthdate) }}</td>
-                </tr>
-                <tr>
-                  <td class="info-label">TELÉFONO:</td>
-                  <td class="info-value">{{ props.beneficiary.phone }}</td>
-                  <td class="info-label">LUGAR DE NACIMIENTO:</td>
-                  <td class="info-value">{{ props.beneficiary.birthplace }}</td>
-                </tr>
-                <tr>
-                  <td class="info-label">SEXO:</td>
-                  <td class="info-value">{{ props.beneficiary.sex === 'HOMBRE' ? 'Hombre' : 'Mujer' }}</td>
-                  <td class="info-label">ESTADO CIVIL:</td>
-                  <td class="info-value">{{ formatCivilStatus(props.beneficiary.civilStatus) }}</td>
-                </tr>
-                <tr>
-                  <td class="info-label">ESCOLARIDAD:</td>
-                  <td class="info-value">{{ props.beneficiary.scholarship }}</td>
-                  <td class="info-label">DISCAPACIDAD:</td>
-                  <td class="info-value">{{ props.beneficiary.hasDisability ? props.beneficiary.disabilityType :
-                    'Ninguna' }}</td>
-                </tr>
-              </tbody>
-            </table>
+            <div class="beneficiary-header">
+              <div class="beneficiary-photo-container" v-if="props.beneficiary.photo">
+                <img :src="getPhotoUrl(props.beneficiary.photo)" alt="Foto del beneficiario" class="beneficiary-photo" />
+              </div>
+              <div class="beneficiary-info">
+                <table class="info-table">
+                  <tbody>
+                    <tr>
+                      <td class="info-label">NOMBRE COMPLETO:</td>
+                      <td class="info-value" colspan="3">{{ props.beneficiary.name }} {{ props.beneficiary.fatherSurname }}
+                        {{ props.beneficiary.motherSurname }}</td>
+                    </tr>
+                    <tr>
+                      <td class="info-label">EDAD:</td>
+                      <td class="info-value">{{ props.beneficiary.age }} años</td>
+                      <td class="info-label">FECHA DE NACIMIENTO:</td>
+                      <td class="info-value">{{ formatDate(props.beneficiary.birthdate) }}</td>
+                    </tr>
+                    <tr>
+                      <td class="info-label">TELÉFONO:</td>
+                      <td class="info-value">{{ props.beneficiary.phone }}</td>
+                      <td class="info-label">LUGAR DE NACIMIENTO:</td>
+                      <td class="info-value">{{ props.beneficiary.birthplace }}</td>
+                    </tr>
+                    <tr>
+                      <td class="info-label">SEXO:</td>
+                      <td class="info-value">{{ props.beneficiary.sex === 'HOMBRE' ? 'Hombre' : 'Mujer' }}</td>
+                      <td class="info-label">ESTADO CIVIL:</td>
+                      <td class="info-value">{{ formatCivilStatus(props.beneficiary.civilStatus) }}</td>
+                    </tr>
+                    <tr>
+                      <td class="info-label">ESCOLARIDAD:</td>
+                      <td class="info-value">{{ props.beneficiary.scholarship }}</td>
+                      <td class="info-label">DISCAPACIDAD:</td>
+                      <td class="info-value">{{ props.beneficiary.hasDisability ? props.beneficiary.disabilityType :
+                        'Ninguna' }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -347,6 +354,11 @@ const formatBelonging = (belonging) => {
   return belongingMap[belonging] || belonging;
 };
 
+const apiEndpoint = import.meta.env.VITE_API_ENDPOINT || "http://localhost:3000";
+const getPhotoUrl = (photo) => {
+  return apiEndpoint + photo;
+};
+
 const generateProfilePDF = async () => {
   const element = document.getElementById('profile-content');
   if (!element) return;
@@ -533,6 +545,35 @@ defineExpose({ generateProfilePDF });
   position: fixed;
   left: -9999px;
   top: -9999px;
+}
+
+/* Beneficiary photo styles */
+.beneficiary-header {
+  display: flex;
+  margin-bottom: 15px;
+  gap: 20px;
+}
+
+.beneficiary-photo-container {
+  width: 150px;
+  height: 150px;
+  border: 1px solid #ddd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f9f9f9;
+  flex-shrink: 0;
+  padding: 5px;
+}
+
+.beneficiary-photo {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: cover;
+}
+
+.beneficiary-info {
+  flex-grow: 1;
 }
 
 .ticket-content {

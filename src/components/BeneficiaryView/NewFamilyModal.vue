@@ -134,7 +134,7 @@ import { AxiosError } from 'axios'
 import { useAuth } from '@/composables/useAuth'
 import { useVuelidate } from '@vuelidate/core'
 import { required, helpers } from '@vuelidate/validators'
-import normalizeObjectText from '@/utils/normalizeObjectText'
+import { normalizeObjectTextProperties } from '@/utils/normalizeObjectText'
 import scholarships from '@/constants/scholarships'
 import relationships from '@/constants/relationships'
 import beneficiaryServices from '@/services/beneficiaryServices'
@@ -202,7 +202,7 @@ const submitForm = async () => {
 
   loading.value = true
   try {
-    const newFamily = normalizeObjectText(family.value)
+    const newFamily = normalizeObjectTextProperties(family.value)
     const response = await beneficiaryServices.createFamily(props.beneficiaryId, newFamily, authHeader.value)
     if (response.code === "ERR_NETWORK") {
       toast.error('No se pudo conectar con el servidor')

@@ -147,7 +147,7 @@ import { toast } from 'vue3-toastify';
 import contributionServices from '@/services/contributionServices';
 import { useAuth } from '@/composables/useAuth';
 import { useRouter } from 'vue-router';
-import normalizeObjectText from '@/utils/normalizeObjectText'
+import { normalizeObjectTextProperties } from '@/utils/normalizeObjectText'
 import beneficiaryServices from '@/services/beneficiaryServices'
 
 // composables
@@ -269,7 +269,7 @@ const submitForm = async () => {
       return;
     }
 
-    const payload = normalizeObjectText(preparePayload());
+    const payload = normalizeObjectTextProperties(preparePayload());
     const response = await contributionServices.createContribution(
       payload,
       authHeader.value
@@ -376,10 +376,20 @@ const addItem = () => {
   //   return;
   // }
 
-  const description = isMedicineSelected.value
-    ? `${newProductOrService.value.name}: ${medicineName.value}`
-    : isOtherSelected.value ? `${newProductOrService.value.name}: 
-    ${otherName.value}` : newProductOrService.value.name;
+  let description = newProductOrService.value.name;
+  
+  // If it's a medicine or other type that requires a custom name
+  if (isMedicineSelected.value && medicineName.value) {
+    description = `${newProductOrService.value.name}: ${medicineName.value}`;
+  } else if (isOtherSelected.value && otherName.value) {
+    description = `${newProductOrService.value.name}: ${otherName.value}`;
+  } else if (newProductOrService.value.requiresCustomName) {
+    // For any other product/service that requires a custom name
+    const customName = medicineName.value || otherName.value;
+    if (customName) {
+      description = `${newProductOrService.value.name}: ${customName}`;
+    }
+  }
 
 
   contribution.value.productOrServices.push({

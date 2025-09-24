@@ -33,6 +33,7 @@ import { toast } from 'vue3-toastify';
 import { AxiosError } from 'axios';
 import { useAuth } from '@/composables/useAuth';
 import { IconX } from '@tabler/icons-vue';
+import { getTranslatedError } from '@/utils/errorManager';
 import beneficiaryServices from './../../services/beneficiaryServices';
 import NewFamilyModal from './NewFamilyModal.vue';
 
@@ -88,9 +89,10 @@ const getFamilyData = async () => {
     }
   } catch (err) {
     if (err instanceof AxiosError) {
-      toast.error(err.response?.data?.message)
+      toast.info('No hay familiares registrados')
+      // toast.info(getTranslatedError(err))
     } else {
-      toast.error(err)
+      toast.error(getTranslatedError(err))
     }
   } finally {
     loading.value = false
@@ -109,9 +111,9 @@ const deleteFamily = async (familyId) => {
     }
   } catch (err) {
     if (err instanceof AxiosError) {
-      toast.error(err.response?.data?.message)
+      toast.error(getTranslatedError(err))
     } else {
-      toast.error(err)
+      toast.error(getTranslatedError(err))
     }
   } finally {
     loading.value = false

@@ -13,12 +13,12 @@ const medicalServices = [
     {
         id:3,
         text: 'IMMS Bienestar',
-        value: 'IMSS BIENESTAR'
+        value: 'IMSS_BIENESTAR'
     },
     {
         id:4,
         text: 'Hospital Militar',
-        value: 'HOSPIAL MILITAR'
+        value: 'HOSPIAL_MILITAR'
     },
     {
         id:5,

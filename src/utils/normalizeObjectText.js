@@ -26,4 +26,4 @@ function normalizeObjectTextProperties(obj) {
   return normalizedObj;
 }
 
-export default normalizeObjectTextProperties;
+export { normalizeObjectTextProperties, normalizeText };

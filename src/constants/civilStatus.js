@@ -17,7 +17,7 @@ const civilStatus = [
     },
     {
         text: 'Unión libre',
-        value: 'UNION LIBRE'
+        value: 'UNION_LIBRE'
     }
 ]
 
