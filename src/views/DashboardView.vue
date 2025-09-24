@@ -22,9 +22,9 @@
 <script setup>
 import { ref, watch, computed, onMounted } from 'vue';
 import { IconFileDownload } from '@tabler/icons-vue';
-import DateSelector from '../components/dashboard/DateSelector.vue';
+import DateSelector from '@/components/dashboard/DateSelector.vue';
 import SummaryByCategoryChart from '@/components/dashboard/SummaryByCategoryChart.vue';
-import ContributionStats from '../components/dashboard/ContributionStats.vue';
+import ContributionStats from '@/components/dashboard/ContributionStats.vue';
 import SummaryChart from '@/components/dashboard/SummaryChart.vue';
 import BeneficiariesByDelegationChart from '@/components/dashboard/BeneficiariesByDelegationChart.vue';
 import BeneficiariesBySexChart from '@/components/dashboard/BeneficiariesBySexChart.vue';
