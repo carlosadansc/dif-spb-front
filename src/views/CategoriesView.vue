@@ -20,7 +20,7 @@
           </label>
 
           <!-- Status Filter -->
-          <select v-model="statusFilter" @change="applyFilters()" class="select select-bordered">
+          <select v-model="statusFilter" class="select select-bordered">
             <option value="all">Todos los estados</option>
             <option value="active">Solo activas</option>
             <option value="inactive">Solo inactivas</option>
@@ -341,10 +341,6 @@ const filteredCategories = computed(() => {
 });
 
 // Methods
-const applyFilters = () => {
-  // The computed property will automatically update when searchQuery or statusFilter changes
-  // This method is kept for consistency with other views and future extensions
-};
 
 const resetFilters = () => {
   searchQuery.value = '';

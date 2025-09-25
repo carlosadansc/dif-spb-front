@@ -13,19 +13,19 @@
         <div class="flex items-start gap-4">
           <!-- Búsqueda -->
           <label class="input input-bordered flex items-center gap-2 grow">
-            <input v-model="search" @keyup.enter="applyFilters()" type="text" class="grow" placeholder="Buscar por nombre, usuario o cargo..." />
+            <input v-model="search" type="text" class="grow" placeholder="Buscar por nombre, usuario o cargo..." />
             <IconSearch class="h-5 w-5" />
           </label>
 
           <!-- Filtro de estado -->
-          <select v-model="statusFilter" @change="applyFilters()" class="select select-bordered">
+          <select v-model="statusFilter" class="select select-bordered">
             <option value="all">Todos los estados</option>
             <option value="active">Solo activos</option>
             <option value="inactive">Solo inactivos</option>
           </select>
 
           <!-- Filtro de tipo de usuario -->
-          <select v-model="userTypeFilter" @change="applyFilters()" class="select select-bordered">
+          <select v-model="userTypeFilter" class="select select-bordered">
             <option value="">Todos los tipos</option>
             <option value="admin">Administradores</option>
             <option value="executive">Ejecutivos</option>

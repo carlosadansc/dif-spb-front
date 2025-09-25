@@ -13,7 +13,7 @@
           <label for="my-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
           <ul class="menu bg-base-200 text-base-content min-h-full w-80 p-4">
             <!-- Sidebar content here -->
-            <li v-if="isExecutive" class="text-red-800"><a @click="goTo('/dashboard')">
+            <li v-if="isStandardUser" class="text-red-800"><a @click="goTo('/dashboard')">
                 <IconCategory2 /> Dashboard
               </a></li>
             <li v-if="isStandardUser" class="text-red-800"><a @click="goTo('/beneficiaries')">

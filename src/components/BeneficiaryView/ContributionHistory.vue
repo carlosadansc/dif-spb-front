@@ -8,7 +8,7 @@
             class="font-bold text-xl text-red-800">{{ contributions.length }}</span> </h6>
 
         <div>
-          <button class="btn btn-square bg-gray-800 font-black text-white text-[1.2rem]" @click.prevent="exportToExcel">
+          <button v-if="isAdmin || isExecutive" class="btn btn-square bg-gray-800 font-black text-white text-[1.2rem]" @click.prevent="exportToExcel">
             <span v-if="loadingExport" class="loading loading-spinner loading-sm"></span>
             <IconFileSpreadsheet v-else class="w-5 h-5" />
           </button>
@@ -104,7 +104,7 @@ import NewContributionModal from './NewContributionModal.vue';
 import ContributionTicketPDF from './ContributionTicketPDF.vue';
 
 // composables
-const { authHeader } = useAuth();
+const { authHeader, isAdmin, isStandardUser, isExecutive } = useAuth();
 const { formatDate } = useDate();
 
 //props

@@ -20,65 +20,74 @@ const routes = [
     name: 'Login',
     component: LoginView,
     meta: {
-      requiresAuth: false
+      requiresAuth: false,
+      title: 'Iniciar Sesión'
     }
   },
   {
     path: '/',
-    name: 'Home',
+    name: 'Root',
     component: HomeView,
+    redirect: '/dashboard',
     meta: {
       requiresAuth: true
     },
     children: [
       {
-        path: '/dashboard',
+        path: 'dashboard',
         name: 'Dashboard',
         component: DashboardView,
         meta: {
-          requiresExecutive: true // Accesible para ejecutivos y superiores
+          requiresStandardUser: true, // Accesible para todos los usuarios autenticados
+          title: 'Dashboard'
         }
       },
       {
-        path: '/beneficiaries',
+        path: 'beneficiaries',
         name: 'Beneficiaries',
         component: BeneficiariesView,
         meta: {
-          requiresStandardUser: true // Accesible para todos los usuarios autenticados
+          requiresStandardUser: true,
+          title: 'Beneficiarios'
         }
       },
       {
-        path: '/beneficiaries/:id',
+        path: 'beneficiaries/:id',
         name: 'Beneficiary',
         component: BeneficiaryView,
         meta: {
-          requiresStandardUser: true
-        }
+          requiresStandardUser: true,
+          title: 'Detalle de Beneficiario'
+        },
+        props: true
       },
       {
-        path: '/users',
+        path: 'users',
         name: 'Users',
         component: UsersView,
         meta: {
-          requiresAdmin: true // Solo administradores
+          requiresAdmin: true,
+          title: 'Usuarios'
         }
       },
       {
-        path: '/categories',
+        path: 'categories',
         name: 'Categories',
         component: CategoriesView,
         meta: {
-          requiresAdmin: true // Solo administradores
+          requiresAdmin: true,
+          title: 'Categorías'
         }
       },
       {
-        path: '/areas',
+        path: 'areas',
         name: 'Areas',
         component: AreasView,
         meta: {
-          requiresAdmin: true // Solo administradores
+          requiresAdmin: true,
+          title: 'Áreas'
         }
-      },
+      }
     ],
   },
   {
@@ -102,48 +111,46 @@ const getUserLevel = (userType) => ({
 
 router.beforeEach((to, from, next) => {
   const { isLoggedIn, user } = useAuth();
-  const userLevel = isLoggedIn.value ? getUserLevel(user.value.userType) : 0;
+  const userLevel = isLoggedIn.value ? getUserLevel(user.value?.userType) : 0;
 
+  // Verificar si la ruta requiere autenticación
   const requiresAuth = to.matched.some(record => 
     record.meta.requiresAdmin || record.meta.requiresExecutive || record.meta.requiresStandardUser
   );
 
-  // --- Lógica de Redirección para Usuarios Autenticados ---
-  if (isLoggedIn.value) {
-    // Si intenta acceder a Login, redirigir a su dashboard
-    if (to.name === 'Login') {
-      const redirectPath = userLevel === 1 ? '/beneficiaries' : '/dashboard';
-      return next({ path: redirectPath });
-    }
-
-    // Si intenta acceder a la ruta raíz, redirigir a su dashboard
-    if (to.name === 'Home' && to.path === '/') {
-        const redirectPath = userLevel === 1 ? '/beneficiaries' : '/dashboard';
-        return next({ path: redirectPath });
-    }
-
-  } else { 
-    // --- Lógica para Usuarios NO Autenticados ---
-    // Si no está autenticado y la ruta requiere autenticación, redirigir a Login
-    if (requiresAuth) {
-      return next({
-        name: 'Login',
-        query: { redirect: to.fullPath },
-      });
-    }
+  // Establecer título de la página
+  if (to.meta.title) {
+    document.title = `${to.meta.title} | DIF SIPA`;
   }
 
-  // --- Lógica de Autorización (Permisos por Nivel) ---
+  // Usuario autenticado
+  if (isLoggedIn.value) {
+    // Redirigir al dashboard si intenta acceder al login
+    if (to.name === 'Login') {
+      return next({ name: 'Dashboard' });
+    }
+  } 
+  // Usuario no autenticado
+  else if (requiresAuth) {
+    return next({
+      name: 'Login',
+      query: { redirect: to.fullPath },
+    });
+  }
+
+  // Verificar permisos de la ruta
   if (requiresAuth) {
-    if ((to.meta.requiresAdmin && userLevel < 3) ||
-        (to.meta.requiresExecutive && userLevel < 2) ||
-        (to.meta.requiresStandardUser && userLevel < 1)) {
-      // Si no tiene el nivel requerido, enviar a NotFound
+    const hasAccess = !(
+      (to.meta.requiresAdmin && userLevel < 3) ||
+      (to.meta.requiresExecutive && userLevel < 2) ||
+      (to.meta.requiresStandardUser && userLevel < 1)
+    );
+
+    if (!hasAccess) {
       return next({ name: 'NotFound' });
     }
   }
 
-  // Si pasa todas las validaciones, permitir el acceso
   next();
 });
 

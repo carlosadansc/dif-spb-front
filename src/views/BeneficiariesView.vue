@@ -104,7 +104,7 @@
           
           <div class="flex items-center gap-3">
             <div class="tooltip tooltip-left" data-tip="Exportar padrón a excel">
-              <button :disabled="loadindExport" @click.prevent="exportToExcel" class="btn btn-square bg-gray-800 font-black text-white text-[1.2rem]"><IconFileSpreadsheet v-if="!loadindExport"/><span v-if="loadindExport" class="loading loading-spinner loading-sm"></span></button>
+              <button v-if="isAdmin || isExecutive" :disabled="loadindExport" @click.prevent="exportToExcel" class="btn btn-square bg-gray-800 font-black text-white text-[1.2rem]"><IconFileSpreadsheet v-if="!loadindExport"/><span v-if="loadindExport" class="loading loading-spinner loading-sm"></span></button>
             </div>
             <div class="tooltip tooltip-left" data-tip="Crear nuevo beneficiario">
               <button @click.prevent="showModal = true" class="btn btn-square bg-red-800 font-black text-white text-[1.2rem]"><IconUserPlus /></button>
@@ -145,6 +145,7 @@
             <IconEye class="h-4 w-4" />
           </button>
           <button 
+            v-if="isAdmin" 
             @click="toggleBeneficiaryStatus(_id, active)" 
             class="btn btn-ghost btn-xs"
             :class="active ? 'text-green-600 hover:bg-green-50' : 'text-red-600 hover:bg-yellow-50'"
@@ -153,7 +154,8 @@
             <IconToggleLeft v-if="!active" class="h-4 w-4" />
             <IconToggleRight v-else class="h-4 w-4" />
           </button>
-          <button 
+          <button
+            v-if="isAdmin" 
             @click="confirmDelete(_id)" 
             class="btn btn-ghost btn-xs text-red-600 hover:bg-red-50"
             title="Eliminar"
@@ -186,7 +188,7 @@ import { useAuth } from '../composables/useAuth';
 import * as XLSX from 'xlsx';
 
 // composables
-const { authHeader } = useAuth()
+const { authHeader, isAdmin, isStandardUser, isExecutive } = useAuth()
 
 //data
 const showModal = ref(false)

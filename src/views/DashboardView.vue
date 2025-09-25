@@ -2,7 +2,7 @@
   <div class="container mx-auto px-4">
     <div class="flex justify-between items-center">
       <DateSelector v-model="dateFilter" />
-        <button @click.prevent="exportToExcel" class="btn btn-sm bg-red-500 text-xs text-white">Descargar padrón de apoyos<IconFileDownload v-if="!loadingExport"/><span v-if="loadingExport" class="loading loading-spinner loading-sm"></span></button>
+      <button v-if="isAdmin || isExecutive" @click.prevent="exportToExcel" class="btn btn-sm bg-red-500 text-xs text-white">Descargar padrón de apoyos<IconFileDownload v-if="!loadingExport"/><span v-if="loadingExport" class="loading loading-spinner loading-sm"></span></button>
     </div>
 
     <div class="mb-8">
@@ -37,7 +37,7 @@ import { omitUndefined } from '@/utils/omitUndefined';
 import * as XLSX from 'xlsx';
 
 // composables
-const { authHeader } = useAuth()
+const { authHeader, isAdmin, isExecutive, isStandardUser } = useAuth()
 
 // data
 const dateFilter = ref({
