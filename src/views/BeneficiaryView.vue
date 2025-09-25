@@ -665,7 +665,7 @@ const updateBeneficiary = async () => {
   
   try {
     const payload =  {
-      filter: filter,
+      filter: _id,
       update: normalizeObjectTextProperties(beneficiaryToUpdate)
     }
     const response = await beneficiaryServices.updateBeneficiary(payload, authHeader.value)
