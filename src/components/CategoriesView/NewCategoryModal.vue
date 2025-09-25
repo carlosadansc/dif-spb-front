@@ -129,14 +129,14 @@ const handleSubmit = async () => {
       toast.success('Categoría actualizada exitosamente');
     } else {
       // Create new category
-      const create = {
+      const createData = {
         name: normalizeText(formData.value.name),
         label: createLabel(formData.value.name),
         description: normalizeText(formData.value.description),
         color: formData.value.color,
         productOrServices: formData.value.productOrServices
       }
-      response = await categoriesServices.createCategory({create: create}, authHeader.value);
+      response = await categoriesServices.createCategory(createData, authHeader.value);
       toast.success('Categoría creada exitosamente');
     }
     

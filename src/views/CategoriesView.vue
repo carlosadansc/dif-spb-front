@@ -464,6 +464,8 @@ const addProductToCategory = async () => {
         }
         categories.value[categoryIndex].productOrServices.push(response.data);
       }
+
+      await getCategories();
     }
   } catch (error) {
     console.error('Error al agregar producto/servicio:', error);
@@ -495,7 +497,8 @@ const removeProductFromCategory = async (productId) => {
           (p._id ? p._id !== productId : p !== productId)
         );
     }
-    
+
+    await getCategories();
     toast.success('Producto/servicio eliminado correctamente');
   } catch (error) {
     console.error('Error al eliminar producto/servicio:', error);
