@@ -210,7 +210,7 @@ const filteredUsers = computed(() => {
   // Apply pagination
   const start = (serverOptions.value.page - 1) * serverOptions.value.rowsPerPage;
   const end = start + serverOptions.value.rowsPerPage;
-  return result.slice(start, end);
+  return result?.slice(start, end);
 });
 
 // Methods

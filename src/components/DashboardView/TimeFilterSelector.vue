@@ -7,7 +7,7 @@
           ? 'bg-blue-600 text-white'
           : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
       ]">
-      {{ filter?.charAt(0).toUpperCase() + filter.slice(1) }}
+      {{ filter?.charAt(0).toUpperCase() + filter?.slice(1) }}
     </button>
   </div>
 </template>
