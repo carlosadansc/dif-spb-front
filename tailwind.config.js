@@ -4,6 +4,12 @@ const { default: daisyui } = require('daisyui');
 module.exports = {
     content: ['./index.html', './src/**/*.{vue,js,ts,jsx,tsx}'],
     media: false, // or 'media' or 'class'
+    future: {
+      disableColorOpacityUtilities: true,
+    },
+    experimental: {
+      optimizeUniversalDefaults: true,
+    },
     theme: {
       extend: {
         // colors: {
