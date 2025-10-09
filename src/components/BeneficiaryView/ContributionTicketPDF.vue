@@ -136,7 +136,7 @@
 
 <script setup>
 import { ref } from 'vue';
-import html2canvas from 'html2canvas';
+import html2canvas from 'html2canvas-pro';
 import jsPDF from 'jspdf';
 import { useDate } from '@/utils/dateTool';
 import capitalize from '@/utils/capitalize';
