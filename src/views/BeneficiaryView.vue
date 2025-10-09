@@ -480,14 +480,13 @@
         <p class="text-gray-500 text-xs ms-2 mt-5">Registro creado: <span class="font-bold">{{formatDatetime(beneficiary.createdAt)}}</span> por: <span class="font-bold">{{beneficiary.createdBy?.name + ' ' + beneficiary.createdBy?.lastname}}</span></p>
         <p class="text-gray-500 text-xs ms-2 mt-1">Ultima modificación: <span class="font-bold">{{formatDatetime(beneficiary.updatedAt)}}</span> por: <span class="font-bold">{{ beneficiary.updatedBy ? beneficiary?.updatedBy?.name + ' ' + beneficiary?.updatedBy?.lastname : '' }}</span></p>
       </div>
-
-      <ProfilePDF ref="profilePDFRef" :beneficiary="beneficiary" />
     </div>
+
+    <ProfilePDF ref="profilePDFRef" :beneficiary="beneficiary" />
   </div>
 </template>
 
 <script setup>
-import router from '../router';
 import { ref, onMounted, watch, computed } from 'vue';
 import { AxiosError } from 'axios';
 import { toast } from 'vue3-toastify';
@@ -507,8 +506,10 @@ import delegations from '../constants/delegations';
 import { useDate } from '../utils/dateTool';
 import { normalizeObjectTextProperties } from '../utils/normalizeObjectText';
 import PhotoPicker from '@/components/BeneficiaryView/PhotoPicker.vue';
+import { useRouter } from 'vue-router'
 
 const { formatDate, formatDatetime } = useDate()
+const router = useRouter()
 
 //data
 const apiEndpoint = import.meta.env.VITE_API_ENDPOINT || "http://localhost:3000";

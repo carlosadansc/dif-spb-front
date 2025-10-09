@@ -307,7 +307,7 @@
 
 <script setup>
 import { ref, computed } from 'vue';
-import html2canvas from 'html2canvas';
+import html2canvas from 'html2canvas-pro';
 import jsPDF from 'jspdf';
 import formatCurrency from '@/utils/formatCurrency';
 import { useDate } from '@/utils/dateTool';
@@ -539,7 +539,7 @@ const generateProfilePDF = async () => {
 defineExpose({ generateProfilePDF });
 </script>
 
-<style>
+<style scoped>
 #beneficiary-profile {
   font-family: 'Arial', sans-serif !important;
   position: fixed;
