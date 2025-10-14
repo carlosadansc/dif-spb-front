@@ -80,40 +80,43 @@
           </div>
         </div>
 
+        <div class="">
+          <button type="button" @click="addItem"
+            class="btn btn-square bg-red-800 text-white w-full">
+            <span class="font-black">+</span>
+            Agregar apoyo
+          </button>
+        </div>
         <!-- Items List -->
 
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-6">
-
+        <div class="bg-gray-100 rounded-md p-5">
+          <h3 class="text-lg font-bold">Lista de apoyos agregados</h3>
           <!-- Items List -->
           <ul v-if="contribution.productOrServices.length > 0"
-            class=" col-span-5 divide-y divide-gray-200 border border-gray-200 rounded-md">
+            class="col-span-5">
             <li v-for="(item, index) in contribution.productOrServices" :key="index"
               class="flex items-center justify-between px-4 py-3 hover:bg-gray-50">
               <span class="text-sm text-gray-700">{{ item.description }} ( {{
                 item.quantity }} )</span>
               <button type="button" @click="removeItem(index)"
                 class="text-red-600 hover:text-red-800 text-sm font-medium">
-                Remove
+                Quitar
               </button>
             </li>
           </ul>
           <p v-else class="col-span-5 text-sm text-gray-500 text-center mt-7 text-red-600">
             No se ha agregado ningun tipo apoyo
           </p>
-
-          <div class="col-span-1 text-right">
-            <button type="button" @click="addItem"
-              class="btn btn-square bg-red-800 font-black text-white text-[1.2rem]">
-              +
-            </button>
-          </div>
         </div>
 
         <!-- Quien revibe -->
         <div>
           <label for="receiver" class="block text-sm font-medium text-gray-700 required">Recibe</label>
-          <input v-model="contribution.receiver" id="receiver" list="families"
-            class="input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
+          <input v-model="contribution.receiver" 
+          id="receiver" 
+          list="families"
+          placeholder="Nombre de la persona que recibe el apoyo"
+          class="input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
           <datalist id="families">
             <option v-for="(item, index) in families" :key="index" :value="item.name">
               {{ item.name }}
@@ -124,8 +127,12 @@
         <!-- Comentarios -->
         <div>
           <label for="comments" class="block text-sm font-medium text-gray-700">Notas / Comentarios</label>
-          <textarea id="comments" v-model="contribution.comments" rows="4"
-            class="input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>
+          <textarea 
+          id="comments" 
+          v-model="contribution.comments" 
+          rows="4"
+          placeholder="Notas o comentarios adicionales sobre el apoyo (opcional)"
+          class="input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>
         </div>
 
 
@@ -366,16 +373,6 @@ const addItem = () => {
     return;
   }
 
-  // if (isMedicineSelected.value && !medicineName.value) {
-  //   toast.warning('Debe especificar el nombre del medicamento');
-  //   return;
-  // }
-
-  // if (isOtherSelected.value && !otherName.value) {
-  //   toast.warning('Debe especificar el nombre del apoyo');
-  //   return;
-  // }
-
   let description = newProductOrService.value.name;
   
   // If it's a medicine or other type that requires a custom name
@@ -391,14 +388,24 @@ const addItem = () => {
     }
   }
 
+  // Check if item already exists in the list
+  const existingItemIndex = contribution.value.productOrServices.findIndex(
+    item => item.description === description && item.productOrService._id === newProductOrService.value._id
+  );
 
-  contribution.value.productOrServices.push({
-    productOrService: newProductOrService.value,
-    description: description,
-    quantity: contribution.value.quantity
-  });
+  if (existingItemIndex !== -1) {
+    // If item exists, increase its quantity
+    contribution.value.productOrServices[existingItemIndex].quantity += contribution.value.quantity;
+  } else {
+    // If item doesn't exist, add it to the list
+    contribution.value.productOrServices.push({
+      productOrService: newProductOrService.value,
+      description: description,
+      quantity: contribution.value.quantity
+    });
+  }
 
-  // Resetear campos después de añadir
+  // Reset fields after adding
   medicineName.value = '';
   otherName.value = '';
 };

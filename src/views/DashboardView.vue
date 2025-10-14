@@ -1,8 +1,29 @@
 <template>
-  <div class="container mx-auto px-4">
+  <div class="container mx-auto px-4 relative">
+    <!-- Quick Access Buttons -->
+    <div class="absolute right-4 top-4 flex items-center gap-2">
+      <router-link 
+        to="/beneficiaries"
+        class="flex items-center gap-1 px-3 py-1.5 text-sm text-gray-700 bg-gray-100 rounded-md transition-colors"
+        title="Ver beneficiarios"
+      >
+      <IconArrowUpRight size="16"/>
+      Ir al padrón de beneficiarios
+      </router-link>
+      <button 
+        v-if="isAdmin || isExecutive" 
+        @click.prevent="exportToExcel" 
+        class="flex items-center gap-1 px-3 py-1.5 text-sm text-white bg-red-500 hover:bg-red-700 rounded-md transition-colors"
+        title="Descargar padrón de apoyos"
+      >
+        <IconFileDownload size="16"/>
+        <span v-if="!loadingExport">Exportar padron de apoyos otorgados</span>
+        <span v-if="loadingExport" class="loading loading-spinner loading-xs"></span>
+      </button>
+    </div>
+
     <div class="flex justify-between items-center">
       <DateSelector v-model="dateFilter" />
-      <button v-if="isAdmin || isExecutive" @click.prevent="exportToExcel" class="btn btn-sm bg-red-500 text-xs text-white">Descargar padrón de apoyos<IconFileDownload v-if="!loadingExport"/><span v-if="loadingExport" class="loading loading-spinner loading-sm"></span></button>
     </div>
 
     <div class="mb-8">
@@ -21,7 +42,7 @@
 
 <script setup>
 import { ref, watch, computed, onMounted } from 'vue';
-import { IconFileDownload } from '@tabler/icons-vue';
+import { IconFileDownload, IconArrowUpRight } from '@tabler/icons-vue';
 import DateSelector from '@/components/DashboardView/DateSelector.vue';
 import SummaryByCategoryChart from '@/components/DashboardView/SummaryByCategoryChart.vue';
 import ContributionStats from '@/components/DashboardView/ContributionStats.vue';
