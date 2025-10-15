@@ -67,7 +67,7 @@ const deleteImage = async (filePath, headers) => {
     }).then((response) => response.data).catch((err) => { throw err });
 }
 
-const deleteBeneficiary = async (id, headers) => {
+const deleteBeneficiaryWhitAllData = async (id, headers) => {
     return await api.delete(`/beneficiary/delete/${id}`, { headers }).then((response) => response.data).catch((err) => { throw err });
 }
 
@@ -88,5 +88,5 @@ export default {
     getBeneficiariesBySex,
     uploadImage,
     deleteImage,
-    deleteBeneficiary
+    deleteBeneficiaryWhitAllData
 }

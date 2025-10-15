@@ -156,9 +156,9 @@
           </button>
           <button
             v-if="isAdmin" 
-            @click="confirmDelete(_id)" 
+            @click="confirmDelete(_id)"
             class="btn btn-ghost btn-xs text-red-600 hover:bg-red-50"
-            title="Eliminar"
+            title="Eliminar beneficiario"
           >
             <IconTrash class="h-4 w-4" />
           </button>
@@ -168,6 +168,18 @@
 
     <NewBeneficiarieModal :showModal="showModal" @refresh:beneficiaries="getBeneficiariesData" @close:modal="showModal = false" />
 
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div class="modal" :class="{ 'modal-open': showDeleteModal }">
+    <div class="modal-box">
+      <h3 class="font-bold text-lg">Confirmar eliminación</h3>
+      <p class="py-4">¿Estás seguro de que deseas eliminar este beneficiario? <br> <span class="text-red-600 font-bold text-[0.7rem]">¡todos los datos asociados serán eliminados permanentemente!</span></p>
+      <div class="modal-action">
+        <button class="btn" @click="showDeleteModal = false">Cancelar</button>
+        <button class="btn btn-error" @click.prevent="deleteBeneficiary">Eliminar</button>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -318,18 +330,26 @@ const openBeneficiaryView = (id) => {
   router.push(`/beneficiaries/${id}`)
 }
 
-const deleteBeneficiary = async (id) => {
-  if (confirm('¿Estás seguro de que deseas eliminar este beneficiario?')) {
-    try {
-      const response = await beneficiaryServices.deleteBeneficiary(id, authHeader.value);
-      toast.success(response.message || 'Beneficiario eliminado con éxito');
-      await getBeneficiariesData();
-    } catch (err) {
-      if (err instanceof AxiosError) {
-        toast.error(err.response?.data?.message || 'Error al eliminar');
-      } else {
-        toast.error('Ocurrió un error inesperado');
-      }
+const beneficiaryToDeleteId = ref(null)
+const showDeleteModal = ref(false)
+const confirmDelete = (id) => {
+  beneficiaryToDeleteId.value = id;
+  showDeleteModal.value = true;
+};
+
+const deleteBeneficiary = async () => {
+  if (!beneficiaryToDeleteId.value) return;
+  
+  try {
+    const response = await beneficiaryServices.deleteBeneficiaryWhitAllData(beneficiaryToDeleteId.value, authHeader.value);
+    toast.success(response.message || 'Beneficiario eliminado con éxito');
+    showDeleteModal.value = false;
+    await getBeneficiariesData();
+  } catch (err) {
+    if (err instanceof AxiosError) {
+      toast.error(err.response?.data?.message || 'Error al eliminar');
+    } else {
+      toast.error('Ocurrió un error inesperado');
     }
   }
 };
