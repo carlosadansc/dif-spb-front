@@ -95,7 +95,7 @@
               class="select select-bordered w-full"
               required
             >
-              <option value="user">Usuario</option>
+              <option value="user">Usuario común</option>
               <option value="executive">Ejecutivo</option>
               <option value="admin">Administrador</option>
             </select>
@@ -288,7 +288,16 @@ const handleSubmit = async () => {
         delete update.password;
       }
       
-      const updateData = normalizeObjectTextProperties(update);
+      const updateData = {
+        name: normalizeText(update.name),
+        lastname: normalizeText(update.lastname),
+        username: update.username,
+        area: update.area,
+        position: normalizeText(update.position),
+        userType: update.userType,
+        password: update.password,
+        active: update.active
+      };
 
       response = await userServices.updateUser(
         props.user._id, 

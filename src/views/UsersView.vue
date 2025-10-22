@@ -25,7 +25,7 @@
           </select>
 
           <!-- Filtro de tipo de usuario -->
-          <select v-model="userTypeFilter" class="select select-bordered">
+          <select v-model="userTypeFilter"  class="select select-bordered">
             <option value="">Todos los tipos</option>
             <option value="admin">Administradores</option>
             <option value="executive">Ejecutivos</option>
@@ -155,7 +155,8 @@ const headers = [
 
 const userTypeLabels = {
   admin: 'Administrador',
-  user: 'Usuario'
+  executive: 'Ejecutivo',
+  user: 'Usuario común'
 };
 
 // Computed

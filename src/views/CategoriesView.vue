@@ -239,6 +239,8 @@
 import { ref, computed, onMounted, nextTick } from 'vue';
 import { useAuth } from '@/composables/useAuth';
 import { useDate } from '@/utils/dateTool';
+import { toast } from 'vue3-toastify';
+import { normalizeText } from '@/utils/normalizeObjectText';
 import categoryServices from '@/services/categoriesServices';
 import NewCategoryModal from '@/components/CategoriesView/NewCategoryModal.vue';
 
@@ -445,8 +447,8 @@ const addProductToCategory = async () => {
     const response = await categoryServices.createProductOrService(
       {
         category: selectedCategory.value._id,
-        name: newProduct.value.name.trim(),
-        description: newProduct.value.description?.trim() || ''
+        name: normalizeText(newProduct.value.name.trim()),
+        description: normalizeText(newProduct.value.description?.trim() || '.')
       },
       authHeader.value
     );
