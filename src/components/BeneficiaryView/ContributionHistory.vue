@@ -40,7 +40,7 @@
           <div v-for="(contribution, index) in contributions" :key="`contribution-card-${contribution._id}`"
             class="bg-white border border-solid border-gray-100 rounded-lg p-4 flex flex-col">
 
-            <p class="text-xs text-gray-500">Folio: <span class="font-bold text-red-800">{{ contribution.folio }}</span>
+            <p class="text-xs text-gray-500 font-medium">Folio: <span class="font-bold text-red-800">{{ contribution.folio }}</span>
             </p>
 
             <div class="flex items-center gap-2">
@@ -49,20 +49,23 @@
                 {{ formatDate(contribution.contributionDate) }}
               </span>
               <h5 :disable="contribution.loadingPrint" class="text-xs underline font-medium text-red-800 cursor-pointer"
-                @click="generateTicketPDF(index)">Imprimir recibo <span class="loading loading-spinner loading-xs"
+                @click="generateTicketPDF(index)">Generar recibo<span class="loading loading-spinner loading-xs"
                   v-if="contribution.loadingPrint"></span> </h5>
             </div>
 
             <div class="space-y-1">
+              <h5 class="text-[0.8rem] font-medium text-gray-900 mt-2">Detalles del apoyo</h5>
               <div v-for="(item, index) in contribution.productOrServices" :key="index"
                 class="flex items-center justify-between text-xs">
                 <div class="flex-1 min-w-0">
                   <span class="font-medium text-gray-900">{{ item.productOrService.category.name }}</span>
                   <span class="text-gray-500 mx-1 font-black">·</span>
                   <span class="text-gray-500">{{ item.description }}</span>
+                  <hr>
                 </div>
                 <div class="text-red-900 font-medium ml-2">
-                  {{ item.quantity }}
+                  cant. {{ item.quantity }}
+                  <hr>
                 </div>
               </div>
             </div>
