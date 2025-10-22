@@ -4,18 +4,22 @@
     <div class="overflow-x-auto">
       <div class="flex justify-between items-center mb-[2rem]">
         <!-- <div class="flex items-center gap-3"> -->
-        <h6 class="ms-4 font-medium text-sm">Apoyos otorgados: <span v-if="!loading"
+        <h6 class="ms-4 font-medium text-sm">Entregas realizadas: <span v-if="!loading"
             class="font-bold text-xl text-red-800">{{ contributions.length }}</span> </h6>
 
         <div>
+          <div class="tooltip tooltip-left" data-tip="Exportar historial a Excel">
           <button v-if="isAdmin || isExecutive" class="btn btn-square bg-gray-800 font-black text-white text-[1.2rem]" @click.prevent="exportToExcel">
             <span v-if="loadingExport" class="loading loading-spinner loading-sm"></span>
             <IconFileSpreadsheet v-else class="w-5 h-5" />
           </button>
+          </div>
+          <div class="tooltip tooltip-left" data-tip="Otorgar apoyo">
           <button class="btn btn-square bg-red-800 font-black text-white text-[1.2rem] ms-2"
             @click.prevent="showModal = true">
             <IconPlus class="w-5 h-5" />
           </button>
+          </div>
         </div>
 
         <!-- </div> -->
@@ -54,7 +58,7 @@
             </div>
 
             <div class="space-y-1">
-              <h5 class="text-[0.8rem] font-medium text-gray-900 mt-2">Detalles del apoyo</h5>
+              <h5 class="text-[0.8rem] font-medium text-gray-900 mt-2">Lista de apoyos otorgados</h5>
               <div v-for="(item, index) in contribution.productOrServices" :key="index"
                 class="flex items-center justify-between text-xs">
                 <div class="flex-1 min-w-0">

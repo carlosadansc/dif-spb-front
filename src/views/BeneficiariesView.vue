@@ -139,6 +139,10 @@
         </div>
       </template>
 
+      <template #item-contributions="{ contributions }">
+        <span class="badge badge-ghost">{{ contributions.length }}</span>
+      </template>
+
       <template #item-actions="{ _id, active }">
         <div class="flex gap-1">
           <button @click="openBeneficiaryView(_id)" class="btn btn-ghost btn-xs text-blue-600 hover:bg-blue-50" title="Ver expediente">
@@ -223,6 +227,7 @@ const headers = [
   { text: 'Estado Civil', value: 'civilStatus' },
   { text: 'Discapacidad', value: 'hasDisability' },
   { text: 'Teléfono', value: 'phone' },
+  { text: '#Entregas de apoyo', value: 'contributions' },
   { text: 'Acciones', value: 'actions' },
 ];
 

@@ -11,7 +11,7 @@
           <div class="tooltip tooltip-bottom" data-tip="Cancelar">
             <button v-if="isEditing" class="btn btn-square bg-gray-300 font-black text-white mx-1" @click="isEditing = false"><IconCancel class="h-5 w-5 text-red-800" /></button>
           </div>
-          <div class="tooltip tooltip-bottom" :data-tip="!isEditing ? 'Editar': 'Guardar'">
+          <div class="tooltip tooltip-bottom" :data-tip="!isEditing ? 'Editar información del beneficiario': 'Guardar cambios'">
             <button @click.prevent="toggleEditMode" id="edit-save" class="btn btn-square bg-red-800 font-black text-white mx-1"><span v-if="loadingSave" class="loading loading-spinner"></span> <IconEdit v-if="!isEditing && !loadingSave" class="h-5 w-5" /> <IconDeviceFloppy v-if="isEditing && !loadingSave"  class="h-5 w-5" /></button>
           </div>
           <div class="tooltip tooltip-bottom" data-tip="Exportar perfil a PDF">
