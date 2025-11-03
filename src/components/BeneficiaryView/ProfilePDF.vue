@@ -9,7 +9,7 @@
           <img :src="logoAyunta" alt="Logo Ayuntamieto" class="logo-ayunta" />
         </div>
         <div class="document-title-container">
-          <h1 class="document-type">PERFIL SOCIOECONOMICO</h1>
+          <h1 class="document-type">PERFIL SOCIOECONOMICO X</h1>
           <h2 class="document-subtitle">REGISTRO DEL PADRON DE BENEFICIARIOS</h2>
         </div>
       </div>

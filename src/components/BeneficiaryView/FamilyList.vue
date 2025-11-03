@@ -13,7 +13,7 @@
           {{ name + ' ' + lastname }}
       </template>
 
-      <template v-if="user.userType === 'admin'" #item-profile="{ _id: id }">
+      <template v-if="isAdmin" #item-profile="{ _id: id }">
         <div class="tooltip tooltip-left" data-tip="Eliminar">
           <button class="btn btn-square btn-sm my-2 mx-auto text-red-800" @click="deleteFamily(id)">
             <IconX class="h-5 w-5" />
@@ -28,7 +28,6 @@
 
 <script setup>
 import { ref, onMounted, watch } from 'vue';
-import router from '@/router';
 import { toast } from 'vue3-toastify';
 import { AxiosError } from 'axios';
 import { useAuth } from '@/composables/useAuth';
@@ -38,7 +37,7 @@ import beneficiaryServices from './../../services/beneficiaryServices';
 import NewFamilyModal from './NewFamilyModal.vue';
 
 // composables
-const { authHeader, user } = useAuth()
+const { authHeader, user, isAdmin } = useAuth()
 
 //props
 const props = defineProps({
@@ -67,6 +66,8 @@ const headers = [
   { text: 'Escolaridad', value: 'scholarship', sortable: true },
   { text: 'Télefono', value: 'phone' },
   { text: 'Parentezco', value: 'relationship', sortable: true },
+  { text: 'Ocupación', value: 'occupation' },
+  { text: 'Ingresos / mes', value: 'income' },
   { text: '', value: 'profile' },
 ]
 

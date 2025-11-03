@@ -412,7 +412,12 @@ const addItem = () => {
 
 
 const removeItem = (index) => {
-  contribution.value.productOrServices.splice(index, 1);
+  const item = contribution.value.productOrServices[index];
+  if (item.quantity > 1) {
+    item.quantity -= 1;
+  } else {
+    contribution.value.productOrServices.splice(index, 1);
+  }
 }
 
 const getSelectedCategory = () => {

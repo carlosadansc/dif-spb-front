@@ -14,9 +14,9 @@
           <div class="tooltip tooltip-bottom" :data-tip="!isEditing ? 'Editar información del beneficiario': 'Guardar cambios'">
             <button @click.prevent="toggleEditMode" id="edit-save" class="btn btn-square bg-red-800 font-black text-white mx-1"><span v-if="loadingSave" class="loading loading-spinner"></span> <IconEdit v-if="!isEditing && !loadingSave" class="h-5 w-5" /> <IconDeviceFloppy v-if="isEditing && !loadingSave"  class="h-5 w-5" /></button>
           </div>
-          <div class="tooltip tooltip-bottom" data-tip="Exportar perfil a PDF">
+          <!-- <div class="tooltip tooltip-bottom" data-tip="Exportar perfil a PDF">
             <button :disabled="loadingPrint" class="btn btn-square bg-gray-500 font-black text-white mx-1" @click.prevent="exportToPDF"><IconFileTypePdf v-if="!loadingPrint" class="h-5 w-5" /> <span v-if="loadingPrint" class="loading loading-spinner"></span></button>
-          </div>
+          </div> -->
         </div>
       </div>
      
@@ -473,6 +473,11 @@
         <div v-if="activeSection === 'contributions'" class="space-y-6">
           <ContributionHistory :contributions="beneficiary.contributions" :beneficiary="beneficiary" @update:list="getBeneficiary" />
         </div>
+
+        <!-- Socioeconomic history -->
+        <div v-if="activeSection === 'socioeconomicHistory'" class="space-y-6">
+          <SocioeconomicHistory :beneficiary="beneficiary" />
+        </div>
         
       </div>
 
@@ -482,7 +487,7 @@
       </div>
     </div>
 
-    <ProfilePDF ref="profilePDFRef" :beneficiary="beneficiary" />
+    <!-- <ProfilePDF ref="profilePDFRef" :beneficiary="beneficiary" /> -->
   </div>
 </template>
 
@@ -494,7 +499,8 @@ import { IconArrowNarrowLeft, IconEdit, IconDeviceFloppy, IconFileTypePdf, IconC
 import beneficiaryServices from '../services/beneficiaryServices';
 import ContributionHistory from '@/components/BeneficiaryView/ContributionHistory.vue';
 import FamilyList from '@/components/BeneficiaryView/FamilyList.vue';
-import ProfilePDF from '../components/BeneficiaryView/ProfilePDF.vue';
+// import ProfilePDF from '../components/BeneficiaryView/ProfilePDF.vue';
+import SocioeconomicHistory from '@/components/BeneficiaryView/SocioeconomicHistory.vue';
 import { useAuth } from '../composables/useAuth';
 import scholarships from '../constants/scholarships';
 import medicalServices from '../constants/medicalServices';
@@ -595,7 +601,8 @@ const sections = [
   { title: 'Integración familiar', id: 'family' },
   { title: 'Vivienda', id: 'home' },
   { title: 'Situación económica', id: 'expenses' },
-  { title: 'Historial de apoyos', id: 'contributions' }
+  { title: 'Entrega de apoyos', id: 'contributions' },
+  { title: 'Historial socioeconómico', id: 'socioeconomicHistory' }
 ]
 
 // composables
@@ -774,12 +781,12 @@ const goBack = () => {
 }
 
 // Eventos de PDF
-const profilePDFRef = ref()
-const exportToPDF = async () => {
-  loadingPrint.value = true
-  await profilePDFRef.value.generateProfilePDF()
-  loadingPrint.value = false
-}
+// const profilePDFRef = ref()
+// const exportToPDF = async () => {
+//   loadingPrint.value = true
+//   await profilePDFRef.value.generateProfilePDF()
+//   loadingPrint.value = false
+// }
 </script>
 
 <style scoped>

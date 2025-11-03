@@ -1,19 +1,27 @@
 <template>
-  <div class="photo-picker" :class="{ uploading: isUploading }" @click="openFileSelector">
-    <img :src="previewUrl" alt="Foto de perfil" class="profile-image" @error="onImageError" />
+  <div class="photo-picker" :class="{ uploading: isUploading }">
+    <div class="photo-container" @click="openFileSelector">
+      <img :src="previewUrl" alt="Foto de perfil" class="profile-image" @error="onImageError" />
+      <div class="overlay">
+        <span class="overlay-text">
+          {{ isUploading ? 'Subiendo' : 'Cambiar foto' }}
+        </span>
+      </div>
+    </div>
     <input ref="fileInput" type="file" @change="handleFileChange" accept="image/jpeg,image/png,image/gif,image/webp"
       style="display: none" />
-    <div class="overlay">
-      <span class="overlay-text">
-        {{ isUploading ? 'Subiendo' : 'Cambiar foto' }}
-      </span>
-    </div>
-  </div>
+
+    <button v-if="showDeleteButton" class="z-9999 absolute bottom-0 right-0 p-2 rounded-full shadow-lg bg-white" @click.stop="deletePhoto" title="Eliminar foto">
+      <IconTrash size="15" color="red" />
+    </button>
+ 
+ </div>
 </template>
 
 <script setup>
 import { ref, onUnmounted, watch } from 'vue';
 import { toast } from 'vue3-toastify';
+import { IconTrash } from '@tabler/icons-vue';
 import { useAuth } from '@/composables/useAuth';
 import beneficiaryServices from '@/services/beneficiaryServices';
 
@@ -44,6 +52,13 @@ const currentObjectUrl = ref(null);
 const isUploading = ref(false);
 const defaultPhoto = ref(props.defaultPhoto);
 const previewUrl = ref(defaultPhoto.value);
+const showDeleteButton = ref(false);
+
+// Mostrar/ocultar botón de eliminar según si hay una foto que no sea la predeterminada
+watch(() => previewUrl.value, (newUrl) => {
+  const defaultPhotoPattern = /placeholder\.com|default\.png|^data:image/;
+  showDeleteButton.value = !defaultPhotoPattern.test(newUrl);
+}, { immediate: true });
 
 const onImageError = (event) => {
   event.target.classList.add('is-broken');
@@ -62,6 +77,57 @@ watch(() => props.defaultPhoto, (newPhoto) => {
 onUnmounted(() => {
   cleanupObjectUrl();
 });
+
+// Función para eliminar la foto
+const deletePhoto = async () => {
+  if (isUploading.value) return;
+
+  const confirmed = window.confirm('¿Estás seguro de que deseas eliminar esta foto?');
+  if (!confirmed) return;
+
+  isUploading.value = true;
+
+  try {
+    // Eliminar la imagen del servidor si no es la predeterminada
+    const defaultPhotoPattern = /placeholder\.com|default\.png|^data:image/;
+    if (defaultPhoto.value && !defaultPhotoPattern.test(defaultPhoto.value)) {
+      try {
+        await beneficiaryServices.deleteImage(defaultPhoto.value, authHeader.value);
+      } catch (deleteError) {
+        console.warn('No se pudo eliminar la imagen del servidor:', deleteError);
+      }
+    }
+
+    // Restablecer a la imagen predeterminada
+    cleanupObjectUrl();
+    previewUrl.value = 'https://via.placeholder.com/150/cccccc/000000?text=Perfil';
+
+    // Actualizar el perfil con la foto vacía
+    const updateResponse = await beneficiaryServices.updateBeneficiary(
+      {
+        filter: props.beneficiaryId,
+        update: { photo: '' },
+      },
+      authHeader.value
+    );
+
+    if (updateResponse?.errors?.length > 0) {
+      throw new Error(updateResponse.errors[0] || 'Error al actualizar el perfil');
+    }
+
+    // Actualizar referencias locales
+    defaultPhoto.value = previewUrl.value;
+
+    // Notificar éxito
+    toast.success('Foto eliminada correctamente');
+
+  } catch (error) {
+    console.error('Error al eliminar la foto:', error);
+    toast.error(error.message || 'Error al eliminar la foto');
+  } finally {
+    isUploading.value = false;
+  }
+};
 
 // Función para limpiar la URL del objeto
 const cleanupObjectUrl = () => {
@@ -140,7 +206,7 @@ const handleFileChange = async (event) => {
         // No hacemos throw aquí para no interrumpir el flujo
       }
     }
-    
+
     // Actualizar la referencia local con la nueva ruta
     defaultPhoto.value = filePath;
 
@@ -156,20 +222,20 @@ const handleFileChange = async (event) => {
     if (updateResponse?.errors?.length > 0) {
       throw new Error(updateResponse.errors[0] || 'Error al actualizar la foto del beneficiario');
     }
-    
+
     // Emitir el evento con la nueva ruta de la foto
     // El componente padre debe actualizar la propiedad defaultPhoto
     emit('photo-selected', filePath);
 
     // 5. Notificar éxito
     toast.success('Imagen actualizada correctamente');
-    
+
     // 6. Emitir evento de éxito
     emit('photo-selected', filePath);
 
   } catch (error) {
     console.error('Error en handleFileChange:', error);
-    
+
     // Determinar mensaje de error apropiado
     if (error.name === 'ValidationError') {
       errorMessage = error.message;
@@ -217,15 +283,11 @@ const handleFileChange = async (event) => {
   width: 150px;
   height: 150px;
   border-radius: 50%;
+  overflow: visible;
   cursor: pointer;
-  overflow: hidden;
-  border: 3px solid #f0f0f0;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #f8f9fa;
+  border: 2px solid #e2e8f0;
+  background-color: #f8fafc;
 }
 
 .photo-picker:hover {
@@ -252,7 +314,8 @@ const handleFileChange = async (event) => {
 
 .profile-image.is-broken {
   position: relative;
-  color: transparent; /* Oculta el texto alt original */
+  color: transparent;
+  /* Oculta el texto alt original */
 }
 
 .profile-image.is-broken::after {
@@ -261,7 +324,8 @@ const handleFileChange = async (event) => {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  color: #6c757d; /* Color del texto de reemplazo */
+  color: #6c757d;
+  /* Color del texto de reemplazo */
   text-align: center;
   width: 100%;
 }

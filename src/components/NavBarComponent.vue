@@ -44,7 +44,7 @@
       <div class="flex items-center justify-center">
         <IconUser class="mr-2 h-6 w-6 text-red-800" />
         <div class="flex flex-col items-start justify-center leading-0">
-          <p class="text-red-800 text-xs font-medium">{{ capitalize(user?.name) + ' ' + capitalize(user?.lastname) }}
+          <p class="text-red-800 text-xs font-medium">{{ user?.name + ' ' + user?.lastname }}
           </p>
           <p class="text-red-800 text-xs font-medium">{{ capitalize(user?.position) }}</p>
         </div>
