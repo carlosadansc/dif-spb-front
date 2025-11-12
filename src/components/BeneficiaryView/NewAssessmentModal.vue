@@ -134,7 +134,9 @@ import socioeconomicServices from '@/services/socioeconomicServices';
 import civilStatus from '@/constants/civilStatus';
 import scholarships from '@/constants/scholarships';
 import formatCurrency from '../../utils/formatCurrency';
-import { formatDate } from '../../utils/dateTool';
+import { useDate } from '@/utils/dateTool';
+
+const { formatDate } = useDate();
 
 const { authHeader } = useAuth()
 
