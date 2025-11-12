@@ -1,18 +1,18 @@
 const relationships = [
-    { text: 'Padre', value: 'PADRE', sex: 'HOMBRE' },
-    { text: 'Madre', value: 'MADRE', sex: 'MUJER' },
-    { text: 'Hermano', value: 'HEMANO', sex: 'HOMBRE' },
-    { text: 'Hermana', value: 'HERMANA', sex: 'MUJER' },
-    { text: 'Hijo', value: 'HIJO', sex: 'HOMBRE' }, 
-    { text: 'Hija', value: 'HIJA', sex: 'MUJER' },
-    { text: 'Abuelo', value: 'ABUELO', sex: 'HOMBRE' },
-    { text: 'Abuela', value: 'ABUELA', sex: 'MUJER' },
-    { text: 'Tío', value: 'TIO', sex: 'HOMBRE' },
-    { text: 'Tía', value: 'TIA', sex: 'MUJER' },
-    { text: 'Primo', value: 'PRIMO', sex: 'HOMBRE' },
-    { text: 'Prima', value: 'PRIMA', sex: 'MUJER' },
-    { text: 'Sobrino', value: 'SOBRINO', sex: 'HOMBRE' },
-    { text: 'Sobrina', value: 'SOBRINA', sex: 'MUJER' }
+    { text: 'PADRE', value: 'PADRE', sex: 'HOMBRE' },
+    { text: 'MADRE', value: 'MADRE', sex: 'MUJER' },
+    { text: 'HERMANO', value: 'HERMANO', sex: 'HOMBRE' },
+    { text: 'HERMANA', value: 'HERMANA', sex: 'MUJER' },
+    { text: 'HIJO', value: 'HIJO', sex: 'HOMBRE' }, 
+    { text: 'HIJA', value: 'HIJA', sex: 'MUJER' },
+    { text: 'ABUELO', value: 'ABUELO', sex: 'HOMBRE' },
+    { text: 'ABUELA', value: 'ABUELA', sex: 'MUJER' },
+    { text: 'TÍO', value: 'TIO', sex: 'HOMBRE' },
+    { text: 'TÍA', value: 'TIA', sex: 'MUJER' },
+    { text: 'PRIMO', value: 'PRIMO', sex: 'HOMBRE' },
+    { text: 'PRIMA', value: 'PRIMA', sex: 'MUJER' },
+    { text: 'SOBRINO', value: 'SOBRINO', sex: 'HOMBRE' },
+    { text: 'SOBRINA', value: 'SOBRINA', sex: 'MUJER' }
 ]
 
 export default relationships

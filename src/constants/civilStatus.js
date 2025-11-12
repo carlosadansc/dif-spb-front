@@ -1,24 +1,24 @@
 const civilStatus = [
     {
-        text: 'Soltero/a',
+        text: 'SOLTERO/A',
         value: 'SOLTERO'
     },
     {
-        text: 'Casado/a',
+        text: 'CASADO/A',
         value: 'CASADO'
     },
-    {
-        text: 'Divorciado/a',
-        value: 'DIVORCIADO'
-    },
-    {
-        text: 'Viudo/a',
-        value: 'VIUDO'
-    },
-    {
-        text: 'Unión libre',
-        value: 'UNION_LIBRE'
-    }
+    // {
+    //     text: 'DIVORCIADO/A',
+    //     value: 'DIVORCIADO'
+    // },
+    // {
+    //     text: 'VIUDO/A',
+    //     value: 'VIUDO'
+    // },
+    // {
+    //     text: 'UNIÓN LIBRE',
+    //     value: 'UNION_LIBRE'
+    // }
 ]
 
 export default civilStatus

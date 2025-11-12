@@ -2,32 +2,32 @@
 const scholarships = [
     {
         id: 1,
-        text: 'Ninguna',
+        text: 'NINGUNA',
         value: 'NINGUNA'
     },
     {
         id: 2,
-        text: 'Básica',
+        text: 'BÁSICA',
         value: 'BASICA'
     },
     {
         id: 3,
-        text: 'Media',
+        text: 'MEDIA',
         value: 'MEDIA'
     },
     {
         id: 4,
-        text: 'Media superior',
+        text: 'MEDIA SUPERIOR',
         value: 'MEDIA_SUPERIOR'
     },
     {
         id: 5,
-        text: 'Licenciatura',
+        text: 'LICENCIATURA',
         value: 'LICENCIATURA'
     },
     {
         id: 6,
-        text:'Posgrado',
+        text:'POSGRADO',
         value: 'POSGRADO'
     }
 ]

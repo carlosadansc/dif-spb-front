@@ -2,22 +2,22 @@
 const wallTypes = [
     {
         id: 1,
-        text: 'Block',
+        text: 'BLOCK',
         value: 'BLOCK'
     },
     {
         id: 2,
-        text: 'Madera',
+        text: 'MADERA',
         value: 'MADERA'
     },
     {
         id: 3,
-        text: 'Cartón',
-        value: 'Cartón'
+        text: 'CARTÓN',
+        value: 'CARTON'
     },
     {
         id: 4,
-        text: 'Lamina',
+        text: 'LAMINA',
         value: 'LAMINA'
     }
 ]

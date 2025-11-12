@@ -1,17 +1,17 @@
 const floorTypes = [
     {
         id: 1,
-        text: 'Loza',
+        text: 'LOZA',
         value: 'LOZA'
     },
     {
         id: 2,
-        text: 'Concreto',
+        text: 'CONCRETO',
         value: 'CONCRETO'
     },
     {
         id: 3,
-        text: 'Tierra',
+        text: 'TIERRA',
         value: 'TIERRA'
     }
 ]

@@ -1,32 +1,32 @@
 const disabilityTypes = [
     {
         id: 1,
-        text: 'Neurológica',
+        text: 'NEUROLÓGICA',
         value: 'NEUROLOGICA'
     },
     {
         id: 2,
-        text: 'Auditiva',
+        text: 'AUDITIVA',
         value: 'AUDITIVA'
     },
     {
         id: 3,
-        text: 'Visual',
+        text: 'VISUAL',
         value: 'VISUAL'
     },
     {
         id: 4,
-        text: 'Física / Motríz',
+        text: 'FÍSICA / MOTRÍZ',
         value: 'MOTRIZ'
     },
     {
         id: 5,
-        text: 'Cognitiva',
+        text: 'COGNITIVA',
         value: 'COGNITIVA'
     },
     {
         id: 6,
-        text:'Psicosocial',
+        text:'PSICOSOCIAL',
         value: 'PSICOSOCIAL'
     }
 ]

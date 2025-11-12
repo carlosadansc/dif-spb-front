@@ -1,22 +1,22 @@
 const ceilingTypes = [
     {
         id: 1,
-        text: 'Block',
+        text: 'BLOCK',
         value: 'BLOCK'
     },
     {
         id: 2,
-        text: 'Madera',
+        text: 'MADERA',
         value: 'MADERA'
     },
     {
         id: 3,
-        text: 'Cartón',
+        text: 'CARTÓN',
         value: 'CARTON'
     },
     {
         id: 4,
-        text: 'Lamina',
+        text: 'LÁMINA',
         value: 'LAMINA'
     }
 ]

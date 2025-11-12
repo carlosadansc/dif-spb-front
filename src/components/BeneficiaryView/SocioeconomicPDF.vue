@@ -625,15 +625,8 @@ const generateSocioeconomicPDF = async () => {
           currentPage++;
           yPosition = margin;
 
-          // Agregar encabezado simplificado en páginas adicionales
-          pdf.setFontSize(8);
-          pdf.setFont('helvetica', 'normal');
-          pdf.text(
-            `Estudio Socioeconómico - ${props.beneficiary.name} ${props.beneficiary.fatherSurname} - Página ${currentPage}`, 
-            margin, 
-            margin - 3
-          );
-          pdf.line(margin, margin - 1, pageWidth - margin, margin - 1);
+          // El encabezado se agregará después de todo el contenido
+        // para asegurar que esté en todas las páginas
         }
 
         const sectionImgData = sectionCanvas.toDataURL('image/png', 1.0);
@@ -741,7 +734,31 @@ const generateSocioeconomicPDF = async () => {
       }      
     }
 
-    // 5. AGREGAR METADATOS Y GUARDAR
+    // 5. AÑADIR NÚMEROS DE PÁGINA A TODAS LAS PÁGINAS
+    const pageCount = pdf.internal.getNumberOfPages();
+    
+    for (let i = 1; i <= pageCount; i++) {
+      pdf.setPage(i);
+      
+      // Configurar el estilo del texto
+      pdf.setFontSize(8);
+      pdf.setFont('helvetica', 'normal');
+      
+      // Agregar encabezado en todas las páginas
+      // const headerText = `Estudio Socioeconómico - ${props.beneficiary.name} ${props.beneficiary.fatherSurname} - Página ${i} de ${pageCount}`;
+      // pdf.text(headerText, margin, margin - 3);
+      // pdf.line(margin, margin - 1, pdf.internal.pageSize.width - margin, margin - 1);
+      
+      // Agregar pie de página con número de página
+      pdf.text(
+        `Estudio Socioeconómico - ${props.beneficiary.name} ${props.beneficiary.fatherSurname} - Página ${i} de ${pageCount}`,
+        margin,
+        pdf.internal.pageSize.height - 10,
+        { align: 'left' }
+      );
+    }
+
+    // 6. AGREGAR METADATOS Y GUARDAR
     pdf.setProperties({
       title: `Estudio Socioeconómico - ${props.assessment.folio}`,
       subject: 'Estudio Socioeconómico de Beneficiario DIF Municipal',
@@ -773,7 +790,7 @@ defineExpose({ generateSocioeconomicPDF });
   font-family: 'Arial', sans-serif !important;
   position: fixed;
   left: 0;
-  top: 99999px;
+  top: 0;
   width: 816px;
   background: white;
   z-index: -9999;
@@ -782,7 +799,7 @@ defineExpose({ generateSocioeconomicPDF });
 }
 
 #socioeconomic-study.generating {
-  z-index: 9999;
+  z-index: -9999;
   top: 0;
 }
 

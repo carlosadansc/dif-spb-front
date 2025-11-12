@@ -4,10 +4,10 @@
       <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" @click="closeModal">
         ✕
       </button>
-      
+
       <h3 class="text-lg font-bold">Nuevo Estudio Socioeconómico</h3>
-      <p class="text-sm text-gray-500 mt-2">
-        Complete los datos del estudio socioeconómico. Este registro capturará un snapshot del estado actual del beneficiario.
+      <p class="text-sm text-gray-500 mt-2 required">
+        <span class="font-bold">¡Importante!</span> Verifique que los datos del beneficiario evaluado sean correctos antes de generar un nuevo estudio socioeconómico, de no ser así, por favor corrija los datos en las secciones de datos del beneficiario y datos económicos.
       </p>
 
       <div class="divider"></div>
@@ -18,65 +18,37 @@
           <h4 class="font-bold text-sm mb-3 text-red-800">Información General</h4>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label class="block text-xs font-medium text-gray-700 required">Fecha de evaluación</label>
-              <input 
-                type="date" 
-                v-model="formData.assessmentDate"
-                class="input input-sm mt-1 block w-full"
-                required />
+              <p class="text-xs font-medium text-gray-600">Fecha de evaluación</p>
+              <p class="text-sm font-semibold text-gray-900">{{ formatDate(formData.assessmentDate) }}</p>
             </div>
           </div>
         </div>
 
-        <!-- Load from Beneficiary Button -->
-        <div class="flex justify-end">
-          <button 
-            type="button"
-            @click="loadFromBeneficiary"
-            class="btn btn-sm bg-blue-600 text-white">
-            Cargar datos actuales del beneficiario
-          </button>
-        </div>
+        <!-- Beneficiary data will be loaded automatically -->
 
         <!-- Economic Data -->
         <div class="bg-gray-50 p-4 rounded-lg">
           <h4 class="font-bold text-sm mb-3 text-red-800">Datos Económicos</h4>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label class="block text-xs font-medium text-gray-700">Ingreso mensual</label>
-              <input 
-                type="number" 
-                step="0.01"
-                v-model="formData.snapshot.income"
-                class="input input-sm mt-1 block w-full" />
+              <p class="text-xs font-medium text-gray-600">Ingreso mensual</p>
+              <p class="text-sm font-semibold text-gray-900">{{ formatCurrency(formData.snapshot.income) }}</p>
             </div>
             <div>
-              <label class="block text-xs font-medium text-gray-700">Ocupación</label>
-              <input 
-                type="text" 
-                v-model="formData.snapshot.occupation"
-                class="input input-sm mt-1 block w-full" />
+              <p class="text-xs font-medium text-gray-600">Ocupación</p>
+              <p class="text-sm font-semibold text-gray-900">{{ formData.snapshot.occupation || 'N/A' }}</p>
             </div>
             <div>
-              <label class="block text-xs font-medium text-gray-700">Escolaridad</label>
-              <input 
-                type="text" 
-                v-model="formData.snapshot.scholarship"
-                class="input input-sm mt-1 block w-full" />
+              <p class="text-xs font-medium text-gray-600">Escolaridad</p>
+              <p class="text-sm font-semibold text-gray-900">{{ getScholarshipText(formData.snapshot.scholarship) }}</p>
             </div>
             <div>
-              <label class="block text-xs font-medium text-gray-700">Estado civil</label>
-              <input 
-                type="text" 
-                v-model="formData.snapshot.civilStatus"
-                class="input input-sm mt-1 block w-full" />
+              <p class="text-xs font-medium text-gray-600">Estado civil</p>
+              <p class="text-sm font-semibold text-gray-900">{{ getCivilStatusText(formData.snapshot.civilStatus) }}</p>
             </div>
             <div>
-              <label class="block text-xs font-medium text-gray-700">Servicio médico</label>
-              <input 
-                type="text" 
-                v-model="formData.snapshot.medicalService"
-                class="input input-sm mt-1 block w-full" />
+              <p class="text-xs font-medium text-gray-600">Servicio médico</p>
+              <p class="text-sm font-semibold text-gray-900">{{ formData.snapshot.medicalService || 'N/A' }}</p>
             </div>
           </div>
         </div>
@@ -86,27 +58,16 @@
           <h4 class="font-bold text-sm mb-3 text-red-800">Resumen del Hogar</h4>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label class="block text-xs font-medium text-gray-700">Integrantes del hogar</label>
-              <input 
-                type="number" 
-                v-model="formData.snapshot.householdSize"
-                class="input input-sm mt-1 block w-full" />
+              <p class="text-xs font-medium text-gray-600">Integrantes del hogar</p>
+              <p class="text-sm font-semibold text-gray-900">{{ formData.snapshot.householdSize }}</p>
             </div>
             <div>
-              <label class="block text-xs font-medium text-gray-700">Ingreso total del hogar</label>
-              <input 
-                type="number" 
-                step="0.01"
-                v-model="formData.snapshot.totalHouseholdIncome"
-                class="input input-sm mt-1 block w-full" />
+              <p class="text-xs font-medium text-gray-600">Ingreso total del hogar</p>
+              <p class="text-sm font-semibold text-green-600">{{ formatCurrency(formData.snapshot.totalHouseholdIncome) }}</p>
             </div>
             <div>
-              <label class="block text-xs font-medium text-gray-700">Gastos totales del hogar</label>
-              <input 
-                type="number" 
-                step="0.01"
-                v-model="formData.snapshot.totalHouseholdExpenses"
-                class="input input-sm mt-1 block w-full" />
+              <p class="text-xs font-medium text-gray-600">Gastos totales del hogar</p>
+              <p class="text-sm font-semibold text-red-600">{{ formatCurrency(formData.snapshot.totalHouseholdExpenses) }}</p>
             </div>
           </div>
         </div>
@@ -116,52 +77,28 @@
           <h4 class="font-bold text-sm mb-3 text-red-800">Gastos Mensuales</h4>
           <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
             <div>
-              <label class="block text-xs font-medium text-gray-700">Transporte</label>
-              <input 
-                type="number" 
-                step="0.01"
-                v-model="formData.snapshot.expenses.transport"
-                class="input input-sm mt-1 block w-full" />
+              <p class="text-xs font-medium text-gray-600">Transporte</p>
+              <p class="text-sm font-semibold text-gray-900">{{ formatCurrency(formData.snapshot.expenses.transport) }}</p>
             </div>
             <div>
-              <label class="block text-xs font-medium text-gray-700">Alimentación</label>
-              <input 
-                type="number" 
-                step="0.01"
-                v-model="formData.snapshot.expenses.meal"
-                class="input input-sm mt-1 block w-full" />
+              <p class="text-xs font-medium text-gray-600">Alimentación</p>
+              <p class="text-sm font-semibold text-gray-900">{{ formatCurrency(formData.snapshot.expenses.meal) }}</p>
             </div>
             <div>
-              <label class="block text-xs font-medium text-gray-700">TV/Internet</label>
-              <input 
-                type="number" 
-                step="0.01"
-                v-model="formData.snapshot.expenses.tvService"
-                class="input input-sm mt-1 block w-full" />
+              <p class="text-xs font-medium text-gray-600">TV/Internet</p>
+              <p class="text-sm font-semibold text-gray-900">{{ formatCurrency(formData.snapshot.expenses.tvService) }}</p>
             </div>
             <div>
-              <label class="block text-xs font-medium text-gray-700">Agua</label>
-              <input 
-                type="number" 
-                step="0.01"
-                v-model="formData.snapshot.expenses.waterService"
-                class="input input-sm mt-1 block w-full" />
+              <p class="text-xs font-medium text-gray-600">Agua</p>
+              <p class="text-sm font-semibold text-gray-900">{{ formatCurrency(formData.snapshot.expenses.waterService) }}</p>
             </div>
             <div>
-              <label class="block text-xs font-medium text-gray-700">Electricidad</label>
-              <input 
-                type="number" 
-                step="0.01"
-                v-model="formData.snapshot.expenses.electricService"
-                class="input input-sm mt-1 block w-full" />
+              <p class="text-xs font-medium text-gray-600">Electricidad</p>
+              <p class="text-sm font-semibold text-gray-900">{{ formatCurrency(formData.snapshot.expenses.electricService) }}</p>
             </div>
             <div>
-              <label class="block text-xs font-medium text-gray-700">Otros gastos</label>
-              <input 
-                type="number" 
-                step="0.01"
-                v-model="formData.snapshot.expenses.otherExpenses"
-                class="input input-sm mt-1 block w-full" />
+              <p class="text-xs font-medium text-gray-600">Otros gastos</p>
+              <p class="text-sm font-semibold text-gray-900">{{ formatCurrency(formData.snapshot.expenses.otherExpenses) }}</p>
             </div>
           </div>
         </div>
@@ -169,20 +106,14 @@
         <!-- Notes -->
         <div>
           <label class="block text-xs font-medium text-gray-700">Observaciones</label>
-          <textarea 
-            v-model="formData.notes"
-            rows="4"
-            class="input mt-1 block w-full"
+          <textarea v-model="formData.notes" rows="4" class="input mt-1 block w-full bg-white border border-gray-300"
             placeholder="Notas adicionales sobre el estudio..."></textarea>
         </div>
 
         <!-- Submit Button -->
         <div class="pt-4">
-          <button 
-            :disabled="loading" 
-            type="submit" 
-            class="btn bg-red-900 text-white w-full">
-            <span v-if="!loading">Guardar Estudio</span>
+          <button :disabled="loading" type="submit" class="btn bg-red-900 text-white w-full">
+            <span v-if="!loading">Generar Estudio</span>
             <span v-else class="loading loading-spinner loading-lg"></span>
           </button>
         </div>
@@ -200,6 +131,10 @@ import { toast } from 'vue3-toastify';
 import { AxiosError } from 'axios';
 import { useAuth } from '@/composables/useAuth'
 import socioeconomicServices from '@/services/socioeconomicServices';
+import civilStatus from '@/constants/civilStatus';
+import scholarships from '@/constants/scholarships';
+import formatCurrency from '../../utils/formatCurrency';
+import { formatDate } from '../../utils/dateTool';
 
 const { authHeader } = useAuth()
 
@@ -283,76 +218,26 @@ const formData = ref({
 
 watch(
   () => props.show,
-  (value) => {
+  async (value) => {
     if (value) {
       newAssessmentModalRef.value?.showModal();
+      // Load beneficiary data automatically when modal opens
+      await loadFromBeneficiary();
     } else {
       newAssessmentModalRef.value?.close();
     }
-  }
+  },
+  { immediate: true }
 );
 
 const closeModal = () => {
   emit('close');
 };
 
-const loadFromBeneficiary = () => {
-  if (!props.beneficiary) return;
-
-  const ben = props.beneficiary;
-
-  // Load economic data
-  if (ben.income) formData.value.snapshot.income = ben.income;
-  if (ben.occupation) formData.value.snapshot.occupation = ben.occupation;
-  if (ben.scholarship) formData.value.snapshot.scholarship = ben.scholarship;
-  if (ben.civilStatus) formData.value.snapshot.civilStatus = ben.civilStatus;
-  if (ben.medicalService) formData.value.snapshot.medicalService = ben.medicalService;
-
-  // Load address
-  if (ben.address) {
-    formData.value.snapshot.address = { ...ben.address };
-  }
-
-  // Load spouse/tutor
-  if (ben.spouseOrTutor) {
-    formData.value.snapshot.spouseOrTutor = { ...ben.spouseOrTutor };
-  }
-
-  // Load home
-  if (ben.home) {
-    formData.value.snapshot.home = { ...ben.home };
-  }
-
-  // Load expenses
-  if (ben.expenses) {
-    formData.value.snapshot.expenses = { ...ben.expenses };
-  }
-
-  // Load family members
-  if (ben.family && ben.family.length > 0) {
-    formData.value.snapshot.familyMembers = ben.family.map(member => ({
-      name: member.name || '',
-      lastname: member.lastname || '',
-      age: member.age || null,
-      sex: member.sex || '',
-      scholarship: member.scholarship || '',
-      phone: member.phone || '',
-      relationship: member.relationship || '',
-      occupation: member.occupation || '',
-      income: member.income || 0
-    }));
-  }
-
-  // Calculate totals
-  calculateTotals();
-
-  toast.success('Datos cargados desde el beneficiario');
-};
-
 const calculateTotals = () => {
   // Calculate total household income
   let totalIncome = parseFloat(formData.value.snapshot.income) || 0;
-  
+
   if (formData.value.snapshot.spouseOrTutor?.income) {
     totalIncome += parseFloat(formData.value.snapshot.spouseOrTutor.income);
   }
@@ -369,7 +254,7 @@ const calculateTotals = () => {
 
   // Calculate total expenses
   const expenses = formData.value.snapshot.expenses;
-  const totalExpenses = 
+  const totalExpenses =
     (parseFloat(expenses.transport) || 0) +
     (parseFloat(expenses.meal) || 0) +
     (parseFloat(expenses.tvService) || 0) +
@@ -387,6 +272,67 @@ const calculateTotals = () => {
   }
 
   formData.value.snapshot.householdSize = householdSize;
+};
+
+const loadFromBeneficiary = async () => {
+  if (!props.beneficiary) return;
+
+  loading.value = true;
+  try {
+    const ben = props.beneficiary;
+
+    // Load economic data
+    if (ben.income) formData.value.snapshot.income = ben.income;
+    if (ben.occupation) formData.value.snapshot.occupation = ben.occupation;
+    if (ben.scholarship) formData.value.snapshot.scholarship = ben.scholarship;
+    if (ben.civilStatus) formData.value.snapshot.civilStatus = ben.civilStatus;
+    if (ben.medicalService) formData.value.snapshot.medicalService = ben.medicalService;
+
+    // Load address
+    if (ben.address) {
+      formData.value.snapshot.address = { ...ben.address };
+    }
+
+    // Load spouse/tutor
+    if (ben.spouseOrTutor) {
+      formData.value.snapshot.spouseOrTutor = { ...ben.spouseOrTutor };
+    }
+
+    // Load home
+    if (ben.home) {
+      formData.value.snapshot.home = { ...ben.home };
+    }
+
+    // Load expenses
+    if (ben.expenses) {
+      formData.value.snapshot.expenses = { ...ben.expenses };
+    }
+
+    // Load family members
+    if (ben.family && ben.family.length > 0) {
+      formData.value.snapshot.familyMembers = ben.family.map(member => ({
+        name: member.name || '',
+        lastname: member.lastname || '',
+        age: member.age || null,
+        sex: member.sex || '',
+        scholarship: member.scholarship || '',
+        phone: member.phone || '',
+        relationship: member.relationship || '',
+        occupation: member.occupation || '',
+        income: member.income || 0
+      }));
+    }
+
+    // Calculate totals
+    calculateTotals();
+
+    // toast.success('Datos cargados desde el beneficiario');
+  } catch (error) {
+    console.error('Error loading beneficiary data:', error);
+    // toast.error('Error al cargar los datos del beneficiario');
+  } finally {
+    loading.value = false;
+  }
 };
 
 const submitForm = async () => {
@@ -408,12 +354,14 @@ const submitForm = async () => {
       toast.success('Estudio socioeconómico creado exitosamente');
       emit('created');
       resetForm();
+      closeModal();
     }
   } catch (err) {
     if (err instanceof AxiosError) {
       toast.error(err.response?.data?.message || 'Error al crear el estudio');
     } else {
-      toast.error('Error inesperado');
+      console.error('Error:', err);
+      toast.error('Error inesperado al crear el estudio');
     }
   } finally {
     loading.value = false;
@@ -448,5 +396,17 @@ const resetForm = () => {
       householdSize: 1
     }
   };
+};
+
+const getCivilStatusText = (statusValue) => {
+  if (!statusValue) return 'N/A';
+  const status = civilStatus.find(s => s.value === statusValue);
+  return status ? status.text : statusValue;
+};
+
+const getScholarshipText = (scholarshipValue) => {
+  if (!scholarshipValue) return 'N/A';
+  const scholarship = scholarships.find(s => s.value === scholarshipValue);
+  return scholarship ? scholarship.text : scholarshipValue;
 };
 </script>

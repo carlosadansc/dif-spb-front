@@ -41,11 +41,11 @@
           </div>
           <div>
             <label class="text-xs font-medium text-gray-600">Escolaridad</label>
-            <p class="text-sm">{{ assessment.snapshot?.scholarship || 'N/A' }}</p>
+            <p class="text-sm">{{ getScholarshipText(assessment.snapshot?.scholarship) }}</p>
           </div>
           <div>
             <label class="text-xs font-medium text-gray-600">Estado civil</label>
-            <p class="text-sm">{{ assessment.snapshot?.civilStatus || 'N/A' }}</p>
+            <p class="text-sm">{{ getCivilStatusText(assessment.snapshot?.civilStatus) }}</p>
           </div>
           <div>
             <label class="text-xs font-medium text-gray-600">Servicio médico</label>
@@ -235,7 +235,7 @@
                 <td>{{ member.age }}</td>
                 <td>{{ member.sex }}</td>
                 <td>{{ member.relationship }}</td>
-                <td>{{ member.scholarship || 'N/A' }}</td>
+                <td>{{ getScholarshipText(member.scholarship) }}</td>
                 <td>{{ member.occupation || 'N/A' }}</td>
                 <td class="font-bold text-green-600">${{ formatCurrency(member.income) }}</td>
               </tr>
@@ -288,6 +288,8 @@
 <script setup>
 import { ref, watch, nextTick } from 'vue';
 import { useDate } from '@/utils/dateTool';
+import civilStatus from '@/constants/civilStatus';
+import scholarships from '@/constants/scholarships';
 
 const { formatDate } = useDate();
 
@@ -339,6 +341,18 @@ const getBalanceClass = (income, expenses) => {
   if (balance > 0) return 'text-green-600';
   if (balance < 0) return 'text-red-600';
   return 'text-gray-600';
+};
+
+const getCivilStatusText = (statusValue) => {
+  if (!statusValue) return 'N/A';
+  const status = civilStatus.find(s => s.value === statusValue);
+  return status ? status.text : statusValue;
+};
+
+const getScholarshipText = (scholarshipValue) => {
+  if (!scholarshipValue) return 'N/A';
+  const scholarship = scholarships.find(s => s.value === scholarshipValue);
+  return scholarship ? scholarship.text : scholarshipValue;
 };
 
 </script>
