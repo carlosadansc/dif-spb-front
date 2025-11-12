@@ -654,7 +654,7 @@ const toggleEditMode = () => {
 const updateBeneficiary = async () => {
   loadingSave.value = true
   // Crear una copia del objeto sin el campo _id
-  let { _id, families, contributions, ...beneficiarySinId } = beneficiary.value;
+  let { _id, families, contributions, photo, ...beneficiarySinId } = beneficiary.value;
   
   // Create a deep copy of the beneficiary data to avoid modifying the original
   const beneficiaryToUpdate = JSON.parse(JSON.stringify(beneficiarySinId));
