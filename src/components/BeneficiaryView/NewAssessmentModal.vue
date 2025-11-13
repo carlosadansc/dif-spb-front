@@ -48,7 +48,7 @@
             </div>
             <div>
               <p class="text-xs font-medium text-gray-600">Servicio médico</p>
-              <p class="text-sm font-semibold text-gray-900">{{ formData.snapshot.medicalService || 'N/A' }}</p>
+              <p class="text-sm font-semibold text-gray-900">{{ getMedicalServiceText(formData.snapshot.medicalService) }}</p>
             </div>
           </div>
         </div>
@@ -133,6 +133,7 @@ import { useAuth } from '@/composables/useAuth'
 import socioeconomicServices from '@/services/socioeconomicServices';
 import civilStatus from '@/constants/civilStatus';
 import scholarships from '@/constants/scholarships';
+import medicalServices from '@/constants/medicalServices';
 import formatCurrency from '../../utils/formatCurrency';
 import { useDate } from '@/utils/dateTool';
 
@@ -410,5 +411,11 @@ const getScholarshipText = (scholarshipValue) => {
   if (!scholarshipValue) return 'N/A';
   const scholarship = scholarships.find(s => s.value === scholarshipValue);
   return scholarship ? scholarship.text : scholarshipValue;
+};
+
+const getMedicalServiceText = (serviceValue) => {
+  if (!serviceValue) return 'N/A';
+  const service = medicalServices.find(s => s.value === serviceValue);
+  return service ? service.text : serviceValue;
 };
 </script>

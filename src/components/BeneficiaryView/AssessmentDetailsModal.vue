@@ -49,7 +49,7 @@
           </div>
           <div>
             <label class="text-xs font-medium text-gray-600">Servicio médico</label>
-            <p class="text-sm">{{ assessment.snapshot?.medicalService || 'N/A' }}</p>
+            <p class="text-sm">{{ getMedicalServiceText(assessment.snapshot?.medicalService) }}</p>
           </div>
         </div>
       </div>
@@ -290,6 +290,7 @@ import { ref, watch, nextTick } from 'vue';
 import { useDate } from '@/utils/dateTool';
 import civilStatus from '@/constants/civilStatus';
 import scholarships from '@/constants/scholarships';
+import medicalServices from '@/constants/medicalServices';
 
 const { formatDate } = useDate();
 
@@ -353,6 +354,12 @@ const getScholarshipText = (scholarshipValue) => {
   if (!scholarshipValue) return 'N/A';
   const scholarship = scholarships.find(s => s.value === scholarshipValue);
   return scholarship ? scholarship.text : scholarshipValue;
+};
+
+const getMedicalServiceText = (serviceValue) => {
+  if (!serviceValue) return 'N/A';
+  const service = medicalServices.find(s => s.value === serviceValue);
+  return service ? service.text : serviceValue;
 };
 
 </script>
