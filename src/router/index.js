@@ -11,6 +11,7 @@ import BeneficiaryView from '../views/BeneficiaryView.vue'
 import UsersView from '../views/UsersView.vue'
 import CategoriesView from '../views/CategoriesView.vue'
 import AreasView from '../views/AreasView.vue'
+import NewContributionView from '../views/NewContributionView.vue'
 import NotFoundView from '../views/NotFoundView.vue'
 
 // Routes
@@ -49,6 +50,34 @@ const routes = [
         meta: {
           requiresStandardUser: true,
           title: 'Beneficiarios'
+        }
+      },
+      {
+        path: 'beneficiaries/:id/new-contribution',
+        name: 'NewContribution',
+        component: NewContributionView,
+        meta: {
+          requiresStandardUser: true,
+          title: 'Nuevo Apoyo'
+        },
+        props: true
+      },
+      {
+        path: 'massive-contributions',
+        name: 'MassiveContributions',
+        component: () => import('../views/MassiveContributionsView.vue'),
+        meta: {
+          requiresStandardUser: true,
+          title: 'Historial de Jornadas'
+        }
+      },
+      {
+        path: 'massive-contribution',
+        name: 'NewMassiveContribution',
+        component: () => import('../views/NewMassiveContributionView.vue'),
+        meta: {
+          requiresStandardUser: true,
+          title: 'Nuevo Apoyo Masivo'
         }
       },
       {

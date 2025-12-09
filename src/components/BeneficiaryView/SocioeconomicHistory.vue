@@ -1,10 +1,42 @@
 <template>
   <div class="">
     <div class="overflow-x-auto">
+      <!-- Barra de filtros -->
+      <div class="bg-gray-50 rounded-lg p-4 mb-4">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <!-- Filtro por folio -->
+          <div>
+            <label class="block text-xs font-medium text-gray-700 mb-1">Buscar por folio</label>
+            <input v-model="filters.folio" type="text" placeholder="Ej: 12345"
+              class="input input-sm input-bordered w-full" />
+          </div>
+
+          <!-- Filtro por fecha desde -->
+          <div>
+            <label class="block text-xs font-medium text-gray-700 mb-1">Desde</label>
+            <input v-model="filters.dateFrom" type="date" class="input input-sm input-bordered w-full" />
+          </div>
+
+          <!-- Filtro por fecha hasta -->
+          <div>
+            <label class="block text-xs font-medium text-gray-700 mb-1">Hasta</label>
+            <input v-model="filters.dateTo" type="date" class="input input-sm input-bordered w-full" />
+          </div>
+        </div>
+
+        <!-- Botón limpiar filtros -->
+        <div class="flex justify-end mt-3">
+          <button v-if="hasActiveFilters" @click="clearFilters" class="btn btn-xs btn-ghost text-gray-600">
+            <IconFilterX class="w-4 h-4 mr-1" />
+            Limpiar filtros
+          </button>
+        </div>
+      </div>
+
       <div class="flex justify-between items-center mb-[2rem]">
         <h6 class="ms-4 font-medium text-sm">
           Estudios realizados:
-          <span v-if="!loading" class="font-bold text-xl text-red-800">{{ assessments.length }}</span>
+          <span v-if="!loading" class="font-bold text-xl text-red-800">{{ filteredAssessments.length }}</span>
         </h6>
 
         <div>
@@ -20,12 +52,15 @@
       <div class="w-full">
         <!-- Loading State -->
         <div v-if="loading" class="flex justify-center items-center py-8">
-          <div class="loading loading-spinner loading-lg"></div>
+          <IconLoader class="w-12 h-12 animate-spin" />
         </div>
 
         <!-- Empty State -->
-        <div v-else-if="assessments.length === 0" class="bg-white rounded-md shadow p-4 text-center">
-          <p class="text-sm text-gray-500">
+        <div v-else-if="filteredAssessments.length === 0" class="bg-white rounded-md shadow p-4 text-center">
+          <p v-if="hasActiveFilters" class="text-sm text-gray-500">
+            No se encontraron estudios con los filtros aplicados
+          </p>
+          <p v-else class="text-sm text-gray-500">
             No hay estudios socioeconómicos registrados
             <span class="text-red-800 font-bold text-xs underline cursor-pointer hover:text-red-500"
               @click="openNewAssessmentModal">
@@ -36,7 +71,7 @@
 
         <!-- Assessments List -->
         <div v-else class="grid grid-cols-1 gap-4">
-          <div v-for="(assessment, index) in assessments" :key="`assessment-${assessment._id}`"
+          <div v-for="(assessment, index) in filteredAssessments" :key="`assessment-${assessment._id}`"
             class="bg-white border border-solid border-gray-100 rounded-lg p-6 hover:shadow-md transition-shadow">
 
             <!-- Header -->
@@ -55,13 +90,13 @@
                 <div class="tooltip" data-tip="Ver detalles">
                   <button class="btn btn-sm btn-square btn-ghost text-blue-600"
                     @click="viewAssessmentDetails(assessment)">
-                    <IconEye class="w-4 h-4" />
+                    <IconFileInfo class="w-4 h-4" />
                   </button>
                 </div>
-                <div class="tooltip" data-tip="Imprimir estudio">
-                  <button class="btn btn-sm btn-square btn-ghost text-green-600"
-                    @click="printAssessment(index)" :disabled="assessment.isGeneratingPDF">
-                    <IconPrinter v-if="!assessment.isGeneratingPDF" class="w-4 h-4" />
+                <div class="tooltip" data-tip="Generar Estudio PDF">
+                  <button class="btn btn-sm btn-square btn-ghost text-red-800" @click="printAssessment(index)"
+                    :disabled="assessment.isGeneratingPDF">
+                    <IconPdf v-if="!assessment.isGeneratingPDF" class="w-4 h-4" />
                     <IconLoader v-if="assessment.isGeneratingPDF" class="w-4 h-4 animate-spin" />
                   </button>
                 </div>
@@ -134,25 +169,28 @@
       @created="handleAssessmentCreated" />
 
     <!-- PDF Component - ÚNICO y siempre montado -->
-    <SocioeconomicPDF 
-      ref="pdfComponent" 
-      :beneficiary="beneficiary"
-      :assessment="selectedAssessment"
-    />
+    <SocioeconomicPDF ref="pdfComponent" :beneficiary="beneficiary" :assessment="selectedAssessment" />
+
+    <!-- Delete Confirmation Modal -->
+    <ConfirmDeleteModal :show="showDeleteConfirmModal" title="Confirmar eliminación"
+      message="¿Está seguro de eliminar este estudio socioeconómico?"
+      warning-message="¡Todos los datos del estudio serán eliminados permanentemente!" @confirm="executeDelete"
+      @close="cancelDelete" />
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick } from 'vue';
+import { ref, computed, onMounted, nextTick } from 'vue';
 import { AxiosError } from 'axios';
 import { toast } from 'vue3-toastify';
-import { IconPlus, IconEye, IconTrash, IconPrinter, IconLoader } from '@tabler/icons-vue';
+import { IconPlus, IconFileInfo, IconTrash, IconPdf, IconLoader, IconFilterX } from '@tabler/icons-vue';
 import { useAuth } from '@/composables/useAuth';
 import { useDate } from '@/utils/dateTool';
 import socioeconomicServices from '@/services/socioeconomicServices';
 import AssessmentDetailsModal from './AssessmentDetailsModal.vue';
 import NewAssessmentModal from './NewAssessmentModal.vue';
 import SocioeconomicPDF from './SocioeconomicPDF.vue';
+import ConfirmDeleteModal from '@/components/ConfirmDeleteModal.vue';
 
 // Composables
 const { authHeader, isAdmin } = useAuth();
@@ -173,11 +211,64 @@ const selectedAssessment = ref(null);
 const showDetailsModal = ref(false);
 const showNewModal = ref(false);
 const isGeneratingPDF = ref(false);
+const showDeleteConfirmModal = ref(false);
+const assessmentToDeleteId = ref(null);
 
 // Ref único para el componente PDF
 const pdfComponent = ref(null);
 
+// Filtros
+const filters = ref({
+  folio: '',
+  dateFrom: '',
+  dateTo: ''
+});
+
+// Computed
+const filteredAssessments = computed(() => {
+  let result = assessments.value;
+
+  // Filtro por folio
+  if (filters.value.folio) {
+    const folioSearch = filters.value.folio.trim().toLowerCase();
+    result = result.filter(a => a.folio?.toString().toLowerCase().includes(folioSearch));
+  }
+
+  // Filtro por fecha desde
+  if (filters.value.dateFrom) {
+    const fromDate = new Date(filters.value.dateFrom);
+    fromDate.setHours(0, 0, 0, 0);
+    result = result.filter(a => {
+      const assessmentDate = new Date(a.assessmentDate);
+      assessmentDate.setHours(0, 0, 0, 0);
+      return assessmentDate >= fromDate;
+    });
+  }
+
+  // Filtro por fecha hasta
+  if (filters.value.dateTo) {
+    const toDate = new Date(filters.value.dateTo);
+    toDate.setHours(23, 59, 59, 999);
+    result = result.filter(a => {
+      const assessmentDate = new Date(a.assessmentDate);
+      return assessmentDate <= toDate;
+    });
+  }
+
+  return result;
+});
+
+const hasActiveFilters = computed(() => {
+  return filters.value.folio || filters.value.dateFrom || filters.value.dateTo;
+});
+
 // Methods
+const clearFilters = () => {
+  filters.value.folio = '';
+  filters.value.dateFrom = '';
+  filters.value.dateTo = '';
+};
+
 const getAssessments = async () => {
   loading.value = true;
   try {
@@ -256,18 +347,23 @@ const handleAssessmentCreated = () => {
   closeNewModal();
 };
 
-const deleteAssessment = async (id) => {
-  if (!confirm('¿Está seguro de eliminar este estudio socioeconómico?')) {
-    return;
-  }
+const deleteAssessment = (id) => {
+  assessmentToDeleteId.value = id;
+  showDeleteConfirmModal.value = true;
+};
+
+const executeDelete = async () => {
+  if (!assessmentToDeleteId.value) return;
 
   try {
-    const response = await socioeconomicServices.deleteAssessment(id, authHeader.value);
+    const response = await socioeconomicServices.deleteAssessment(assessmentToDeleteId.value, authHeader.value);
 
     if (response.code === "ERR_NETWORK") {
       toast.error('No se pudo conectar con el servidor');
     } else {
       toast.success('Estudio eliminado exitosamente');
+      showDeleteConfirmModal.value = false;
+      assessmentToDeleteId.value = null;
       getAssessments();
     }
   } catch (err) {
@@ -277,6 +373,11 @@ const deleteAssessment = async (id) => {
       toast.error('Error inesperado');
     }
   }
+};
+
+const cancelDelete = () => {
+  showDeleteConfirmModal.value = false;
+  assessmentToDeleteId.value = null;
 };
 
 // Utility functions

@@ -1,29 +1,57 @@
 <template>
-  <div class="photo-picker" :class="{ uploading: isUploading }">
-    <div class="photo-container" @click="openFileSelector">
-      <img :src="previewUrl" alt="Foto de perfil" class="profile-image" @error="onImageError" />
-      <div class="overlay">
-        <span class="overlay-text">
-          {{ isUploading ? 'Subiendo' : 'Cambiar foto' }}
-        </span>
+  <div class="photo-picker-wrapper">
+    <div
+      class="photo-picker border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center cursor-pointer hover:border-red-800 hover:bg-gray-50 transition-colors group relative"
+      :class="{ 'border-red-800 bg-gray-50': isUploading, 'has-image': previewUrl && !isDefaultPhoto }"
+      @click="openFileSelector">
+      <input ref="fileInput" type="file" class="hidden" accept="image/jpeg,image/png,image/gif,image/webp"
+        @change="handleFileChange" />
+
+      <!-- Loading State -->
+      <div v-if="isUploading" class="flex flex-col items-center z-10">
+        <span class="loading loading-spinner text-red-800 loading-md mb-2"></span>
+        <span class="text-sm text-gray-500">Subiendo imagen...</span>
+      </div>
+
+      <!-- Empty State -->
+      <div v-else-if="!previewUrl || isDefaultPhoto" class="flex flex-col items-center z-10">
+        <IconCamera class="w-8 h-8 text-gray-400 group-hover:text-red-800 mb-2 transition-colors" />
+        <span class="text-sm text-gray-600 font-medium text-center">Click para subir foto de perfil</span>
+        <span class="text-xs text-gray-400 mt-1">JPG, PNG (Max {{ maxFileSizeMB }}MB)</span>
+      </div>
+
+      <!-- Preview State -->
+      <div v-else
+        class="w-full h-full absolute inset-0 rounded-lg overflow-hidden flex items-center justify-center bg-gray-100">
+        <img :src="previewUrl" alt="Foto de perfil" class="w-full h-full object-cover" @error="onImageError" />
+
+        <!-- Hover Overlay -->
+        <div
+          class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
+          <span class="text-white text-sm font-medium">Cambiar foto</span>
+          <button v-if="showDeleteButton" class="btn btn-error btn-xs text-white gap-1" @click.stop="confirmDelete"
+            title="Eliminar foto">
+            <IconTrash size="14" /> Eliminar
+          </button>
+        </div>
       </div>
     </div>
-    <input ref="fileInput" type="file" @change="handleFileChange" accept="image/jpeg,image/png,image/gif,image/webp"
-      style="display: none" />
 
-    <button v-if="showDeleteButton" class="z-9999 absolute bottom-0 right-0 p-2 rounded-full shadow-lg bg-white" @click.stop="deletePhoto" title="Eliminar foto">
-      <IconTrash size="15" color="red" />
-    </button>
- 
- </div>
+    <!-- Delete Confirmation Modal -->
+    <ConfirmDeleteModal :show="showDeleteModal" title="Confirmar eliminación"
+      message="¿Estás seguro de que deseas eliminar esta foto?"
+      warning-message="¡La foto será eliminada permanentemente!" @confirm="deletePhoto"
+      @close="showDeleteModal = false" />
+  </div>
 </template>
 
 <script setup>
-import { ref, onUnmounted, watch } from 'vue';
+import { ref, onUnmounted, watch, computed } from 'vue';
 import { toast } from 'vue3-toastify';
-import { IconTrash } from '@tabler/icons-vue';
+import { IconTrash, IconCamera } from '@tabler/icons-vue';
 import { useAuth } from '@/composables/useAuth';
 import beneficiaryServices from '@/services/beneficiaryServices';
+import ConfirmDeleteModal from '@/components/ConfirmDeleteModal.vue';
 
 // Composables
 const { authHeader } = useAuth();
@@ -53,15 +81,25 @@ const isUploading = ref(false);
 const defaultPhoto = ref(props.defaultPhoto);
 const previewUrl = ref(defaultPhoto.value);
 const showDeleteButton = ref(false);
+const showDeleteModal = ref(false);
+
+const maxFileSizeMB = computed(() => (props.maxFileSize / (1024 * 1024)).toFixed(0));
+
+const defaultPhotoPattern = /placeholder\.com|default\.png|^data:image/;
+const isDefaultPhoto = computed(() => {
+  return !previewUrl.value || defaultPhotoPattern.test(previewUrl.value);
+});
+
 
 // Mostrar/ocultar botón de eliminar según si hay una foto que no sea la predeterminada
 watch(() => previewUrl.value, (newUrl) => {
-  const defaultPhotoPattern = /placeholder\.com|default\.png|^data:image/;
   showDeleteButton.value = !defaultPhotoPattern.test(newUrl);
 }, { immediate: true });
 
 const onImageError = (event) => {
-  event.target.classList.add('is-broken');
+  // If error, show default placeholder or broken state
+  // event.target.src = 'https://via.placeholder.com/150/cccccc/000000?text=Error';
+  // Let logic handle it, maybe revert to generic
 };
 
 // Actualizar la referencia local cuando cambie la prop
@@ -78,18 +116,20 @@ onUnmounted(() => {
   cleanupObjectUrl();
 });
 
+// Función para confirmar eliminación
+const confirmDelete = () => {
+  if (isUploading.value) return;
+  showDeleteModal.value = true;
+};
+
 // Función para eliminar la foto
 const deletePhoto = async () => {
   if (isUploading.value) return;
-
-  const confirmed = window.confirm('¿Estás seguro de que deseas eliminar esta foto?');
-  if (!confirmed) return;
 
   isUploading.value = true;
 
   try {
     // Eliminar la imagen del servidor si no es la predeterminada
-    const defaultPhotoPattern = /placeholder\.com|default\.png|^data:image/;
     if (defaultPhoto.value && !defaultPhotoPattern.test(defaultPhoto.value)) {
       try {
         await beneficiaryServices.deleteImage(defaultPhoto.value, authHeader.value);
@@ -118,8 +158,10 @@ const deletePhoto = async () => {
     // Actualizar referencias locales
     defaultPhoto.value = previewUrl.value;
 
-    // Notificar éxito
+    // Cerrar modal y notificar éxito
+    showDeleteModal.value = false;
     toast.success('Foto eliminada correctamente');
+    emit('photo-selected', ''); // Emit empty string on delete
 
   } catch (error) {
     console.error('Error al eliminar la foto:', error);
@@ -197,7 +239,6 @@ const handleFileChange = async (event) => {
     const { filePath } = uploadResponse.data;
 
     // 4. Si la subida fue exitosa, eliminar la imagen anterior si existe y no es la predeterminada
-    const defaultPhotoPattern = /placeholder\.com|default\.png|^data:image/;
     if (defaultPhoto.value && !defaultPhotoPattern.test(defaultPhoto.value) && defaultPhoto.value !== filePath) {
       try {
         await beneficiaryServices.deleteImage(defaultPhoto.value, authHeader.value);
@@ -229,9 +270,6 @@ const handleFileChange = async (event) => {
 
     // 5. Notificar éxito
     toast.success('Imagen actualizada correctamente');
-
-    // 6. Emitir evento de éxito
-    emit('photo-selected', filePath);
 
   } catch (error) {
     console.error('Error en handleFileChange:', error);
@@ -279,134 +317,15 @@ const handleFileChange = async (event) => {
 
 <style scoped>
 .photo-picker {
-  position: relative;
-  width: 150px;
-  height: 150px;
-  border-radius: 50%;
-  overflow: visible;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  border: 2px solid #e2e8f0;
-  background-color: #f8fafc;
+  width: 160px;
+  min-height: 160px;
+  /* Adjust height slightly */
 }
 
-.photo-picker:hover {
-  border-color: #007bff;
-  box-shadow: 0 6px 12px rgba(0, 123, 255, 0.2);
-}
-
-.photo-picker.uploading {
-  cursor: not-allowed;
-  opacity: 0.8;
-  border-color: #28a745;
-}
-
-.profile-image {
+/* Ensure the image covers the container nicely */
+.photo-picker img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  text-align: center;
-  line-height: 150px;
-  font-size: 14px;
-  color: #6c757d;
-  border-radius: 50%;
-}
-
-.profile-image.is-broken {
-  position: relative;
-  color: transparent;
-  /* Oculta el texto alt original */
-}
-
-.profile-image.is-broken::after {
-  content: attr(alt);
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: #6c757d;
-  /* Color del texto de reemplazo */
-  text-align: center;
-  width: 100%;
-}
-
-.photo-picker:hover .profile-image {
-  transform: scale(1.05);
-  filter: brightness(0.8);
-}
-
-.photo-picker.uploading .profile-image {
-  filter: brightness(0.6);
-}
-
-.overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.6);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  border-radius: 50%;
-}
-
-.photo-picker:hover .overlay,
-.photo-picker.uploading .overlay {
-  opacity: 1;
-}
-
-.photo-picker.uploading .overlay {
-  background-color: rgba(40, 167, 69, 0.8);
-}
-
-.overlay-text {
-  color: white;
-  font-family: sans-serif;
-  font-weight: bold;
-  text-align: center;
-  font-size: 14px;
-  padding: 0 10px;
-}
-
-.photo-picker.uploading .overlay-text::after {
-  content: '...';
-  animation: dots 1.5s infinite;
-}
-
-@keyframes dots {
-
-  0%,
-  20% {
-    content: '...';
-  }
-
-  40% {
-    content: '..';
-  }
-
-  60% {
-    content: '.';
-  }
-
-  80%,
-  100% {
-    content: '';
-  }
-}
-
-/* Responsividad */
-@media (max-width: 768px) {
-  .photo-picker {
-    width: 120px;
-    height: 120px;
-  }
-
-  .overlay-text {
-    font-size: 12px;
-  }
 }
 </style>

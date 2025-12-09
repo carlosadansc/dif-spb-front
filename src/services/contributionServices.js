@@ -37,6 +37,18 @@ const getAllContributions = async (headers) => {
     return await api.get('/contribution/get-all', { headers } ).then((response) =>  response.data ).catch((err) => err)
 }
 
+const createMassiveContribution = async (contribution, headers) => {
+    return await api.post('/contribution/create-multiple', contribution, { headers }).then((response) =>  response.data ).catch((err) => {throw err})
+}
+
+const getMassiveContributions = async (params, headers) => {
+    return await api.get('/contribution/massive-contributions', { params, headers }).then((response) => response.data).catch((err) => err)
+}
+
+const getContribution = async (id, headers) => {
+    return await api.get(`/contribution/${id}`, { headers }).then((response) => response.data).catch((err) => err)
+}
+
 export default {
     getProductOrServicesByCategory,
     getContributionsByBeneficiary,
@@ -46,5 +58,8 @@ export default {
     getContributionYears,
     getContributionSummary,
     getContributionSummaryByCategory,
-    getAllContributions 
+    getAllContributions,
+    createMassiveContribution,
+    getMassiveContributions,
+    getContribution
 }

@@ -7,6 +7,7 @@ import { computed } from 'vue'
 export const useAuth = () => {
     const authStore = useAuthStore()
     const { user, authToken } = storeToRefs(authStore)
+    
     const authHeader = computed(() => {
       return {
         'Authorization': 'Bearer ' + authToken.value ?? ''

@@ -8,7 +8,8 @@
         <div class="flex items-start gap-4">
           <!-- Búsqueda -->
           <label class="input input-bordered flex items-center gap-2 grow">
-            <input v-model="search" @keyup.enter="applyFilters()" type="text" class="grow" placeholder="Buscar por CURP, nombre, apellidos..." />
+            <input v-model="search" @keyup.enter="applyFilters()" type="text" class="grow"
+              placeholder="Buscar por CURP, nombre, apellidos..." />
             <IconSearch class="h-5 w-5" />
           </label>
 
@@ -18,14 +19,17 @@
               <IconFilter class="h-5 w-5 mr-2" />
               Filtros
             </label>
-            <div tabindex="0" class="dropdown-content z-[9999] card card-compact w-[40rem] p-4 shadow bg-base-100 border">
+            <div tabindex="0"
+              class="dropdown-content z-[9999] card card-compact w-[40rem] p-4 shadow bg-base-100 border">
               <div class="card-body">
                 <h3 class="card-title">Filtros avanzados</h3>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
                   <!-- Filtro por estado civil -->
-                  <select v-model="filters.civilStatus" @change="applyFilters()" class="select select-xs select-bordered">
+                  <select v-model="filters.civilStatus" @change="applyFilters()"
+                    class="select select-xs select-bordered">
                     <option value="">Estado Civil</option>
-                    <option v-for="status in civilStatus" :key="status.value" :value="status.value">{{ status.text }}</option>
+                    <option v-for="status in civilStatus" :key="status.value" :value="status.value">{{ status.text }}
+                    </option>
                   </select>
 
                   <!-- Filtro por sexo -->
@@ -36,20 +40,24 @@
                   </select>
 
                   <!-- Filtro por discapacidad -->
-                  <select v-model="filters.hasDisability" @change="applyFilters()" class="select select-xs select-bordered">
+                  <select v-model="filters.hasDisability" @change="applyFilters()"
+                    class="select select-xs select-bordered">
                     <option value="">Discapacidad</option>
                     <option value="true">Con discapacidad</option>
                     <option value="false">Sin discapacidad</option>
                   </select>
 
                   <!-- Filtro por servicio médico -->
-                  <select v-model="filters.medicalService" @change="applyFilters()" class="select select-xs select-bordered">
+                  <select v-model="filters.medicalService" @change="applyFilters()"
+                    class="select select-xs select-bordered">
                     <option value="">Servicio Médico</option>
-                    <option v-for="service in medicalServices" :key="service.value" :value="service.value">{{ service.text }}</option>
+                    <option v-for="service in medicalServices" :key="service.value" :value="service.value">{{
+                      service.text }}</option>
                   </select>
 
                   <!-- Filtro por comunidad indígena -->
-                  <select v-model="filters.isIndigenousCommunity" @change="applyFilters()" class="select select-xs select-bordered">
+                  <select v-model="filters.isIndigenousCommunity" @change="applyFilters()"
+                    class="select select-xs select-bordered">
                     <option value="">Comunidad Indígena</option>
                     <option value="true">Sí pertenece</option>
                     <option value="false">No pertenece</option>
@@ -63,29 +71,35 @@
                   </select>
 
                   <!-- Filtro por escolaridad -->
-                  <select v-model="filters.scholarship" @change="applyFilters()" class="select select-xs select-bordered">
+                  <select v-model="filters.scholarship" @change="applyFilters()"
+                    class="select select-xs select-bordered">
                     <option value="">Escolaridad</option>
-                    <option v-for="scholarship in scholarships" :key="scholarship.value" :value="scholarship.value">{{ scholarship.text }}</option>
+                    <option v-for="scholarship in scholarships" :key="scholarship.value" :value="scholarship.value">{{
+                      scholarship.text }}</option>
                   </select>
 
                   <!-- Filtro por tipo de comunidad -->
-                  <select v-model="filters.communityType" @change="applyFilters()" class="select select-xs select-bordered">
+                  <select v-model="filters.communityType" @change="applyFilters()"
+                    class="select select-xs select-bordered">
                     <option value="">Tipo de Comunidad</option>
                     <option value="RURAL">Rural</option>
                     <option value="URBANA">Urbana</option>
                   </select>
 
                   <!-- Filtros de ubicación -->
-                  <select v-model="filters.delegation" @change="onDelegationChange" class="select select-xs select-bordered">
+                  <select v-model="filters.delegation" @change="onDelegationChange"
+                    class="select select-xs select-bordered">
                     <option value="">Delegación</option>
                     <option v-for="delegation in delegations" :key="delegation.id" :value="delegation.value">
                       {{ delegation.text }}
                     </option>
                   </select>
-                  
-                  <select v-model="filters.subdelegation" @change="applyFilters()" :disabled="!filters.delegation" class="select select-xs select-bordered">
+
+                  <select v-model="filters.subdelegation" @change="applyFilters()" :disabled="!filters.delegation"
+                    class="select select-xs select-bordered">
                     <option value="">Subdelegación</option>
-                    <option v-for="subdelegation in filteredSubdelegations" :key="subdelegation.value" :value="subdelegation.value">
+                    <option v-for="subdelegation in filteredSubdelegations" :key="subdelegation.value"
+                      :value="subdelegation.value">
                       {{ subdelegation.text }}
                     </option>
                   </select>
@@ -94,36 +108,29 @@
             </div>
           </div>
         </div>
-        
+
         <!-- Botones de acción -->
         <div class="flex justify-between items-center mt-4">
           <button @click="clearFilters()" class="btn btn-ghost btn-sm">
             <IconFilterX class="h-4 w-4 mr-2" />
             Limpiar filtros
           </button>
-          
+
           <div class="flex items-center gap-3">
-            <div class="tooltip tooltip-left" data-tip="Exportar padrón a excel">
-              <button v-if="isAdmin || isExecutive" :disabled="loadindExport" @click.prevent="exportToExcel" class="btn btn-square bg-gray-800 font-black text-white text-[1.2rem]"><IconFileSpreadsheet v-if="!loadindExport"/><span v-if="loadindExport" class="loading loading-spinner loading-sm"></span></button>
-            </div>
+            <ExportToExcelButton tooltip="Exportar padrón a excel" :loading="loadindExport" @click="exportToExcel" />
             <div class="tooltip tooltip-left" data-tip="Crear nuevo beneficiario">
-              <button @click.prevent="showModal = true" class="btn btn-square bg-red-800 font-black text-white text-[1.2rem]"><IconUserPlus /></button>
+              <button @click.prevent="showModal = true"
+                class="btn btn-square bg-red-800 font-black text-white text-[1.2rem]">
+                <IconUserPlus />
+              </button>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <EasyDataTable
-      v-model:server-options="serverOptions"
-      :server-items-length="serverItemsLength"
-      :headers="headers"
-      :items="data"
-      :rows-items="rowsItems"
-      :loading="loading"
-      rows-per-page-message="Se muestran"
-      alternating
-    >
+    <EasyDataTable v-model:server-options="serverOptions" :server-items-length="serverItemsLength" :headers="headers"
+      :items="data" :rows-items="rowsItems" :loading="loading" rows-per-page-message="Se muestran" alternating>
 
       <template #item-name="{ name, fatherSurname, motherSurname }">
         {{ name }} {{ fatherSurname }} {{ motherSurname }}
@@ -145,55 +152,45 @@
 
       <template #item-actions="{ _id, active }">
         <div class="flex gap-1">
-          <button @click="openBeneficiaryView(_id)" class="btn btn-ghost btn-xs text-blue-600 hover:bg-blue-50" title="Ver expediente">
-            <IconEye class="h-4 w-4" />
+          <button @click="openBeneficiaryView(_id)" class="btn btn-ghost btn-xs text-blue-600 hover:bg-blue-50"
+            title="Abrir expediente | Perfil">
+            <IconFileInfo class="h-4 w-4" />
           </button>
-          <button 
-            v-if="isAdmin" 
-            @click="toggleBeneficiaryStatus(_id, active)" 
-            class="btn btn-ghost btn-xs"
+          <button v-if="isAdmin" @click="toggleBeneficiaryStatus(_id, active)" class="btn btn-ghost btn-xs"
             :class="active ? 'text-green-600 hover:bg-green-50' : 'text-red-600 hover:bg-yellow-50'"
-            :title="active ? 'Desactivar' : 'Activar'"
-          >
+            :title="active ? 'Desactivar' : 'Activar'">
             <IconToggleLeft v-if="!active" class="h-4 w-4" />
             <IconToggleRight v-else class="h-4 w-4" />
           </button>
-          <button
-            v-if="isAdmin" 
-            @click="confirmDelete(_id)"
-            class="btn btn-ghost btn-xs text-red-600 hover:bg-red-50"
-            title="Eliminar beneficiario"
-          >
+          <button v-if="isAdmin" @click="confirmDelete(_id)" class="btn btn-ghost btn-xs text-red-600 hover:bg-red-50"
+            title="Eliminar beneficiario">
             <IconTrash class="h-4 w-4" />
           </button>
         </div>
       </template>
     </EasyDataTable>
 
-    <NewBeneficiarieModal :showModal="showModal" @refresh:beneficiaries="getBeneficiariesData" @close:modal="showModal = false" />
+    <NewBeneficiarieModal :showModal="showModal" @refresh:beneficiaries="getBeneficiariesData"
+      @close:modal="showModal = false" />
 
   </div>
 
   <!-- Delete Confirmation Modal -->
-  <div class="modal" :class="{ 'modal-open': showDeleteModal }">
-    <div class="modal-box">
-      <h3 class="font-bold text-lg">Confirmar eliminación</h3>
-      <p class="py-4">¿Estás seguro de que deseas eliminar este beneficiario? <br> <span class="text-red-600 font-bold text-[0.7rem]">¡todos los datos asociados serán eliminados permanentemente!</span></p>
-      <div class="modal-action">
-        <button class="btn" @click="showDeleteModal = false">Cancelar</button>
-        <button class="btn btn-error" @click.prevent="deleteBeneficiary">Eliminar</button>
-      </div>
-    </div>
-  </div>
+  <ConfirmDeleteModal :show="showDeleteModal" title="Confirmar eliminación"
+    message="¿Estás seguro de que deseas eliminar este beneficiario?"
+    warning-message="¡Todos los datos asociados serán eliminados permanentemente!" @confirm="deleteBeneficiary"
+    @close="showDeleteModal = false" />
 </template>
 
 <script setup>
 import { ref, onMounted, watch } from 'vue';
 import router from '../router';
 import { toast } from 'vue3-toastify';
-import { IconSearch, IconEye, IconFileSpreadsheet, IconUserPlus, IconFilterX, IconTrash, IconFilter, IconPencil, IconToggleLeft, IconToggleRight } from '@tabler/icons-vue';
+import { IconSearch, IconFileInfo, IconUserPlus, IconFilterX, IconTrash, IconFilter, IconPencil, IconToggleLeft, IconToggleRight } from '@tabler/icons-vue';
 import beneficiaryServices from '../services/beneficiaryServices'
 import NewBeneficiarieModal from '../components/BeneficiariesView/NewBeneficiaryModal.vue'
+import ExportToExcelButton from '../components/ExportToExcelButton.vue'
+import ConfirmDeleteModal from '../components/ConfirmDeleteModal.vue'
 import civilStatus from '../constants/civilStatus'
 import medicalServices from '../constants/medicalServices'
 import scholarships from '../constants/scholarships'
@@ -201,7 +198,7 @@ import delegations from '../constants/delegations'
 
 import { AxiosError } from 'axios';
 import { useAuth } from '../composables/useAuth';
-import * as XLSX from 'xlsx';
+import { exportToExcel as exportExcelUtil, formatDateForExcel } from '../utils/excelExport';
 
 // composables
 const { authHeader, isAdmin, isStandardUser, isExecutive } = useAuth()
@@ -260,7 +257,7 @@ const getBeneficiariesData = async () => {
     // Ensure pagination parameters are numbers
     const page = parseInt(serverOptions.value.page, 10) || 1;
     const limit = parseInt(serverOptions.value.rowsPerPage, 10) || 10;
-    
+
     const params = {
       page,
       limit,
@@ -269,7 +266,7 @@ const getBeneficiariesData = async () => {
       search: search.value,
       ...filters.value
     };
-    
+
     // Remove any empty string filters
     Object.keys(params).forEach(key => {
       if (params[key] === '') {
@@ -327,7 +324,7 @@ const clearFilters = () => {
   getBeneficiariesData()
 };
 
-onMounted(async() => {
+onMounted(async () => {
   await getBeneficiariesData()
 })
 
@@ -344,7 +341,7 @@ const confirmDelete = (id) => {
 
 const deleteBeneficiary = async () => {
   if (!beneficiaryToDeleteId.value) return;
-  
+
   try {
     const response = await beneficiaryServices.deleteBeneficiaryWhitAllData(beneficiaryToDeleteId.value, authHeader.value);
     toast.success(response.message || 'Beneficiario eliminado con éxito');
@@ -374,17 +371,17 @@ const formatCivilStatus = (status) => {
 const onDelegationChange = () => {
   // Reset subdelegation when delegation changes
   filters.value.subdelegation = '';
-  
+
   // Filter subdelegations based on selected delegation
   const selectedDelegation = delegations.find(d => d.value === filters.value.delegation);
   filteredSubdelegations.value = selectedDelegation ? selectedDelegation.subdelegations : [];
-  
+
   // Apply filters
   applyFilters();
 };
 
 // Export to Excel
-const json_fields = {
+const beneficiaryColumns = {
   "CURP": "curp",
   "Nombre": "name",
   "Apellido paterno": "fatherSurname",
@@ -410,56 +407,55 @@ const json_fields = {
 
 const exportToExcel = async () => {
   loadindExport.value = true;
-  serverOptions.value.page = null;
-  serverOptions.value.rowsPerPage = null;
-  
-  await getBeneficiariesData();
-  
-  const dataExcel = data.value.map(beneficiary => {
-    const row = {};
-    for (const [key, value] of Object.entries(json_fields)) {
-      try {
-        // Obtener el valor de la propiedad anidada
-        const cellValue = value.split('.').reduce((o, i) => o?.[i], beneficiary);
-        
-        // Formatear solo si es el campo de fecha de nacimiento
-        if (key === 'Fecha de nacimiento' && cellValue) {
-          const parsedDate = new Date(cellValue);
-          if (!isNaN(parsedDate)) {
-            // Formatear como DD/MM/YYYY
-            row[key] = parsedDate.toLocaleDateString('es-ES', {
-              day: '2-digit',
-              month: '2-digit',
-              year: 'numeric'
-            });
-          } else {
-            row[key] = cellValue;
-          }
-        } else {
-          row[key] = cellValue ?? '';
-        }
-      } catch (error) {
-        console.warn(`Error procesando campo ${key}:`, error);
-        row[key] = '';
-      }
-    }
-    return row;
-  });
 
-  // Crear hoja de cálculo
-  const worksheet = XLSX.utils.json_to_sheet(dataExcel);
-  
-  // Opcional: Asegurar que la columna de fecha tenga ancho adecuado
-  worksheet['!cols'] = worksheet['!cols'] || [];
-  const fechaIndex = Object.keys(json_fields).indexOf('Fecha de nacimiento');
-  if (fechaIndex !== -1) {
-    worksheet['!cols'][fechaIndex] = { wch: 15 }; // Ancho de columna
+  try {
+    const params = {
+      page: 1,
+      limit: 10000, // Fetch all (or a very large number)
+      sort: serverOptions.value.sortBy,
+      order: serverOptions.value.sortType,
+      search: search.value,
+      ...filters.value
+    };
+
+    // Remove any empty string filters
+    Object.keys(params).forEach(key => {
+      if (params[key] === '') {
+        delete params[key];
+      }
+    });
+
+    const response = await beneficiaryServices.getBeneficiaries(params, authHeader.value);
+    const exportData = response.data.beneficiaries || [];
+
+    exportExcelUtil(
+      exportData,
+      beneficiaryColumns,
+      'padron-beneficiarios-smdif-la-paz',
+      'Beneficiarios',
+      {
+        columnWidths: {
+          'CURP': 18,
+          'Nombre': 15,
+          'Apellido paterno': 15,
+          'Apellido materno': 15,
+          'Fecha de nacimiento': 15,
+          'Teléfono': 12,
+          'Colonia': 15,
+          'Código postal': 10
+        },
+        formatters: {
+          'Fecha de nacimiento': formatDateForExcel
+        }
+      }
+    );
+
+  } catch (error) {
+    console.error('Error exporting excel:', error);
+    toast.error('Error al exportar a Excel');
+  } finally {
+    loadindExport.value = false;
   }
-  
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, 'Beneficiarios');
-  XLSX.writeFile(workbook, 'padron-beneficiarios-smdif-la-paz.xlsx');
-  loadindExport.value = false;
 };
 </script>
 

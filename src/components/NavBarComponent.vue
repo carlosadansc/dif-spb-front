@@ -19,6 +19,9 @@
             <li v-if="isStandardUser" class="text-red-800"><a @click="goTo('/beneficiaries')">
                 <IconUsers />Beneficiarios
               </a></li>
+            <li v-if="isStandardUser" class="text-red-800"><a @click="goTo('/massive-contributions')">
+                <IconUsersGroup />Jornadas
+              </a></li>
             <li v-if="isAdmin" class="text-red-800"><a @click="goTo('/categories')">
                 <IconFilters />Categorias
               </a></li>
@@ -65,7 +68,7 @@
 </template>
 
 <script setup>
-import { IconMenu2, IconCategory2, IconUsers, IconUser, IconChevronDown, IconUserCog, IconFilters, IconSitemap } from '@tabler/icons-vue'
+import { IconMenu2, IconCategory2, IconUsers, IconUser, IconChevronDown, IconUserCog, IconFilters, IconSitemap, IconUsersGroup } from '@tabler/icons-vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '../composables/useAuth'
 import capitalize from '../utils/capitalize'

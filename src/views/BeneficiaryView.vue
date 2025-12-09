@@ -2,37 +2,45 @@
   <div class="px-4 sm:px-6 lg:px-8">
     <div class="max-w-7xl mx-auto">
 
-      <span v-if="loading" class="loading loading-spinner loading-lg absolute top-1/2 left-1/2"></span>
+      <IconLoader v-if="loading" class="w-12 h-12 animate-spin absolute top-1/2 left-1/2" />
 
       <div v-if="!loading" class="flex justify-between items-center">
-        <h1 class="text-3xl font-bold text-gray-900 mt-5"><span class="bg-white py-2 px-4 rounded-[10px] border border-gray-400">{{beneficiary.name + ' ' + beneficiary.fatherSurname + ' ' + beneficiary.motherSurname}}</span></h1>
-        
+        <h1 class="text-3xl font-bold text-gray-900 mt-5"><span
+            class="bg-white py-2 px-4 rounded-[10px] border border-gray-400">{{ beneficiary.name + ' ' +
+              beneficiary.fatherSurname + ' ' + beneficiary.motherSurname }}</span></h1>
+
         <div class="flex justify-between items-center">
           <div class="tooltip tooltip-bottom" data-tip="Cancelar">
-            <button v-if="isEditing" class="btn btn-square bg-gray-300 font-black text-white mx-1" @click="isEditing = false"><IconCancel class="h-5 w-5 text-red-800" /></button>
+            <button v-if="isEditing" class="btn btn-square bg-gray-300 font-black text-white mx-1"
+              @click="isEditing = false">
+              <IconCancel class="h-5 w-5 text-red-800" />
+            </button>
           </div>
-          <div class="tooltip tooltip-bottom" :data-tip="!isEditing ? 'Editar información del beneficiario': 'Guardar cambios'">
-            <button @click.prevent="toggleEditMode" id="edit-save" class="btn btn-square bg-red-800 font-black text-white mx-1"><span v-if="loadingSave" class="loading loading-spinner"></span> <IconEdit v-if="!isEditing && !loadingSave" class="h-5 w-5" /> <IconDeviceFloppy v-if="isEditing && !loadingSave"  class="h-5 w-5" /></button>
+          <div class="tooltip tooltip-bottom"
+            :data-tip="!isEditing ? 'Editar información del beneficiario' : 'Guardar cambios'">
+            <button @click.prevent="toggleEditMode" id="edit-save"
+              class="btn btn-square bg-red-800 font-black text-white mx-1"><span v-if="loadingSave"
+                class="loading loading-spinner"></span>
+              <IconEdit v-if="!isEditing && !loadingSave" class="h-5 w-5" />
+              <IconDeviceFloppy v-if="isEditing && !loadingSave" class="h-5 w-5" />
+            </button>
           </div>
           <!-- <div class="tooltip tooltip-bottom" data-tip="Exportar perfil a PDF">
             <button :disabled="loadingPrint" class="btn btn-square bg-gray-500 font-black text-white mx-1" @click.prevent="exportToPDF"><IconFileTypePdf v-if="!loadingPrint" class="h-5 w-5" /> <span v-if="loadingPrint" class="loading loading-spinner"></span></button>
           </div> -->
         </div>
       </div>
-     
-     
+
+
       <!-- Navigation Tabs -->
       <div v-if="!loading" class="mt-4">
         <nav class="-mb-px flex space-x-4" aria-label="Tabs">
           <button class="btn btn-square btn-ghost" @click="goBack">
             <IconArrowNarrowLeft class="w-6 h-6" />
           </button>
-          <div
-            v-for="section in sections"
-            :key="section.id"
-            class="flex flex-col justify-center items-center relative"
+          <div v-for="section in sections" :key="section.id" class="flex flex-col justify-center items-center relative"
             :class="[activeSection === section.id ? 'after:w-11/12 after:h-1 after:absolute after:-bottom-1 after:bg-red-800 after:rounded-full' : '']">
-            <button 
+            <button
               class="btn btn-ghost border-b-transparent text-gray-500 hover:bg-transparent hover:scale-105 hover:text-gray-700 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm"
               @click="activeSection = section.id">
               {{ section.title }}
@@ -45,8 +53,9 @@
       <div v-if="!loading" class="mt-6 bg-white border border-gray-400 rounded-lg p-6">
         <!-- General Information -->
         <div v-if="activeSection === 'general'" class="space-t-6">
-          <PhotoPicker class="mb-6" :beneficiaryId="beneficiaryId" :defaultPhoto="photoUrl" @photo-selected="beneficiary.photo = $event" />
- 
+          <PhotoPicker class="mb-6" :beneficiaryId="beneficiaryId" :defaultPhoto="photoUrl"
+            @photo-selected="beneficiary.photo = $event" />
+
           <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
             <div>
               <label class="block text-sm font-medium text-gray-700">CURP</label>
@@ -70,30 +79,19 @@
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700">Edad</label>
-              <input 
-                :disabled="!isEditing" 
-                type="number" 
-                v-model.number="beneficiary.age"
-                min="0"
-                max="120"
-                @input="(e) => {
-                  // Ensure the value is a valid number between 0 and 120
-                  const value = parseInt(e.target.value);
-                  if (isNaN(value) || value < 0) e.target.value = 0;
-                  if (value > 120) e.target.value = 120;
-                }"
-                class="input input-sm mt-1 block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" 
-              />
+              <input :disabled="!isEditing" type="number" v-model.number="beneficiary.age" min="0" max="120" @input="(e) => {
+                // Ensure the value is a valid number between 0 and 120
+                const value = parseInt(e.target.value);
+                if (isNaN(value) || value < 0) e.target.value = 0;
+                if (value > 120) e.target.value = 120;
+              }"
+                class="input input-sm mt-1 block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700">Fecha de Nacimiento</label>
-              <input 
-                :disabled="!isEditing" 
-                type="date" 
-                v-model="birthdateInput"
+              <input :disabled="!isEditing" type="date" v-model="birthdateInput"
                 :max="new Date().toISOString().split('T')[0]"
-                class="input input-sm mt-1 block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" 
-              />
+                class="input input-sm mt-1 block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
               <p v-if="formattedBirthdate" class="text-xs text-gray-500 mt-1">{{ formattedBirthdate }}</p>
             </div>
             <div>
@@ -138,7 +136,8 @@
               <label class="block text-sm font-medium text-gray-700">Servicio médico</label>
               <select :disabled="!isEditing" v-model="beneficiary.medicalService"
                 class="select select-sm mt-1 block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                <option v-for="medicalService in medicalServices" :key="medicalService.id" :value="medicalService.value">
+                <option v-for="medicalService in medicalServices" :key="medicalService.id"
+                  :value="medicalService.value">
                   {{ medicalService.text }}
                 </option>
               </select>
@@ -154,12 +153,13 @@
               <label class="block text-sm font-medium text-gray-700">Tipo de Discapacidad</label>
               <select :disabled="!isEditing" v-model="beneficiary.disabilityType"
                 class="select select-sm mt-1 block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                <option v-for="disabilityType in disabilityTypes" :key="disabilityType.id" :value="disabilityType.value">
+                <option v-for="disabilityType in disabilityTypes" :key="disabilityType.id"
+                  :value="disabilityType.value">
                   {{ disabilityType.text }}
                 </option>
               </select>
             </div>
-            
+
             <div class="flex items-center">
               <input :disabled="!isEditing" type="checkbox" v-model="beneficiary.isIndigenousCommunity"
                 class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded" />
@@ -189,10 +189,10 @@
           </div>
 
           <div class="mt-5">
-              <label class="block text-sm font-medium text-gray-700">Comentarios / Observaciones</label>
-              <textarea :disabled="!isEditing" v-model="beneficiary.comments" 
-                class="textarea h-24 mt-1 block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
-            </div>
+            <label class="block text-sm font-medium text-gray-700">Comentarios / Observaciones</label>
+            <textarea :disabled="!isEditing" v-model="beneficiary.comments"
+              class="textarea h-24 mt-1 block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
+          </div>
         </div>
 
         <!-- Address -->
@@ -209,7 +209,7 @@
             <div>
               <label class="block text-sm font-medium text-gray-700">Delegación</label>
               <select :disabled="!isEditing" name="delegation" v-model="beneficiary.address.delegation"
-              @change="getSubdelegations()"
+                @change="getSubdelegations()"
                 class="select select-sm mt-1 block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                 <option v-for="delegation in delegations" :key="delegation.id" :value="delegation.value">
                   {{ delegation.text }}
@@ -283,7 +283,8 @@
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700">Teléfono</label>
-              <input :disabled="!isEditing" v-maska="'(###) ### ####'" type="tel" v-model="beneficiary.spouseOrTutor.phone"
+              <input :disabled="!isEditing" v-maska="'(###) ### ####'" type="tel"
+                v-model="beneficiary.spouseOrTutor.phone"
                 class="input input-sm mt-1 block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
             </div>
             <div>
@@ -313,9 +314,9 @@
         </div>
 
         <!-- Family -->
-         <div v-if="activeSection === 'family'" class="space-y-6">
+        <div v-if="activeSection === 'family'" class="space-y-6">
           <FamilyList :beneficiaryId="beneficiaryId" />
-         </div>
+        </div>
 
         <!-- Home -->
         <div v-if="activeSection === 'home'" class="space-y-6">
@@ -471,19 +472,25 @@
 
         <!-- Contributions -->
         <div v-if="activeSection === 'contributions'" class="space-y-6">
-          <ContributionHistory :contributions="beneficiary.contributions" :beneficiary="beneficiary" @update:list="getBeneficiary" />
+          <ContributionHistory :contributions="beneficiary.contributions" :beneficiary="beneficiary"
+            @update:list="getBeneficiary" />
         </div>
 
         <!-- Socioeconomic history -->
         <div v-if="activeSection === 'socioeconomicHistory'" class="space-y-6">
           <SocioeconomicHistory :beneficiary="beneficiary" />
         </div>
-        
+
       </div>
 
       <div v-if="!loading" class="flex flex-col">
-        <p class="text-gray-500 text-xs ms-2 mt-5">Registro creado: <span class="font-bold">{{formatDatetime(beneficiary.createdAt)}}</span> por: <span class="font-bold">{{beneficiary.createdBy?.name + ' ' + beneficiary.createdBy?.lastname}}</span></p>
-        <p class="text-gray-500 text-xs ms-2 mt-1">Ultima modificación: <span class="font-bold">{{formatDatetime(beneficiary.updatedAt)}}</span> por: <span class="font-bold">{{ beneficiary.updatedBy ? beneficiary?.updatedBy?.name + ' ' + beneficiary?.updatedBy?.lastname : '' }}</span></p>
+        <p class="text-gray-500 text-xs ms-2 mt-5">Registro creado: <span class="font-bold">{{
+          formatDatetime(beneficiary.createdAt) }}</span> por: <span class="font-bold">{{ beneficiary.createdBy?.name
+              + ' ' + beneficiary.createdBy?.lastname }}</span></p>
+        <p class="text-gray-500 text-xs ms-2 mt-1">Ultima modificación: <span class="font-bold">{{
+          formatDatetime(beneficiary.updatedAt) }}</span> por: <span class="font-bold">{{
+              beneficiary.updatedBy ? beneficiary?.updatedBy?.name + ' ' + beneficiary?.updatedBy?.lastname : '' }}</span>
+        </p>
       </div>
     </div>
 
@@ -495,11 +502,10 @@
 import { ref, onMounted, watch, computed } from 'vue';
 import { AxiosError } from 'axios';
 import { toast } from 'vue3-toastify';
-import { IconArrowNarrowLeft, IconEdit, IconDeviceFloppy, IconFileTypePdf, IconCancel } from '@tabler/icons-vue';
+import { IconArrowNarrowLeft, IconEdit, IconDeviceFloppy, IconLoader, IconCancel } from '@tabler/icons-vue';
 import beneficiaryServices from '../services/beneficiaryServices';
 import ContributionHistory from '@/components/BeneficiaryView/ContributionHistory.vue';
 import FamilyList from '@/components/BeneficiaryView/FamilyList.vue';
-// import ProfilePDF from '../components/BeneficiaryView/ProfilePDF.vue';
 import SocioeconomicHistory from '@/components/BeneficiaryView/SocioeconomicHistory.vue';
 import { useAuth } from '../composables/useAuth';
 import scholarships from '../constants/scholarships';
@@ -655,10 +661,10 @@ const updateBeneficiary = async () => {
   loadingSave.value = true
   // Crear una copia del objeto sin el campo _id
   let { _id, families, contributions, photo, ...beneficiarySinId } = beneficiary.value;
-  
+
   // Create a deep copy of the beneficiary data to avoid modifying the original
   const beneficiaryToUpdate = JSON.parse(JSON.stringify(beneficiarySinId));
-  
+
   // Ensure birthdate is properly formatted as an ISO string
   if (beneficiaryToUpdate.birthdate instanceof Date) {
     beneficiaryToUpdate.birthdate = beneficiaryToUpdate.birthdate.toISOString();
@@ -670,9 +676,9 @@ const updateBeneficiary = async () => {
       beneficiaryToUpdate.birthdate.day
     ).toISOString();
   }
-  
+
   try {
-    const payload =  {
+    const payload = {
       filter: _id,
       update: normalizeObjectTextProperties(beneficiaryToUpdate)
     }
@@ -705,23 +711,23 @@ const formatDateForInput = (date) => {
 // Function to calculate age from birthdate
 const calculateAge = (birthDate) => {
   if (!birthDate) return 0;
-  
+
   const today = new Date();
   const birth = new Date(birthDate);
   let age = today.getFullYear() - birth.getFullYear();
   const monthDiff = today.getMonth() - birth.getMonth();
-  
+
   if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
     age--;
   }
-  
+
   return age > 0 ? age : 0;
 };
 
 // Function to calculate birthdate from age
 const calculateBirthdateFromAge = (age) => {
   if (!age || isNaN(age)) return null;
-  
+
   const today = new Date();
   const birthYear = today.getFullYear() - parseInt(age);
   return new Date(birthYear, today.getMonth(), today.getDate());
@@ -739,7 +745,7 @@ watch(birthdateInput, (newDate) => {
     const [year, month, day] = newDate.split('-').map(Number);
     const newBirthdate = new Date(year, month - 1, day);
     beneficiary.value.birthdate = newBirthdate;
-    
+
     // Update age when birthdate changes
     beneficiary.value.age = calculateAge(newBirthdate);
   } else {
@@ -789,6 +795,4 @@ const goBack = () => {
 // }
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

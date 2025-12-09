@@ -23,9 +23,11 @@
             <div class="font-bold text-xs text-red-500 input-errors" v-for="error of v$.curp.$errors" :key="error.$uid">
               <div class="error-msg">{{ error.$message }}</div>
             </div>
-            <span class="font-bold text-xs text-red-800 cursor-pointer" v-if="beneficiaryExists" @click="goTo(beneficiaryFinded._id)">Este beneficiario ya existe <a
-                @click="goTo(beneficiaryFinded._id)" class="underline">Ver perfil</a></span>
-            <button class="btn-text text-[0.7rem] text-blue-800 underline font-bold" v-if="!beneficiaryExists" @click.prevent="generateCurp">Generar CURP (provisional)</button>
+            <span class="font-bold text-xs text-red-800 cursor-pointer" v-if="beneficiaryExists"
+              @click="goTo(beneficiaryFinded._id)">Este beneficiario ya existe <a @click="goTo(beneficiaryFinded._id)"
+                class="underline">Ver perfil</a></span>
+            <button class="btn-text text-[0.7rem] text-blue-800 underline font-bold" v-if="!beneficiaryExists"
+              @click.prevent="generateCurp">Generar CURP (provisional)</button>
           </div>
         </div>
 
@@ -213,7 +215,7 @@
               <select v-model="beneficiary.address.delegation" id="delegation" name="delegation"
                 class="select select-bordered mt-2 w-full" @change="getSubDelegations()">
                 <option v-for="delegation in delegations" :key="delegation.value" :value="delegation">{{ delegation.text
-                  }}</option>
+                }}</option>
               </select>
               <div class="font-bold text-xs text-red-500 input-errors" v-for="error of v$.address.delegation.$errors"
                 :key="error.$uid">
@@ -229,7 +231,7 @@
                 class="select select-bordered mt-2 w-full">
                 <option v-for="subdelegation in subdelegations" :key="subdelegation.value" :value="subdelegation.value">
                   {{
-        subdelegation.text }}</option>
+                    subdelegation.text }}</option>
               </select>
               <div class="font-bold text-xs text-red-500 input-errors" v-for="error of v$.address.subdelegation.$errors"
                 :key="error.$uid">
@@ -316,7 +318,7 @@
           </div>
           <div class="flex flex-col">
             <button class="btn bg-red-800 text-white" @click.prevent="submitForm">{{ !loading ? 'Guardar' : 'Guardando'
-              }} <span v-if="loading" class="loading loadign-spinner" /></button>
+            }} <span v-if="loading" class="loading loadign-spinner" /></button>
           </div>
         </div>
 
@@ -346,6 +348,10 @@ import { AxiosError } from 'axios'
 //props
 const props = defineProps({
   showModal: Boolean,
+  defaultCurp: {
+    type: String,
+    default: ''
+  }
 })
 
 //emits
@@ -403,6 +409,12 @@ watch(
 watch(() => beneficiary.birthdate, (value) => {
   beneficiary.age = calculateAge(value)
 })
+
+watch(() => props.defaultCurp, (value) => {
+  if (value) {
+    beneficiary.curp = value;
+  }
+}, { immediate: true })
 
 //computed
 const foundNeighborhoods = computed(() => {
@@ -493,14 +505,12 @@ const submitForm = async () => {
     console.log(err)
     if (err instanceof AxiosError) {
       err.response?.data?.errors.forEach(error => {
-        if(error.code === 'ERR0007')
-      {
-        toast.error('El CURP ya se encuentra registrado')
-      }
-      else
-      {
-        toast.error(error.description)
-      }
+        if (error.code === 'ERR0007') {
+          toast.error('El CURP ya se encuentra registrado')
+        }
+        else {
+          toast.error(error.description)
+        }
       })
     } else {
       toast.error(err)

@@ -1,25 +1,51 @@
 <template>
   <div class="container mx-auto px-4 relative">
-    <!-- Quick Access Buttons -->
-    <div class="absolute right-4 top-4 flex items-center gap-2">
-      <router-link 
-        to="/beneficiaries"
-        class="flex items-center gap-1 px-3 py-1.5 text-sm text-gray-700 bg-gray-100 rounded-md transition-colors"
-        title="Ver beneficiarios"
-      >
-      <IconArrowUpRight size="16"/>
-      Ir al padrón de beneficiarios
-      </router-link>
-      <button 
-        v-if="isAdmin || isExecutive" 
-        @click.prevent="exportToExcel" 
-        class="flex items-center gap-1 px-3 py-1.5 text-sm text-white bg-red-500 hover:bg-red-700 rounded-md transition-colors"
-        title="Descargar padrón de apoyos"
-      >
-        <IconFileDownload size="16"/>
-        <span v-if="!loadingExport">Exportar padron de apoyos otorgados</span>
-        <span v-if="loadingExport" class="loading loading-spinner loading-xs"></span>
-      </button>
+    <!-- Quick Access Dock -->
+    <div class="absolute right-4 top-4 z-10">
+      <div
+        class="bg-white/80 backdrop-blur-md border border-gray-200 rounded-2xl shadow-lg p-2 flex items-center gap-2">
+        <!-- Botón: Ir a Beneficiarios -->
+        <div class="tooltip tooltip-bottom" data-tip="Ir al padrón de beneficiarios">
+          <router-link to="/beneficiaries"
+            class="btn btn-square btn-ghost hover:bg-blue-50 hover:text-blue-600 transition-all duration-200 hover:scale-110">
+            <IconUsers class="w-5 h-5" />
+          </router-link>
+        </div>
+
+        <!-- Separador -->
+        <div class="w-px h-8 bg-gray-300"></div>
+
+        <!-- Botón: Otorgar Apoyo Rápido -->
+        <div class="tooltip tooltip-bottom" data-tip="Otorgar apoyo rápido">
+          <button @click="showQuickContributionModal = true"
+            class="btn btn-square btn-ghost hover:bg-red-50 hover:text-red-600 transition-all duration-200 hover:scale-110">
+            <IconPlus class="w-5 h-5" />
+          </button>
+        </div>
+
+        <!-- Separador -->
+        <div class="w-px h-8 bg-gray-300"></div>
+
+        <!-- Botón: Apoyo Masivo -->
+        <div class="tooltip tooltip-bottom" data-tip="Registrar jornada masiva">
+          <router-link to="/massive-contribution"
+            class="btn btn-square btn-ghost hover:bg-purple-50 hover:text-purple-600 transition-all duration-200 hover:scale-110">
+            <IconUsersGroup class="w-5 h-5" />
+          </router-link>
+        </div>
+
+        <!-- Separador -->
+        <div class="w-px h-8 bg-gray-300"></div>
+
+        <!-- Botón: Exportar Apoyos -->
+        <div v-if="isAdmin || isExecutive" class="tooltip tooltip-bottom" data-tip="Exportar padrón de apoyos">
+          <button @click.prevent="exportToExcel" :disabled="loadingExport"
+            class="btn btn-square btn-ghost hover:bg-green-50 hover:text-green-600 transition-all duration-200 hover:scale-110 disabled:opacity-50">
+            <IconFileDownload v-if="!loadingExport" class="w-5 h-5" />
+            <IconLoader v-else class="w-5 h-5 animate-spin" />
+          </button>
+        </div>
+      </div>
     </div>
 
     <div class="flex justify-between items-center">
@@ -27,30 +53,47 @@
     </div>
 
     <div class="mb-8">
-      <ContributionStats :loadingContributions="loadingSummary" :beneficiariesCount="beneficiariesCount" :contributionsCount="contributionsCount" />
+      <ContributionStats :loadingContributions="loadingSummary" :beneficiariesCount="beneficiariesCount"
+        :contributionsCount="contributionsCount" />
     </div>
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
       <SummaryChart :data="contibutionsSummaryData" :isLoading="loadingSummary" />
-      <SummaryByCategoryChart @update:category="selectCategoryFilter" :isLoading="loadingSummaryByCategory" :data="contributionSummaryByCategoryData" />
+      <SummaryByCategoryChart @update:category="selectCategoryFilter" :isLoading="loadingSummaryByCategory"
+        :data="contributionSummaryByCategoryData" />
     </div>
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-      <BeneficiariesByDelegationChart :data="beneficiariesByDelegationData" :isLoading="loadingBeneficiariesByDelegation" />
+      <BeneficiariesByDelegationChart :data="beneficiariesByDelegationData"
+        :isLoading="loadingBeneficiariesByDelegation" />
       <BeneficiariesBySexChart :data="beneficiariesBySexData" :isLoading="loadingBeneficiariesBySex" />
     </div>
   </div>
+
+  <!-- Quick Contribution Modal -->
+  <QuickContributionModal :show="showQuickContributionModal" @close="showQuickContributionModal = false"
+    @beneficiary-found="handleBeneficiaryFound" @beneficiary-not-found="handleBeneficiaryNotFound" />
+
+  <!-- New Beneficiary Modal -->
+  <NewBeneficiaryModal :showModal="showNewBeneficiaryModal" :defaultCurp="defaultCurp"
+    @close:modal="showNewBeneficiaryModal = false" @refresh:beneficiaries="handleBeneficiaryCreated" />
+
+
 </template>
 
 <script setup>
 import { ref, watch, computed, onMounted } from 'vue';
-import { IconFileDownload, IconArrowUpRight } from '@tabler/icons-vue';
+import { IconFileDownload, IconUsers, IconLoader, IconPlus, IconUsersGroup } from '@tabler/icons-vue';
 import DateSelector from '@/components/DashboardView/DateSelector.vue';
 import SummaryByCategoryChart from '@/components/DashboardView/SummaryByCategoryChart.vue';
 import ContributionStats from '@/components/DashboardView/ContributionStats.vue';
 import SummaryChart from '@/components/DashboardView/SummaryChart.vue';
 import BeneficiariesByDelegationChart from '@/components/DashboardView/BeneficiariesByDelegationChart.vue';
 import BeneficiariesBySexChart from '@/components/DashboardView/BeneficiariesBySexChart.vue';
+
+import QuickContributionModal from '@/components/DashboardView/QuickContributionModal.vue';
+import NewBeneficiaryModal from '@/components/BeneficiariesView/NewBeneficiaryModal.vue';
 import contributionServices from '@/services/contributionServices';
 import beneficiaryServices from '@/services/beneficiaryServices';
+import router from '@/router';
 import { toast } from 'vue3-toastify';
 import { AxiosError } from 'axios';
 import { useAuth } from '@/composables/useAuth';
@@ -76,6 +119,9 @@ const loadingBeneficiariesBySex = ref(false)
 const loadingBeneficiariesCount = ref(false)
 const loadingContributions = ref(false)
 const loadingExport = ref(false)
+const showQuickContributionModal = ref(false)
+const showNewBeneficiaryModal = ref(false)
+const defaultCurp = ref('')
 
 const contibutionsSummaryData = ref([])
 const contributionSummaryByCategoryData = ref([])
@@ -177,10 +223,10 @@ const getBeneficiariesByDelegation = async () => {
       toast.error(err.response?.data?.message)
     } else {
       toast.error(err)
-    } 
-  } finally {
-      loadingBeneficiariesByDelegation.value = false
     }
+  } finally {
+    loadingBeneficiariesByDelegation.value = false
+  }
 }
 
 const getBeneficiariesBySex = async () => {
@@ -214,17 +260,17 @@ const getAllContributions = async () => {
       contributionsData.value = response.data
     }
   } catch (err) {
-      if (err instanceof AxiosError) {
-        toast.error(err.response?.data?.message)
-      } else {
-        toast.error(err)
-      }
+    if (err instanceof AxiosError) {
+      toast.error(err.response?.data?.message)
+    } else {
+      toast.error(err)
+    }
   } finally {
-    loadingExport.value = false 
+    loadingExport.value = false
   }
-  }
+}
 
-  // Export to Excel
+// Export to Excel
 // Export to Excel
 const json_fields = {
   "folio": "folio",
@@ -251,17 +297,17 @@ const json_fields = {
 
 const exportToExcel = async () => {
   loadingExport.value = true;
-  
+
   try {
     await getAllContributions();
-    
+
     const dataExcel = contributionsData.value.map(contribution => {
       const row = {};
       for (const [key, value] of Object.entries(json_fields)) {
         try {
           // Los campos no están anidados, así que accedemos directamente
           const cellValue = contribution[value];
-          
+
           // Formatear fechas si es necesario
           if ((key === 'Fecha de nacimiento' || key === 'Fecha de apoyo') && cellValue) {
             // Suponiendo que las fechas ya vienen formateadas como DD/MM/YYYY
@@ -279,7 +325,7 @@ const exportToExcel = async () => {
 
     // Crear hoja de cálculo
     const worksheet = XLSX.utils.json_to_sheet(dataExcel);
-    
+
     // Ajustar anchos de algunas columnas
     worksheet['!cols'] = [
       { wch: 15 }, // Folio
@@ -303,7 +349,7 @@ const exportToExcel = async () => {
       { wch: 25 }, // Apoyo otorgado
       { wch: 10 }  // Cantidad
     ];
-    
+
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Apoyos');
     XLSX.writeFile(workbook, 'registro-apoyos-otorgados-smdif-la-paz.xlsx');
@@ -322,6 +368,34 @@ const selectCategoryFilter = (category) => {
     return
   }
   getContributionSummaryByCategory(category._id)
+}
+
+// Handlers para Quick Contribution
+const handleBeneficiaryFound = (beneficiary) => {
+  // Redirigir a la vista del beneficiario en la pestaña de contribuciones
+  router.push(`/beneficiaries/${beneficiary._id}`);
+}
+
+const handleBeneficiaryNotFound = (curp) => {
+  // Abrir modal de nuevo beneficiario con el CURP prellenado
+  defaultCurp.value = curp;
+  showNewBeneficiaryModal.value = true;
+}
+
+const handleBeneficiaryCreated = () => {
+  // Cerrar modal y refrescar datos si es necesario
+  showNewBeneficiaryModal.value = false;
+  defaultCurp.value = '';
+  toast.success('Beneficiario creado exitosamente');
+  // Opcional: refrescar estadísticas
+  getBeneficiariesTotal();
+}
+
+const handleMassiveContributionCreated = () => {
+  // Refrescar estadísticas después de crear jornada masiva
+  getContributionSummary();
+  getContributionSummaryByCategory();
+  getBeneficiariesTotal();
 }
 
 onMounted(() => {
