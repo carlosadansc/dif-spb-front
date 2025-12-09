@@ -5,7 +5,7 @@
                 <IconArrowLeft class="w-6 h-6" />
             </button>
             <div>
-                <h1 class="text-2xl font-bold text-gray-900">Jornada - Apoyo Masivo</h1>
+                <h1 class="text-2xl font-bold text-gray-900">Apoyo Múltiple | Jornada</h1>
                 <p class="text-sm text-gray-500">
                     Registre un apoyo para múltiples beneficiarios en una jornada.
                 </p>

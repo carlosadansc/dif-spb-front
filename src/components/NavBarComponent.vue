@@ -20,7 +20,7 @@
                 <IconUsers />Beneficiarios
               </a></li>
             <li v-if="isStandardUser" class="text-red-800"><a @click="goTo('/massive-contributions')">
-                <IconUsersGroup />Jornadas
+                <IconUsersGroup />Apoyos multiples
               </a></li>
             <li v-if="isAdmin" class="text-red-800"><a @click="goTo('/categories')">
                 <IconFilters />Categorias

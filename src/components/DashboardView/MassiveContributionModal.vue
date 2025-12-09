@@ -4,7 +4,7 @@
       <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" @click="closeModal">
         ✕
       </button>
-      <h3 class="text-lg font-bold">Jornada - Apoyo masivo</h3>
+      <h3 class="text-lg font-bold">Apoyo múltiple | Jornada</h3>
       <p class="text-sm text-gray-500 mt-2">
         Registre un apoyo para múltiples beneficiarios en una jornada.
       </p>

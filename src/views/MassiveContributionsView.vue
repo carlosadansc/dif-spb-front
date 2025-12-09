@@ -1,6 +1,6 @@
 <template>
     <div class="container mx-auto px-4">
-        <h1 class="text-2xl font-semibold text-gray-900 mb-8">Jornadas (Apoyos Masivos)</h1>
+        <h1 class="text-2xl font-semibold text-gray-900 mb-8">Apoyos Múltiples | Jornadas</h1>
 
         <!-- Filtros expandidos -->
         <div class="card bg-base-100 shadow-sm border mb-6">

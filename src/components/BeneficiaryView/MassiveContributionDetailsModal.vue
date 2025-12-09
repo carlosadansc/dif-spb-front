@@ -5,7 +5,7 @@
                 ✕
             </button>
 
-            <h3 class="text-lg font-bold mb-2">Detalle de Jornada (Apoyo Masivo)</h3>
+            <h3 class="text-lg font-bold mb-2">Detalle de Apoyo Múltiple | Jornada</h3>
             <p class="text-xs text-gray-500 mb-4">
                 Folio: <span class="font-bold text-red-800">{{ contribution.folio || 'N/A' }}</span>
             </p>
