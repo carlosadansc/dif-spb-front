@@ -23,7 +23,7 @@
       <!-- Preview State -->
       <div v-else
         class="w-full h-full absolute inset-0 rounded-lg overflow-hidden flex items-center justify-center bg-gray-100">
-        <img :src="previewUrl" alt="Foto de perfil" class="w-full h-full object-cover" @error="onImageError" />
+        <img :src="previewUrl" alt="Foto de perfil" class="w-full h-full object-cover" />
 
         <!-- Hover Overlay -->
         <div
@@ -63,7 +63,7 @@ const emit = defineEmits(['photo-selected', 'photo-error']);
 const props = defineProps({
   defaultPhoto: {
     type: String,
-    default: 'https://via.placeholder.com/150/cccccc/000000?text=Perfil'
+    default: 'https://placehold.org/300x300/cccccc/000000?text=Hola+Mundo'
   },
   beneficiaryId: {
     type: String,
@@ -95,12 +95,6 @@ const isDefaultPhoto = computed(() => {
 watch(() => previewUrl.value, (newUrl) => {
   showDeleteButton.value = !defaultPhotoPattern.test(newUrl);
 }, { immediate: true });
-
-const onImageError = (event) => {
-  // If error, show default placeholder or broken state
-  // event.target.src = 'https://via.placeholder.com/150/cccccc/000000?text=Error';
-  // Let logic handle it, maybe revert to generic
-};
 
 // Actualizar la referencia local cuando cambie la prop
 watch(() => props.defaultPhoto, (newPhoto) => {
@@ -140,7 +134,7 @@ const deletePhoto = async () => {
 
     // Restablecer a la imagen predeterminada
     cleanupObjectUrl();
-    previewUrl.value = 'https://via.placeholder.com/150/cccccc/000000?text=Perfil';
+    previewUrl.value = 'https://placehold.org/300x300/cccccc/000000?text=Hola+Mundo';
 
     // Actualizar el perfil con la foto vacía
     const updateResponse = await beneficiaryServices.updateBeneficiary(

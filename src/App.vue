@@ -6,7 +6,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref } from 'vue';
 import SplashScreen from './components/SplashScreen.vue';
 
 const showSplash = ref(true);
