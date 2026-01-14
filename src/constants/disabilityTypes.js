@@ -1,34 +1,39 @@
 const disabilityTypes = [
-    {
-        id: 1,
-        text: 'NEUROLÓGICA',
-        value: 'NEUROLOGICA'
-    },
-    {
-        id: 2,
-        text: 'AUDITIVA',
-        value: 'AUDITIVA'
-    },
-    {
-        id: 3,
-        text: 'VISUAL',
-        value: 'VISUAL'
-    },
-    {
-        id: 4,
-        text: 'FÍSICA / MOTRÍZ',
-        value: 'MOTRIZ'
-    },
-    {
-        id: 5,
-        text: 'COGNITIVA',
-        value: 'COGNITIVA'
-    },
-    {
-        id: 6,
-        text:'PSICOSOCIAL',
-        value: 'PSICOSOCIAL'
-    }
-]
+  {
+    id: 1,
+    text: "NEUROLÓGICA",
+    value: "NEUROLOGICA",
+  },
+  {
+    id: 2,
+    text: "AUDITIVA",
+    value: "AUDITIVA",
+  },
+  {
+    id: 3,
+    text: "VISUAL",
+    value: "VISUAL",
+  },
+  {
+    id: 4,
+    text: "FÍSICA / MOTRÍZ",
+    value: "MOTRIZ",
+  },
+  {
+    id: 5,
+    text: "COGNITIVA",
+    value: "COGNITIVA",
+  },
+  {
+    id: 6,
+    text: "PSICOSOCIAL",
+    value: "PSICOSOCIAL",
+  },
+  {
+    id: 7,
+    text: "NEUTOMOTORA",
+    value: "NEUTOMOTORA",
+  },
+];
 
-export default disabilityTypes
+export default disabilityTypes;

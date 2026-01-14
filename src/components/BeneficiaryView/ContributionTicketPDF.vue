@@ -97,13 +97,13 @@
                 <p class="signature-role">RECIBE</p>
                 <div class="signature-line"></div>
                 <p class="signature-name">{{ contribution.receiver }}</p>
-                <p class="signature-label">BENEFICIARIO / CONYUGUE O TUTOR</p>
+                <!-- <p class="signature-label">BENEFICIARIO / CONYUGUE O TUTOR</p> -->
               </div>
               <div class="signature-column">
                 <p class="signature-role">ENTREGA</p>
                 <div class="signature-line"></div>
-                <p class="signature-name">{{ contribution.createdBy.name }} {{ contribution.createdBy.lastname }}</p>
-                <p class="signature-label">{{ contribution.createdBy.position }}</p>
+                <p class="signature-name">{{ contribution.donor }}</p>
+                <!-- <p class="signature-label">{{ contribution.createdBy.position }}</p> -->
               </div>
             </div>
             
@@ -135,7 +135,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import html2canvas from 'html2canvas-pro';
 import jsPDF from 'jspdf';
 import { useDate } from '@/utils/dateTool';
@@ -147,6 +147,19 @@ import { useAuth } from '@/composables/useAuth'
 // composables
 const { user } = useAuth()
 const { formatDate, getCurrentDate } = useDate()
+
+// computed
+const evidencePhotoUrl = computed(() => {
+  if (!props.contribution.evidencePhoto) return '';
+  const baseURL = import.meta.env.VITE_API_ENDPOINT || 'http://localhost:3000';
+  const photoPath = props.contribution.evidencePhoto;
+  // Si la ruta ya es una URL completa, devolverla tal cual
+  if (photoPath.startsWith('http')) {
+    return photoPath;
+  }
+  // Si no, construir la URL completa
+  return `${baseURL}${photoPath.startsWith('/') ? '' : '/'}${photoPath}`;
+});
 
 // props
 const props = defineProps({
@@ -216,6 +229,62 @@ const generateTicketPDF = async () => {
     heightLeft -= pageHeight;
   }
 
+  // Agregar página de evidencia fotográfica si existe
+  if (props.contribution.evidencePhoto) {
+    pdf.addPage();
+    
+    // Agregar encabezado
+    const headerY = 15;
+    pdf.setFontSize(16);
+    pdf.text('EVIDENCIA FOTOGRÁFICA', pageWidth / 2, headerY, { align: 'center' });
+    
+    pdf.setFontSize(10);
+    pdf.text(`Folio: ${props.contribution.folio}`, pageWidth / 2, headerY + 8, { align: 'center' });
+    
+    // Línea divisora
+    pdf.line(10, headerY + 12, pageWidth - 10, headerY + 12);
+
+    // Cargar y agregar imagen
+    try {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        const imgWidthEv = pageWidth - 20;
+        const imgHeightEv = (img.height * imgWidthEv) / img.width;
+        const imgY = headerY + 20;
+        
+        // Asegurar que la imagen quepa en la página
+        const maxHeight = pageHeight - imgY - 30;
+        let finalHeight = imgHeightEv;
+        let finalWidth = imgWidthEv;
+        
+        if (finalHeight > maxHeight) {
+          finalHeight = maxHeight;
+          finalWidth = (img.width * finalHeight) / img.height;
+        }
+        
+        const centerX = (pageWidth - finalWidth) / 2;
+        pdf.addImage(img, 'JPEG', centerX, imgY, finalWidth, finalHeight);
+        
+        // Agregar información del beneficiario
+        const footerY = imgY + finalHeight + 15;
+        pdf.setFontSize(10);
+        pdf.text(`Beneficiario: ${props.beneficiary.name} ${props.beneficiary.fatherSurname} ${props.beneficiary.motherSurname}`, pageWidth / 2, footerY, { align: 'center' });
+        pdf.text(`Fecha de entrega: ${formatDate(props.contribution.contributionDate)}`, pageWidth / 2, footerY + 8, { align: 'center' });
+        
+        // Guardar el PDF
+        pdf.save(`recibo-entrega-apoyo-${props.beneficiary.name.toLowerCase()}-${props.beneficiary.fatherSurname.toLowerCase()}-${props.contribution.folio}.pdf`);
+      };
+      img.src = evidencePhotoUrl.value;
+    } catch (error) {
+      console.error('Error al cargar imagen de evidencia:', error);
+      pdf.save(`recibo-entrega-apoyo-${props.beneficiary.name.toLowerCase()}-${props.beneficiary.fatherSurname.toLowerCase()}-${props.contribution.folio}.pdf`);
+    }
+  } else {
+    // Guardar sin página de evidencia
+    pdf.save(`recibo-entrega-apoyo-${props.beneficiary.name.toLowerCase()}-${props.beneficiary.fatherSurname.toLowerCase()}-${props.contribution.folio}.pdf`);
+  }
+
   // Agregar metadatos al PDF
   pdf.setProperties({
     title: `Recibo de Entrega de Apoyo - ${props.beneficiary.name} ${props.beneficiary.fatherSurname}`,
@@ -224,8 +293,6 @@ const generateTicketPDF = async () => {
     keywords: 'apoyo, recibo, beneficiario, oficial',
     creator: 'Sistema de Padron de Beneficiarios'
   });
-
-  pdf.save(`recibo-entrega-apoyo-${props.beneficiary.name.toLowerCase()}-${props.beneficiary.fatherSurname.toLowerCase()}-${props.contribution.folio}.pdf`);
 };
 
 // expose
@@ -468,6 +535,91 @@ defineExpose({ generateTicketPDF });
   flex: 1;
   font-size: 10px;
   color: #333;
+}
+
+/* PÁGINA DE EVIDENCIA */
+.page-break {
+  page-break-before: always !important;
+  break-before: page !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  page-break-inside: avoid !important;
+  break-inside: avoid !important;
+}
+
+.evidence-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.5rem;
+  background-color: #ffffff;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+
+.evidence-header {
+  text-align: center;
+  margin-bottom: 0.5rem;
+  border-bottom: 2px solid #333;
+  padding-bottom: 0.3rem;
+  width: 100%;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+
+.evidence-title {
+  font-size: 16px;
+  font-weight: bold;
+  margin: 0 0 0.3rem 0;
+  color: #000;
+}
+
+.evidence-folio {
+  font-size: 12px;
+  color: #666;
+  margin: 0;
+}
+
+.evidence-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0.5rem 0;
+  width: 100%;
+  max-height: 25vh;
+  page-break-inside: avoid !important;
+  break-inside: avoid !important;
+}
+
+.evidence-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+
+.evidence-footer {
+  text-align: center;
+  margin-top: 0.5rem;
+  padding-top: 0.3rem;
+  border-top: 1px solid #ddd;
+  width: 100%;
+  font-size: 10px;
+  color: #333;
+}
+
+.evidence-beneficiary {
+  margin: 0.5rem 0;
+  font-weight: bold;
+}
+
+.evidence-date {
+  margin: 0.5rem 0;
+  color: #666;
 }
 
 .document-generated {

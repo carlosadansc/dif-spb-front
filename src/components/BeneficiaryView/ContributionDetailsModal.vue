@@ -15,10 +15,14 @@
       <!-- General Information -->
       <div class="mb-6">
         <h4 class="font-bold text-md mb-3 text-red-800">Información General</h4>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
             <label class="text-xs font-medium text-gray-600">Fecha de entrega</label>
             <p class="text-sm">{{ formatDate(contribution.contributionDate) }}</p>
+          </div>
+          <div>
+            <label class="text-xs font-medium text-gray-600">Entregó</label>
+            <p class="text-sm">{{ contribution.donor || 'N/A' }}</p>
           </div>
           <div>
             <label class="text-xs font-medium text-gray-600">Recibió</label>

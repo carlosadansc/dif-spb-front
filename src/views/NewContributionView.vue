@@ -201,7 +201,7 @@
                         <!-- Preview Area -->
                         <div v-else
                             class="relative w-full max-w-md mx-auto rounded-lg overflow-hidden border border-gray-200 shadow-sm group">
-                            <img :src="contribution.evidencePhoto" alt="Evidencia"
+                            <img :src="`${baseURL}${contribution.evidencePhoto}`" alt="Evidencia"
                                 class="w-full h-auto object-cover max-h-[300px]" />
 
                             <div
@@ -213,6 +213,15 @@
                                 </button>
                             </div>
                         </div>
+                    </div>
+
+                    <!-- Quien entrega -->
+                    <div>
+                        <label for="donor" class="block text-sm font-medium text-gray-700 required">Quien
+                            entrega</label>
+                        <input v-model="contribution.donor" id="donor"
+                            placeholder="Nombre del usuario que entrega el apoyo"
+                            class="input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
                     </div>
 
                     <!-- Quien recibe -->
@@ -269,15 +278,20 @@ import { IconPlus, IconTrash, IconMinus, IconX, IconArrowLeft, IconShoppingCart,
 import contributionServices from '@/services/contributionServices';
 import { useAuth } from '@/composables/useAuth';
 import { useRouter, useRoute } from 'vue-router'; // useRoute added
-import { normalizeObjectTextProperties, normalizeText } from '@/utils/normalizeObjectText'
+import { normalizeText } from '@/utils/normalizeObjectText'
+import { useDate } from '@/utils/dateTool'
 import beneficiaryServices from '@/services/beneficiaryServices'
 import ConfirmDeleteModal from '@/components/ConfirmDeleteModal.vue';
 import { AxiosError } from 'axios';
+import dayjs from 'dayjs';
 
 // composables
-const { authHeader } = useAuth()
+const { authHeader, user } = useAuth()
+const { getCurrentDate } = useDate()
 const router = useRouter()
 const route = useRoute() // Access route parameters
+const baseURL = import.meta.env.VITE_API_ENDPOINT || 'http://localhost:3000';
+
 
 // data
 const beneficiaryId = route.params.id; // Get ID from route
@@ -304,7 +318,8 @@ const contribution = ref({
     quantity: 1,
     comments: '',
     receiver: '',
-    contributionDate: new Date().toISOString().split('T')[0], // Default to today
+    donor: user.value ? user.value.name + ' ' + user.value.lastname : '',
+    contributionDate: dayjs().format('YYYY-MM-DD'), // Default to today
     evidencePhoto: ''
 })
 
@@ -485,6 +500,7 @@ const preparePayload = () => {
         beneficiary: beneficiaryId,
         comments: normalizeText(contribution.value.comments),
         contributionDate: contribution.value.contributionDate,
+        donor: normalizeText(contribution.value.donor),
         receiver: normalizeText(contribution.value.receiver),
         evidencePhoto: contribution.value.evidencePhoto
     };
