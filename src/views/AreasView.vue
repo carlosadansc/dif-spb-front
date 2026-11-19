@@ -1,22 +1,22 @@
 <template>
-  <div class="container mx-auto px-4 py-6">
-    <div class="flex justify-between items-center mb-6">
-      <h1 class="text-2xl font-semibold text-gray-900">Áreas</h1>
+  <div class="app-page">
+    <AppPageHeader title="Áreas" description="Organiza las áreas responsables y su estructura jerárquica.">
+      <template #icon><IconSitemap class="h-6 w-6" /></template>
       <button 
         @click="openCreateModal"
-        class="btn bg-red-800 hover:bg-red-900 text-white"
+        class="btn btn-brand min-h-11"
       >
         <IconPlus class="w-4 h-4 mr-2" />
-        Nueva Área
+        Nueva área
       </button>
-    </div>
+    </AppPageHeader>
 
     <!-- Search and Filters -->
-    <div class="card bg-base-100 shadow-sm border mb-6">
-      <div class="card-body p-4">
-        <div class="flex items-center gap-4">
+    <div class="toolbar-panel">
+      <div class="card-body p-0">
+        <div class="flex flex-col gap-3 md:flex-row md:items-center">
           <!-- Search -->
-          <div class="form-control w-full max-w-xs">
+          <div class="form-control w-full md:max-w-md">
             <div class="relative">
               <input
                 v-model="search"
@@ -25,14 +25,14 @@
                 class="input input-bordered w-full pr-10"
                 @keyup.enter="applyFilters"
               />
-              <button class="absolute right-3 top-1/2 transform -translate-y-1/2" @click="applyFilters">
-                <i class="fas fa-search text-gray-400"></i>
+              <button type="button" class="absolute right-1 top-1/2 grid min-h-11 min-w-11 -translate-y-1/2 place-items-center text-gray-600" aria-label="Buscar áreas" @click="applyFilters">
+                <IconSearch class="h-5 w-5" />
               </button>
             </div>
           </div>
           
           <!-- Status Filter -->
-          <div class="form-control w-full max-w-xs">
+          <div class="form-control w-full md:max-w-xs">
             <select v-model="statusFilter" class="select select-bordered w-full" @change="applyFilters">
               <option value="">Todos los estados</option>
               <option value="active">Activos</option>
@@ -41,8 +41,8 @@
           </div>
           
           <!-- Clear Filters -->
-          <button @click="clearFilters" class="btn btn-ghost">
-            <i class="fas fa-times mr-2"></i>
+          <button v-if="hasActiveFilters" @click="clearFilters" class="btn btn-ghost md:ml-auto">
+            <IconFilterX class="h-5 w-5" />
             Limpiar filtros
           </button>
         </div>
@@ -50,7 +50,7 @@
     </div>
 
     <!-- Areas Table -->
-    <div class="card bg-base-100 shadow-sm border">
+    <div class="surface-panel">
       <div class="card-body p-0">
         <EasyDataTable
           v-model:server-options="serverOptions"
@@ -95,6 +95,7 @@
                 @click="openEditModal(findAreaById(_id))" 
                 class="btn btn-ghost btn-sm btn-square text-blue-600 hover:bg-blue-50"
                 title="Editar"
+                aria-label="Editar área"
               >
                 <IconPencil class="h-4 w-4" />
               </button>
@@ -103,6 +104,7 @@
                 class="btn btn-ghost btn-sm btn-square"
                 :class="active ? 'text-green-600 hover:bg-green-50' : 'text-red-600 hover:bg-red-50'"
                 :title="active ? 'Desactivar' : 'Activar'"
+                :aria-label="active ? 'Desactivar área' : 'Activar área'"
               >
                 <IconToggleLeft v-if="!active" class="h-4 w-4" />
                 <IconToggleRight v-else class="h-4 w-4" />
@@ -111,6 +113,7 @@
                 @click="confirmDelete(_id)" 
                 class="btn btn-ghost btn-sm btn-square text-red-600 hover:bg-red-50"
                 title="Eliminar"
+                aria-label="Eliminar área"
               >
                 <IconTrash class="h-4 w-4" />
               </button>
@@ -140,37 +143,17 @@
       @save="saveArea"
     />
 
-    <!-- Delete Confirmation Modal -->
-    <div v-if="showDeleteModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div class="bg-white rounded-lg p-6 w-full max-w-md">
-        <h3 class="text-lg font-semibold mb-4">Confirmar eliminación</h3>
-        <p class="mb-6">¿Estás seguro de que deseas eliminar esta área? Esta acción no se puede deshacer.</p>
-        <div class="flex justify-end gap-3">
-          <button
-            @click="showDeleteModal = false"
-            class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
-          >
-            Cancelar
-          </button>
-          <button
-            @click="deleteArea"
-            class="px-4 py-2 bg-red-600 text-white rounded-md text-sm font-medium hover:bg-red-700"
-            :disabled="loading"
-          >
-            <span v-if="loading">
-              <i class="fas fa-spinner fa-spin"></i> Eliminando...
-            </span>
-            <span v-else>Eliminar</span>
-          </button>
-        </div>
-      </div>
-    </div>
+    <ConfirmDeleteModal :show="showDeleteModal" title="Eliminar área"
+      message="¿Deseas eliminar esta área?" warning-message="Esta acción no se puede deshacer."
+      :loading="loading" @confirm="deleteArea" @close="showDeleteModal = false" />
   </div>
 </template>
 
 <script setup>
-import { IconPlus, IconPencil, IconToggleLeft, IconToggleRight, IconTrash } from '@tabler/icons-vue';
+import { IconPlus, IconPencil, IconToggleLeft, IconToggleRight, IconTrash, IconSearch, IconFilterX, IconSitemap } from '@tabler/icons-vue';
 import AreaFormModal from '@/components/AreasView/AreaFormModal.vue';
+import ConfirmDeleteModal from '@/components/ConfirmDeleteModal.vue';
+import AppPageHeader from '@/components/ui/AppPageHeader.vue';
 import { ref, computed, onMounted, watch } from 'vue';
 import { toast } from 'vue3-toastify';
 import areaService from '@/services/areaServices';
@@ -199,6 +182,8 @@ const serverOptions = ref({
 const serverItemsLength = ref(0);
 const search = ref('');
 const statusFilter = ref('');
+
+const hasActiveFilters = computed(() => Boolean(search.value.trim() || statusFilter.value));
 
 // Data
 const areas = ref([]);

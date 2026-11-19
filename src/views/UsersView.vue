@@ -1,16 +1,16 @@
 <template>
-  <div class="container mx-auto p-4">
-    <div class="flex justify-between items-center mb-6">
-      <h1 class="text-2xl font-semibold text-gray-900 mb-1">Usuarios</h1>
-      <button @click="openUserForm()" class="btn bg-red-800 hover:bg-red-900 text-white">
+  <div class="app-page">
+    <AppPageHeader title="Usuarios" description="Administra accesos, roles y estado de las cuentas del sistema.">
+      <template #icon><IconUserCog class="h-6 w-6" /></template>
+      <button @click="openUserForm()" class="btn btn-brand min-h-11">
         <IconPlus class="w-4 h-4 mr-2" />
-        Nuevo Usuario
+        Nuevo usuario
       </button>
-    </div>
+    </AppPageHeader>
 
-    <div class="card bg-base-100 shadow-sm border mb-6">
-      <div class="card-body p-4">
-        <div class="flex items-start gap-4">
+    <div class="toolbar-panel">
+      <div class="card-body p-0">
+        <div class="flex flex-col gap-3 md:flex-row md:items-center">
           <!-- Búsqueda -->
           <label class="input input-bordered flex items-center gap-2 grow">
             <input v-model="search" type="text" class="grow" placeholder="Buscar por nombre, usuario o cargo..." />
@@ -18,14 +18,14 @@
           </label>
 
           <!-- Filtro de estado -->
-          <select v-model="statusFilter" class="select select-bordered">
+          <select v-model="statusFilter" class="select select-bordered w-full md:w-48">
             <option value="all">Todos los estados</option>
             <option value="active">Solo activos</option>
             <option value="inactive">Solo inactivos</option>
           </select>
 
           <!-- Filtro de tipo de usuario -->
-          <select v-model="userTypeFilter"  class="select select-bordered">
+          <select v-model="userTypeFilter" class="select select-bordered w-full md:w-52">
             <option value="">Todos los tipos</option>
             <option value="admin">Administradores</option>
             <option value="executive">Ejecutivos</option>
@@ -35,7 +35,7 @@
       </div>
     </div>
 
-    <div class="bg-white rounded-lg shadow overflow-hidden">
+    <div class="surface-panel overflow-hidden">
       <EasyDataTable
         v-model:server-options="serverOptions"
         :server-items-length="serverItemsLength"
@@ -63,7 +63,7 @@
 
         <template #item-actions="item">
           <div class="flex space-x-1">
-            <button @click="editUser(item)" class="btn btn-ghost btn-xs text-blue-600 hover:bg-blue-50" title="Editar">
+            <button @click="editUser(item)" class="btn btn-ghost btn-xs text-blue-600 hover:bg-blue-50" title="Editar" aria-label="Editar usuario">
               <IconPencil class="h-4 w-4" />
             </button>
             <button 
@@ -71,6 +71,7 @@
               class="btn btn-ghost btn-xs"
               :class="item.active ? 'text-green-600 hover:bg-green-50' : 'text-red-600 hover:bg-yellow-50'"
               :title="item.active ? 'Desactivar usuario' : 'Activar usuario'"
+              :aria-label="item.active ? 'Desactivar usuario' : 'Activar usuario'"
             >
               <IconToggleLeft v-if="!item.active" class="h-4 w-4" />
               <IconToggleRight v-else class="h-4 w-4" />
@@ -81,6 +82,7 @@
               class="btn btn-ghost btn-xs text-red-600 hover:bg-red-50"
               :disabled="item.deleted"
               title="Eliminar usuario"
+              aria-label="Eliminar usuario"
             >
               <IconTrash class="h-4 w-4" />
             </button>
@@ -97,17 +99,9 @@
       @saved="handleUserSaved"
     />
 
-    <!-- Delete Confirmation Modal -->
-    <div class="modal" :class="{ 'modal-open': showDeleteModal }">
-      <div class="modal-box">
-        <h3 class="font-bold text-lg">Confirmar eliminación</h3>
-        <p class="py-4">¿Estás seguro de que deseas eliminar al usuario {{ userToDelete?.name }}?</p>
-        <div class="modal-action">
-          <button class="btn" @click="showDeleteModal = false">Cancelar</button>
-          <button class="btn btn-error" @click="deleteUser">Eliminar</button>
-        </div>
-      </div>
-    </div>
+    <ConfirmDeleteModal :show="showDeleteModal" title="Eliminar usuario"
+      :message="`¿Deseas eliminar al usuario ${userToDelete?.name || ''}?`"
+      warning-message="Esta acción no se puede deshacer." @confirm="deleteUser" @close="showDeleteModal = false" />
   </div>
 </template>
 
@@ -117,7 +111,9 @@ import { toast } from 'vue3-toastify';
 import userServices from '@/services/userServices';
 import { useAuth } from '@/composables/useAuth';
 import UserFormModal from '@/components/UsersView/UserFormModal.vue';
-import { IconPlus, IconPencil, IconToggleLeft, IconToggleRight, IconTrash, IconSearch } from '@tabler/icons-vue';
+import ConfirmDeleteModal from '@/components/ConfirmDeleteModal.vue';
+import AppPageHeader from '@/components/ui/AppPageHeader.vue';
+import { IconPlus, IconPencil, IconToggleLeft, IconToggleRight, IconTrash, IconSearch, IconUserCog } from '@tabler/icons-vue';
 import 'vue3-easy-data-table/dist/style.css';
 
 const { authHeader } = useAuth();

@@ -34,7 +34,7 @@
           <div class="formal-section-content">
             <div class="beneficiary-header">
               <div class="beneficiary-photo-container" v-if="props.assessment.beneficiary.photo">
-                <img :src="getPhotoUrl(props.assessment.beneficiary.photo)" alt="Foto del beneficiario" class="beneficiary-photo" />
+                <ProtectedImage :path="props.assessment.beneficiary.photo" alt="Foto del beneficiario" class="beneficiary-photo" />
               </div>
               <div class="beneficiary-info">
                 <table class="info-table">
@@ -324,8 +324,8 @@
           </div>
         </div>
         <div class="footer-text">
-          <p>Este documento es válido como estudio socioeconómico del beneficiario en el Sistema del Padrón de Beneficiarios del DIF Municipal La Paz Baja California Sur.</p>
-          <p class="document-generated">Documento generado el {{ getCurrentDate() }} a través del Sistema del Padrón de Beneficiarios (SPB DIF La Paz)</p>
+          <p>Este documento es válido como estudio socioeconómico del beneficiario en el Sistema de Padrón de Beneficiarios del DIF Municipal La Paz Baja California Sur.</p>
+          <p class="document-generated">Documento generado el {{ getCurrentDate() }} a través del Sistema de Padrón de Beneficiarios (SPB DIF La Paz)</p>
           <p class="document-operator">Expedido por: {{ user.name }} {{ user.lastname }} / {{ capitalize(user.position) }}</p>
         </div>
       </div>
@@ -333,7 +333,7 @@
       <div class="privacy-section" id="pdf-privacy">
       <!-- Aviso de Privacidad -->
           <div class="privacy-notice">
-            <h4 class="privacy-title">AVISO DE PRIVACIDAD - SISTEMA DEL PADRÓN DE BENEFICIARIOS SMDIF LA PAZ</h4>
+            <h4 class="privacy-title">AVISO DE PRIVACIDAD - SISTEMA DE PADRÓN DE BENEFICIARIOS (SPB) SMDIF LA PAZ</h4>
             <div class="privacy-content">
               <p><strong>Responsable de la protección de sus datos personales:</strong> Sistema para el Desarrollo Integral de la Familia del Municipio de La Paz, Baja California Sur (DIF Municipal La Paz), con domicilio en calle Nayarit 490, Col. Pueblo Nuevo, La Paz Baja California Sur, CP: 23060, teléfono 612 125 8400, correo electrónico dif@lapaz.gob.mx.</p>
               
@@ -387,6 +387,7 @@ import capitalize from '@/utils/capitalize';
 import logoDif from '@/assets/img/logo-dif.png';
 import logoAyunta from '@/assets/img/logo-ayunta.png';
 import { useAuth } from '@/composables/useAuth';
+import ProtectedImage from '@/components/ProtectedImage.vue';
 
 // composables
 const { user } = useAuth();
@@ -435,11 +436,6 @@ const formatBelonging = (belonging) => {
     'CARTON': 'Cartón'
   };
   return belongingMap[belonging] || belonging;
-};
-
-const apiEndpoint = import.meta.env.VITE_API_ENDPOINT || "http://localhost:3000";
-const getPhotoUrl = (photo) => {
-  return apiEndpoint + photo;
 };
 
 const generateSocioeconomicPDF = async () => {
@@ -764,7 +760,7 @@ const generateSocioeconomicPDF = async () => {
       subject: 'Estudio Socioeconómico de Beneficiario DIF Municipal',
       author: 'DIF Municipal La Paz Baja California Sur.',
       keywords: 'beneficiario, estudio, socioeconómico',
-      creator: 'Sistema del Padrón de Beneficiarios'
+      creator: 'SPB - Sistema de Padrón de Beneficiarios'
     });
 
     console.log('Saving PDF...');

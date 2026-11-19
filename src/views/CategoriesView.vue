@@ -1,18 +1,18 @@
 <template>
-  <div class="container mx-auto p-4">
+  <div class="app-page">
     <!-- Header -->
-    <div class="flex justify-between items-center mb-6">
-      <h1 class="text-2xl font-semibold text-gray-900 mb-1">Categorías</h1>
-      <button @click="openCreateModal" class="btn bg-red-800 hover:bg-red-900 text-white" :disabled="loading">
+    <AppPageHeader title="Categorías" description="Organiza los tipos de apoyo y los productos o servicios disponibles.">
+      <template #icon><IconCategory2 class="h-6 w-6" /></template>
+      <button @click="openCreateModal" class="btn btn-brand min-h-11" :disabled="loading">
         <IconPlus class="w-4 h-4 mr-2" />
-        Nueva Categoría
+        Nueva categoría
       </button>
-    </div>
+    </AppPageHeader>
 
     <!-- Search and Filters -->
-    <div class="card bg-base-100 shadow-sm border mb-6">
-      <div class="card-body p-4">
-        <div class="flex items-start gap-4">
+    <div class="toolbar-panel">
+      <div class="card-body p-0">
+        <div class="flex flex-col gap-3 md:flex-row md:items-center">
           <!-- Search -->
           <label class="input input-bordered flex items-center gap-2 grow">
             <input v-model="searchQuery" type="text" class="grow" placeholder="Buscar categorías..." />
@@ -20,7 +20,7 @@
           </label>
 
           <!-- Status Filter -->
-          <select v-model="statusFilter" class="select select-bordered">
+          <select v-model="statusFilter" class="select select-bordered w-full md:w-52">
             <option value="all">Todos los estados</option>
             <option value="active">Solo activas</option>
             <option value="inactive">Solo inactivas</option>
@@ -38,34 +38,21 @@
     </div>
 
     <!-- Empty State -->
-    <div v-else-if="filteredCategories.length === 0"
-      class="text-center py-16 border-2 border-dashed rounded-lg bg-base-100">
-      <div class="mx-auto w-20 h-20 text-gray-300 mb-4">
-        <IconFolderOff class="w-full h-full" />
-      </div>
-      <h3 class="text-lg font-medium text-gray-900 mb-2">
-        {{ searchQuery || statusFilter !== 'all' ? 'No se encontraron resultados' : 'No hay categorías' }}
-      </h3>
-      <p class="text-sm text-gray-500 max-w-md mx-auto mb-6">
-        {{
-          searchQuery || statusFilter !== 'all'
-            ? "No se encontraron categorías que coincidan con tu búsqueda. Intenta con otros términos o ajusta los filtros."
-            : "Aún no has creado ninguna categoría. Las categorías te ayudan a organizar tus productos y servicios."
-        }}
-      </p>
-      <div class="flex justify-center gap-3">
+    <AppEmptyState v-else-if="filteredCategories.length === 0"
+      :title="searchQuery || statusFilter !== 'all' ? 'No se encontraron resultados' : 'No hay categorías'"
+      :description="searchQuery || statusFilter !== 'all' ? 'Prueba con otros términos o ajusta los filtros.' : 'Crea categorías para organizar los productos y servicios que se entregan.'">
+      <template #icon><IconFolderOff class="h-7 w-7" /></template>
         <button v-if="searchQuery || statusFilter !== 'all'" @click="resetFilters" class="btn btn-ghost">
           Limpiar filtros
         </button>
-        <button @click="openCreateModal" class="btn bg-red-800 hover:bg-red-900 text-white">
+        <button @click="openCreateModal" class="btn btn-brand">
           <IconPlus class="w-4 h-4 mr-2" />
-          {{ searchQuery || statusFilter !== 'all' ? 'Crear nueva categoría' : 'Crear mi primera categoría' }}
+          Crear categoría
         </button>
-      </div>
-    </div>
+    </AppEmptyState>
 
     <!-- Categories Table -->
-    <div v-else class="bg-white rounded-lg shadow">
+    <div v-else class="surface-panel overflow-hidden">
       <EasyDataTable 
         :headers="tableHeaders" 
         :items="filteredCategories" 
@@ -118,7 +105,7 @@
         <!-- Actions Column -->
         <template #item-actions="item">
           <div class="dropdown dropdown-end">
-            <label tabindex="0" class="btn btn-ghost btn-sm btn-square">
+            <label tabindex="0" class="btn btn-ghost btn-sm btn-square" aria-label="Abrir acciones de categoría">
               <IconDotsVertical class="h-5 w-5" />
             </label>
             <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-48 z-10">
@@ -160,13 +147,15 @@
 
     <!-- Delete Confirmation Modal -->
     <dialog id="deleteModal" class="modal">
-      <div class="modal-box">
-        <h3 class="font-bold text-lg">¿Eliminar categoría?</h3>
-        <p class="py-4">¿Estás seguro de que deseas eliminar esta categoría? Esta acción no se puede deshacer.</p>
+      <div class="modal-box max-w-md">
+        <AppModalHeader title="Eliminar categoría" @close="closeDeleteModal">
+          <template #icon><IconAlertTriangle class="h-5 w-5" /></template>
+        </AppModalHeader>
+        <p class="text-sm leading-6 text-gray-700">¿Deseas eliminar esta categoría? Esta acción no se puede deshacer.</p>
         <div class="modal-action">
           <form method="dialog" class="flex gap-2">
-            <button class="btn">Cancelar</button>
-            <button class="btn btn-error" @click="deleteCategory">Eliminar</button>
+            <button class="btn btn-ghost">Cancelar</button>
+            <button class="btn border-red-800 bg-red-800 text-white hover:bg-red-900" @click="deleteCategory"><IconTrash class="h-4 w-4" />Eliminar categoría</button>
           </form>
         </div>
       </div>
@@ -176,11 +165,11 @@
     </dialog>
 
     <!-- Modal para gestionar productos/servicios -->
-    <div v-if="showProductModal" class="modal modal-open">
+    <div v-if="showProductModal" class="modal modal-open" role="dialog" aria-modal="true" @click.self="closeProductModal">
       <div class="modal-box max-w-3xl">
-        <h3 class="font-bold text-lg mb-4">
-          {{ selectedCategory?.name }} - Gestionar Productos/Servicios
-        </h3>
+        <AppModalHeader title="Productos y servicios" :description="selectedCategory?.name || ''" @close="closeProductModal">
+          <template #icon><IconPackage class="h-5 w-5" /></template>
+        </AppModalHeader>
         <div class="space-y-4">
           <!-- Lista de productos/servicios existentes -->
           <div class="space-y-2">
@@ -189,7 +178,7 @@
               <ul class="space-y-2">
                 <li v-for="(product, index) in currentProducts" :key="index" class="flex justify-between items-center p-2 bg-base-200 rounded">
                   <span>{{ product.name || product }}</span>
-                  <button @click="removeProductFromCategory(product._id || index)" class="btn btn-ghost btn-xs text-error">
+                  <button @click="removeProductFromCategory(product._id || index)" class="btn btn-ghost btn-xs text-error" :aria-label="`Eliminar ${product.name || product}`">
                     <IconTrash class="w-4 h-4" />
                   </button>
                 </li>
@@ -213,8 +202,8 @@
                 @keyup.enter="addProductToCategory"
                 ref="productNameInput"
               />
-              <button @click="addProductToCategory" class="btn btn-primary" :disabled="!newProduct.name?.trim()">
-                Agregar
+              <button @click="addProductToCategory" class="btn btn-brand" :disabled="!newProduct.name?.trim()">
+                <IconPlus class="h-4 w-4" /> Agregar
               </button>
             </div>
             <div class="mt-2">
@@ -243,6 +232,9 @@ import { toast } from 'vue3-toastify';
 import { normalizeText } from '@/utils/normalizeObjectText';
 import categoryServices from '@/services/categoriesServices';
 import NewCategoryModal from '@/components/CategoriesView/NewCategoryModal.vue';
+import AppPageHeader from '@/components/ui/AppPageHeader.vue';
+import AppEmptyState from '@/components/ui/AppEmptyState.vue';
+import AppModalHeader from '@/components/ui/AppModalHeader.vue';
 
 // Icons
 import { 
@@ -254,7 +246,9 @@ import {
   IconCheck, 
   IconX, 
   IconPackage, 
-  IconTrash 
+  IconTrash,
+  IconCategory2,
+  IconAlertTriangle
 } from '@tabler/icons-vue';
 
 const { authHeader } = useAuth();
@@ -385,6 +379,10 @@ const closeModal = () => {
 const confirmDelete = (categoryId) => {
   categoryToDelete.value = categoryId;
   document.getElementById('deleteModal').showModal();
+};
+
+const closeDeleteModal = () => {
+  document.getElementById('deleteModal')?.close();
 };
 
 const deleteCategory = async () => {

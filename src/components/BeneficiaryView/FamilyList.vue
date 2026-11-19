@@ -1,9 +1,13 @@
 <template>
-  <div class="container mx-auto px-4">
+  <div>
 
-    <div class="flex justify-end items-center mt-[5rem] mb-[2rem]">
+    <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
+      <div>
+        <h2 class="section-heading"><IconUsersGroup class="section-heading-icon" /> Integración familiar</h2>
+        <p class="mt-1 text-sm text-gray-600">Personas que integran el hogar del beneficiario.</p>
+      </div>
       <button @click.prevent="showModal = true" 
-      class="btn btn-square bg-red-800 font-black text-white text-[1.2rem]">+</button>
+      class="btn btn-brand min-h-11" aria-label="Agregar integrante familiar"><IconUserPlus class="h-5 w-5" />Agregar integrante</button>
     </div>
 
     <EasyDataTable v-model:server-options="serverOptions" :server-items-length="serverItemsLength" :headers="headers"
@@ -15,10 +19,14 @@
 
       <template v-if="isAdmin" #item-profile="{ _id: id }">
         <div class="tooltip tooltip-left" data-tip="Eliminar">
-          <button class="btn btn-square btn-sm my-2 mx-auto text-red-800" @click="deleteFamily(id)">
-            <IconX class="h-5 w-5" />
+          <button class="btn btn-square btn-sm my-2 mx-auto text-red-800" aria-label="Eliminar integrante familiar" @click="deleteFamily(id)">
+            <IconTrash class="h-5 w-5" />
           </button>
         </div>
+      </template>
+
+      <template #empty-message>
+        <div class="py-8 text-center text-sm text-gray-600">No hay familiares registrados.</div>
       </template>
     </EasyDataTable>
 
@@ -31,7 +39,7 @@ import { ref, onMounted, watch } from 'vue';
 import { toast } from 'vue3-toastify';
 import { AxiosError } from 'axios';
 import { useAuth } from '@/composables/useAuth';
-import { IconX } from '@tabler/icons-vue';
+import { IconTrash, IconUserPlus, IconUsersGroup } from '@tabler/icons-vue';
 import { getTranslatedError } from '@/utils/errorManager';
 import beneficiaryServices from './../../services/beneficiaryServices';
 import NewFamilyModal from './NewFamilyModal.vue';
@@ -64,8 +72,8 @@ const headers = [
   { text: 'Edad', value: 'age', sortable: true },
   { text: 'Sexo', value: 'sex', sortable: true },
   { text: 'Escolaridad', value: 'scholarship', sortable: true },
-  { text: 'Télefono', value: 'phone' },
-  { text: 'Parentezco', value: 'relationship', sortable: true },
+  { text: 'Teléfono', value: 'phone' },
+  { text: 'Parentesco', value: 'relationship', sortable: true },
   { text: 'Ocupación', value: 'occupation' },
   { text: 'Ingresos / mes', value: 'income' },
   { text: '', value: 'profile' },

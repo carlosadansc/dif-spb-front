@@ -1,59 +1,69 @@
 <template>
-  <div class="px-4 sm:px-6 lg:px-8">
-    <div class="max-w-7xl mx-auto">
+  <div class="app-page max-w-7xl">
+    <div>
 
-      <IconLoader v-if="loading" class="w-12 h-12 animate-spin absolute top-1/2 left-1/2" />
+      <div v-if="loading" class="space-y-4 pt-4" aria-label="Cargando expediente">
+        <div class="skeleton h-14 w-2/3 max-w-xl"></div>
+        <div class="skeleton h-12 w-full"></div>
+        <div class="skeleton h-72 w-full"></div>
+      </div>
 
-      <div v-if="!loading" class="flex justify-between items-center">
-        <h1 class="text-3xl font-bold text-gray-900 mt-5"><span
-            class="bg-white py-2 px-4 rounded-[10px] border border-gray-400">{{ beneficiary.name + ' ' +
-              beneficiary.fatherSurname + ' ' + beneficiary.motherSurname }}</span></h1>
-
-        <div class="flex justify-between items-center">
+      <AppPageHeader v-if="!loading" :title="beneficiaryFullName"
+        :description="beneficiary.curp ? `CURP: ${beneficiary.curp}` : 'Expediente del beneficiario'">
+        <template #icon><IconUserCircle class="h-6 w-6" /></template>
+        <button class="btn min-h-11 btn-ghost" aria-label="Volver a beneficiarios" @click="goBack">
+          <IconArrowNarrowLeft class="h-5 w-5" /> <span class="hidden sm:inline">Volver</span>
+        </button>
           <div class="tooltip tooltip-bottom" data-tip="Cancelar">
-            <button v-if="isEditing" class="btn btn-square bg-gray-300 font-black text-white mx-1"
-              @click="isEditing = false">
+            <button v-if="isEditing" class="btn min-h-11 bg-gray-200 text-gray-900"
+              aria-label="Cancelar edición" @click="isEditing = false">
               <IconCancel class="h-5 w-5 text-red-800" />
+              <span class="hidden sm:inline">Cancelar</span>
             </button>
           </div>
           <div class="tooltip tooltip-bottom"
             :data-tip="!isEditing ? 'Editar información del beneficiario' : 'Guardar cambios'">
             <button @click.prevent="toggleEditMode" id="edit-save"
-              class="btn btn-square bg-red-800 font-black text-white mx-1"><span v-if="loadingSave"
-                class="loading loading-spinner"></span>
+              :aria-label="isEditing ? 'Guardar cambios' : 'Editar expediente'"
+              class="btn min-h-11 bg-red-800 font-bold text-white hover:bg-red-900"><span v-if="loadingSave"
+                 class="loading loading-spinner"></span>
               <IconEdit v-if="!isEditing && !loadingSave" class="h-5 w-5" />
               <IconDeviceFloppy v-if="isEditing && !loadingSave" class="h-5 w-5" />
+              <span class="hidden sm:inline">{{ isEditing ? 'Guardar cambios' : 'Editar expediente' }}</span>
             </button>
           </div>
-          <!-- <div class="tooltip tooltip-bottom" data-tip="Exportar perfil a PDF">
-            <button :disabled="loadingPrint" class="btn btn-square bg-gray-500 font-black text-white mx-1" @click.prevent="exportToPDF"><IconFileTypePdf v-if="!loadingPrint" class="h-5 w-5" /> <span v-if="loadingPrint" class="loading loading-spinner"></span></button>
-          </div> -->
-        </div>
-      </div>
+      </AppPageHeader>
+
+      <CompletionBanner v-if="!loading" class="mt-5" :beneficiary="beneficiary" @start="startCompletion" />
 
 
       <!-- Navigation Tabs -->
       <div v-if="!loading" class="mt-4">
-        <nav class="-mb-px flex space-x-4" aria-label="Tabs">
-          <button class="btn btn-square btn-ghost" @click="goBack">
-            <IconArrowNarrowLeft class="w-6 h-6" />
-          </button>
-          <div v-for="section in sections" :key="section.id" class="flex flex-col justify-center items-center relative"
-            :class="[activeSection === section.id ? 'after:w-11/12 after:h-1 after:absolute after:-bottom-1 after:bg-red-800 after:rounded-full' : '']">
+        <nav class="flex gap-1 overflow-x-auto rounded-xl border border-gray-200 bg-white p-1.5 shadow-sm" aria-label="Secciones del expediente" role="tablist">
+          <div v-for="section in sections" :key="section.id" class="shrink-0">
             <button
-              class="btn btn-ghost border-b-transparent text-gray-500 hover:bg-transparent hover:scale-105 hover:text-gray-700 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm"
+              role="tab" :aria-selected="activeSection === section.id"
+              class="btn min-h-11 whitespace-nowrap border-0 px-3 text-sm"
+              :class="activeSection === section.id ? 'bg-red-900 text-white hover:bg-red-950' : 'btn-ghost text-gray-700 hover:bg-red-50 hover:text-red-900'"
               @click="activeSection = section.id">
+              <component :is="section.icon" class="h-4 w-4" aria-hidden="true" />
               {{ section.title }}
+              <span v-if="pendingFieldCountBySection[section.id]"
+                class="badge h-5 min-w-5 border-amber-300 bg-amber-100 px-1.5 text-xs font-bold text-amber-900"
+                :aria-label="`${pendingFieldCountBySection[section.id]} campos pendientes`">
+                {{ pendingFieldCountBySection[section.id] }}
+              </span>
             </button>
           </div>
         </nav>
       </div>
 
       <!-- Content Sections -->
-      <div v-if="!loading" class="mt-6 bg-white border border-gray-400 rounded-lg p-6">
+      <div v-if="!loading" class="surface-panel mt-4 p-4 sm:p-6">
         <!-- General Information -->
         <div v-if="activeSection === 'general'" class="space-t-6">
           <PhotoPicker class="mb-6" :beneficiaryId="beneficiaryId" :defaultPhoto="photoUrl"
+            :storedPhotoPath="beneficiary.photo"
             @photo-selected="beneficiary.photo = $event" />
 
           <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
@@ -108,13 +118,19 @@
               </select>
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700">Teléfono</label>
-              <input :disabled="!isEditing" v-maska="'(###) ### ####'" type="tel" v-model="beneficiary.phone"
+              <label for="beneficiary-phone" class="flex items-center gap-1.5 text-sm font-medium text-gray-700">
+                Teléfono <PendingFieldMarker :show="isFieldPending('phone')" />
+              </label>
+              <input id="beneficiary-phone" :disabled="!isEditing" v-maska="'(###) ### ####'" type="tel" v-model="beneficiary.phone"
+                :class="{ 'pending-profile-field': isFieldPending('phone') }"
                 class="input input-sm mt-1 block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700">Estado Civil</label>
-              <select :disabled="!isEditing" v-model="beneficiary.civilStatus"
+              <label for="beneficiary-civil-status" class="flex items-center gap-1.5 text-sm font-medium text-gray-700">
+                Estado civil <PendingFieldMarker :show="isFieldPending('civilStatus')" />
+              </label>
+              <select id="beneficiary-civil-status" :disabled="!isEditing" v-model="beneficiary.civilStatus"
+                :class="{ 'pending-profile-field': isFieldPending('civilStatus') }"
                 class="select select-sm mt-1 block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                 <option value="CASADO">Casado</option>
                 <option value="SOLTERO">Soltero</option>
@@ -123,8 +139,11 @@
               </select>
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700">Escolaridad</label>
-              <select :disabled="!isEditing" v-model="beneficiary.scholarship"
+              <label for="beneficiary-scholarship" class="flex items-center gap-1.5 text-sm font-medium text-gray-700">
+                Escolaridad <PendingFieldMarker :show="isFieldPending('scholarship')" />
+              </label>
+              <select id="beneficiary-scholarship" :disabled="!isEditing" v-model="beneficiary.scholarship"
+                :class="{ 'pending-profile-field': isFieldPending('scholarship') }"
                 class="select select-sm mt-1 block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                 <option v-for="scholarship in scholarships" :key="scholarship.id" :value="scholarship.value">
                   {{ scholarship.text }}
@@ -133,8 +152,11 @@
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-gray-700">Servicio médico</label>
-              <select :disabled="!isEditing" v-model="beneficiary.medicalService"
+              <label for="beneficiary-medical-service" class="flex items-center gap-1.5 text-sm font-medium text-gray-700">
+                Servicio médico <PendingFieldMarker :show="isFieldPending('medicalService')" />
+              </label>
+              <select id="beneficiary-medical-service" :disabled="!isEditing" v-model="beneficiary.medicalService"
+                :class="{ 'pending-profile-field': isFieldPending('medicalService') }"
                 class="select select-sm mt-1 block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                 <option v-for="medicalService in medicalServices" :key="medicalService.id"
                   :value="medicalService.value">
@@ -207,9 +229,12 @@
               </select>
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700">Delegación</label>
-              <select :disabled="!isEditing" name="delegation" v-model="beneficiary.address.delegation"
+              <label for="beneficiary-delegation" class="flex items-center gap-1.5 text-sm font-medium text-gray-700">
+                Delegación <PendingFieldMarker :show="isFieldPending('delegation')" />
+              </label>
+              <select id="beneficiary-delegation" :disabled="!isEditing" name="delegation" v-model="beneficiary.address.delegation"
                 @change="getSubdelegations()"
+                :class="{ 'pending-profile-field': isFieldPending('delegation') }"
                 class="select select-sm mt-1 block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                 <option v-for="delegation in delegations" :key="delegation.id" :value="delegation.value">
                   {{ delegation.text }}
@@ -217,8 +242,11 @@
               </select>
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700">Subdelegación</label>
-              <select :disabled="!isEditing" name="subdelegation" v-model="beneficiary.address.subdelegation"
+              <label for="beneficiary-subdelegation" class="flex items-center gap-1.5 text-sm font-medium text-gray-700">
+                Subdelegación <PendingFieldMarker :show="isFieldPending('subdelegation')" />
+              </label>
+              <select id="beneficiary-subdelegation" :disabled="!isEditing" name="subdelegation" v-model="beneficiary.address.subdelegation"
+                :class="{ 'pending-profile-field': isFieldPending('subdelegation') }"
                 class="select select-sm mt-1 block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                 <option v-for="subdelegation in subdelegations" :key="subdelegation.text" :value="subdelegation.value">
                   {{ subdelegation.text }}
@@ -226,8 +254,11 @@
               </select>
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700">Calle</label>
-              <input :disabled="!isEditing" type="text" v-model="beneficiary.address.street"
+              <label for="beneficiary-street" class="flex items-center gap-1.5 text-sm font-medium text-gray-700">
+                Calle <PendingFieldMarker :show="isFieldPending('street')" />
+              </label>
+              <input id="beneficiary-street" :disabled="!isEditing" type="text" v-model="beneficiary.address.street"
+                :class="{ 'pending-profile-field': isFieldPending('street') }"
                 class="input input-sm mt-1 block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
             </div>
             <div>
@@ -236,8 +267,11 @@
                 class="input input-sm mt-1 block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700">Número Exterior</label>
-              <input :disabled="!isEditing" type="text" v-model="beneficiary.address.extNum"
+              <label for="beneficiary-ext-num" class="flex items-center gap-1.5 text-sm font-medium text-gray-700">
+                Número exterior <PendingFieldMarker :show="isFieldPending('extNum')" />
+              </label>
+              <input id="beneficiary-ext-num" :disabled="!isEditing" type="text" v-model="beneficiary.address.extNum"
+                :class="{ 'pending-profile-field': isFieldPending('extNum') }"
                 class="input input-sm mt-1 block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
             </div>
             <div>
@@ -246,13 +280,19 @@
                 class="input input-sm mt-1 block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700">Colonia</label>
-              <input :disabled="!isEditing" type="text" v-model="beneficiary.address.neighborhood"
+              <label for="beneficiary-neighborhood" class="flex items-center gap-1.5 text-sm font-medium text-gray-700">
+                Colonia <PendingFieldMarker :show="isFieldPending('neighborhood')" />
+              </label>
+              <input id="beneficiary-neighborhood" :disabled="!isEditing" type="text" v-model="beneficiary.address.neighborhood"
+                :class="{ 'pending-profile-field': isFieldPending('neighborhood') }"
                 class="input input-sm mt-1 block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700">Código Postal</label>
-              <input :disabled="!isEditing" type="number" v-model="beneficiary.address.cp"
+              <label for="beneficiary-cp" class="flex items-center gap-1.5 text-sm font-medium text-gray-700">
+                Código postal <PendingFieldMarker :show="isFieldPending('cp')" />
+              </label>
+              <input id="beneficiary-cp" :disabled="!isEditing" type="number" v-model="beneficiary.address.cp"
+                :class="{ 'pending-profile-field': isFieldPending('cp') }"
                 class="input input-sm mt-1 block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
             </div>
             <div>
@@ -423,8 +463,11 @@
         <div v-if="activeSection === 'expenses'" class="space-y-6">
           <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
             <div>
-              <label class="block text-sm font-medium text-gray-700">Ocupación</label>
-              <input :disabled="!isEditing" type="text" v-model="beneficiary.occupation"
+              <label for="beneficiary-occupation" class="flex items-center gap-1.5 text-sm font-medium text-gray-700">
+                Ocupación <PendingFieldMarker :show="isFieldPending('occupation')" />
+              </label>
+              <input id="beneficiary-occupation" :disabled="!isEditing" type="text" v-model="beneficiary.occupation"
+                :class="{ 'pending-profile-field': isFieldPending('occupation') }"
                 class="input input-sm mt-1 block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
             </div>
             <div>
@@ -478,7 +521,7 @@
 
         <!-- Socioeconomic history -->
         <div v-if="activeSection === 'socioeconomicHistory'" class="space-y-6">
-          <SocioeconomicHistory :beneficiary="beneficiary" />
+          <SocioeconomicHistory :beneficiary="beneficiary" @beneficiary-updated="getBeneficiary" />
         </div>
 
       </div>
@@ -502,7 +545,8 @@
 import { ref, onMounted, watch, computed } from 'vue';
 import { AxiosError } from 'axios';
 import { toast } from 'vue3-toastify';
-import { IconArrowNarrowLeft, IconEdit, IconDeviceFloppy, IconLoader, IconCancel } from '@tabler/icons-vue';
+import { IconArrowNarrowLeft, IconEdit, IconDeviceFloppy, IconCancel, IconUserCircle, IconMapPin, IconUserHeart, IconUsersGroup, IconHome, IconCoin, IconHeartHandshake, IconChartBar } from '@tabler/icons-vue';
+import AppPageHeader from '@/components/ui/AppPageHeader.vue';
 import beneficiaryServices from '../services/beneficiaryServices';
 import ContributionHistory from '@/components/BeneficiaryView/ContributionHistory.vue';
 import FamilyList from '@/components/BeneficiaryView/FamilyList.vue';
@@ -517,15 +561,18 @@ import ceilingTypes from '../constants/ceilingTypes';
 import delegations from '../constants/delegations';
 import { useDate } from '../utils/dateTool';
 import { normalizeObjectTextProperties } from '../utils/normalizeObjectText';
+import { getTranslatedError } from '../utils/errorManager';
 import PhotoPicker from '@/components/BeneficiaryView/PhotoPicker.vue';
+import CompletionBanner from '@/components/BeneficiaryView/CompletionBanner.vue';
+import PendingFieldMarker from '@/components/BeneficiaryView/PendingFieldMarker.vue';
+import { useProtectedImage } from '@/composables/useProtectedImage';
+import { getMissingBeneficiaryFields, getMissingFieldCountBySection } from '@/utils/beneficiaryCompletion';
 import { useRouter } from 'vue-router'
 
 const { formatDate, formatDatetime } = useDate()
 const router = useRouter()
 
 //data
-const apiEndpoint = import.meta.env.VITE_API_ENDPOINT || "http://localhost:3000";
-const photoUrl = ref('');
 const beneficiaryId = router.currentRoute.value.params.id;
 const beneficiary = ref({
   photo: '',
@@ -548,6 +595,7 @@ const beneficiary = ref({
   civilStatus: '',
   scholarship: '',
   comments: '',
+  registrationStatus: 'COMPLETE',
   address: {
     communityType: 'RURAL',
     delegation: '',
@@ -599,17 +647,28 @@ const loading = ref(false)
 const loadingPrint = ref(false)
 const loadingSave = ref(false)
 const isEditing = ref(false)
-const activeSection = ref('general')
 const sections = [
-  { title: 'Información General', id: 'general' },
-  { title: 'Dirección', id: 'address' },
-  { title: 'Datos del Cónyuge/Tutor', id: 'spouse' },
-  { title: 'Integración familiar', id: 'family' },
-  { title: 'Vivienda', id: 'home' },
-  { title: 'Situación económica', id: 'expenses' },
-  { title: 'Entrega de apoyos', id: 'contributions' },
-  { title: 'Historial socioeconómico', id: 'socioeconomicHistory' }
+  { title: 'Información general', id: 'general', icon: IconUserCircle },
+  { title: 'Dirección', id: 'address', icon: IconMapPin },
+  { title: 'Cónyuge o tutor', id: 'spouse', icon: IconUserHeart },
+  { title: 'Familia', id: 'family', icon: IconUsersGroup },
+  { title: 'Vivienda', id: 'home', icon: IconHome },
+  { title: 'Situación económica', id: 'expenses', icon: IconCoin },
+  { title: 'Apoyos', id: 'contributions', icon: IconHeartHandshake },
+  { title: 'Estudios socioeconómicos', id: 'socioeconomicHistory', icon: IconChartBar }
 ]
+const requestedSection = router.currentRoute.value.query.section
+const activeSection = ref(sections.some(({ id }) => id === requestedSection) ? requestedSection : 'general')
+const beneficiaryFullName = computed(() => [beneficiary.value.name, beneficiary.value.fatherSurname, beneficiary.value.motherSurname].filter(Boolean).join(' ') || 'Expediente del beneficiario')
+const missingCompletionFields = computed(() => getMissingBeneficiaryFields(beneficiary.value))
+const missingCompletionFieldKeys = computed(() => new Set(missingCompletionFields.value.map(({ key }) => key)))
+const isPendingProfile = computed(() => beneficiary.value.registrationStatus === 'PENDING_COMPLETION')
+const pendingFieldCountBySection = computed(() => isPendingProfile.value
+  ? getMissingFieldCountBySection(missingCompletionFields.value)
+  : {})
+const isFieldPending = (key) => isPendingProfile.value && missingCompletionFieldKeys.value.has(key)
+const beneficiaryPhotoPath = computed(() => beneficiary.value.photo);
+const { imageUrl: photoUrl } = useProtectedImage(beneficiaryPhotoPath);
 
 // composables
 const { authHeader } = useAuth()
@@ -631,7 +690,6 @@ const getBeneficiary = async () => {
           ...response.data.spouseOrTutor
         }
       }
-      photoUrl.value = apiEndpoint + beneficiary.value.photo;
       getSubdelegations()
     }
   } catch (err) {
@@ -657,10 +715,31 @@ const toggleEditMode = () => {
   }
 }
 
+const startCompletion = (section) => {
+  activeSection.value = section
+  isEditing.value = true
+}
+
 const updateBeneficiary = async () => {
   loadingSave.value = true
   // Crear una copia del objeto sin el campo _id
-  let { _id, families, contributions, photo, ...beneficiarySinId } = beneficiary.value;
+  let {
+    _id,
+    families,
+    contributions,
+    socioeconomicAssessments,
+    documents,
+    photo,
+    createdBy,
+    updatedBy,
+    createdAt,
+    updatedAt,
+    deleted,
+    registrationStatus,
+    registrationSource,
+    __v,
+    ...beneficiarySinId
+  } = beneficiary.value;
 
   // Create a deep copy of the beneficiary data to avoid modifying the original
   const beneficiaryToUpdate = JSON.parse(JSON.stringify(beneficiarySinId));
@@ -687,14 +766,14 @@ const updateBeneficiary = async () => {
       toast.error('No se pudo conectar con el servidor')
     } else {
       toast.success('Beneficiario actualizado correctamente')
-      getBeneficiary()
-      isEditing.value = !isEditing.value;
+      await getBeneficiary()
+      isEditing.value = false;
     }
   } catch (err) {
     if (err instanceof AxiosError) {
-      toast.error(err.response?.data?.message)
+      toast.error(getTranslatedError(err))
     } else {
-      toast.error(err)
+      toast.error(err?.message || 'No se pudieron guardar los cambios')
     }
   } finally {
     loadingSave.value = false
@@ -795,4 +874,10 @@ const goBack = () => {
 // }
 </script>
 
-<style scoped></style>
+<style scoped>
+.pending-profile-field {
+  border-color: rgb(217 119 6);
+  background-color: rgb(255 251 235);
+  box-shadow: 0 0 0 1px rgb(217 119 6 / 0.14);
+}
+</style>

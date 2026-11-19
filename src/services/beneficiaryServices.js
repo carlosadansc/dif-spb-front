@@ -20,6 +20,16 @@ const createBeneficiary = async (beneficiary, headers) => {
     return await api.post('/beneficiary/create', beneficiary, { headers }).then((response) =>  response.data ).catch((err) => {throw err})
 }
 
+const createBeneficiaryFromIne = async (beneficiary, headers) => {
+    return await api.post('/beneficiary/quick-create', beneficiary, { headers }).then((response) => response.data).catch((err) => { throw err })
+}
+
+const scanBeneficiaryIne = async (image, headers) => {
+    const body = new FormData()
+    body.append('image', image)
+    return await api.post('/beneficiary/ine/scan', body, { headers, timeout: 150000 }).then((response) => response.data).catch((err) => { throw err })
+}
+
 const updateBeneficiary = async (payload, headers) => {
     return await api.put('/beneficiary/update', payload, { headers }).then((response) =>  response.data ).catch((err) => {throw err})
 }
@@ -75,6 +85,8 @@ export default {
     getBeneficiary,
     getBeneficiaries,
     createBeneficiary,
+    createBeneficiaryFromIne,
+    scanBeneficiaryIne,
     updateBeneficiary,
     checkBeneficiaryExistsByCurp,
     createFamily,

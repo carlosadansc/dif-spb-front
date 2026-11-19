@@ -65,6 +65,10 @@ const props = defineProps({
     type: String,
     default: 'https://placehold.org/300x300/cccccc/000000?text=Hola+Mundo'
   },
+  storedPhotoPath: {
+    type: String,
+    default: ''
+  },
   beneficiaryId: {
     type: String,
     required: true
@@ -79,6 +83,7 @@ const fileInput = ref(null);
 const currentObjectUrl = ref(null);
 const isUploading = ref(false);
 const defaultPhoto = ref(props.defaultPhoto);
+const currentStoredPath = ref(props.storedPhotoPath);
 const previewUrl = ref(defaultPhoto.value);
 const showDeleteButton = ref(false);
 const showDeleteModal = ref(false);
@@ -105,6 +110,10 @@ watch(() => props.defaultPhoto, (newPhoto) => {
   }
 });
 
+watch(() => props.storedPhotoPath, (newPath) => {
+  currentStoredPath.value = newPath || '';
+});
+
 // Limpiar URL de objeto al desmontar el componente
 onUnmounted(() => {
   cleanupObjectUrl();
@@ -124,9 +133,9 @@ const deletePhoto = async () => {
 
   try {
     // Eliminar la imagen del servidor si no es la predeterminada
-    if (defaultPhoto.value && !defaultPhotoPattern.test(defaultPhoto.value)) {
+    if (currentStoredPath.value) {
       try {
-        await beneficiaryServices.deleteImage(defaultPhoto.value, authHeader.value);
+        await beneficiaryServices.deleteImage(currentStoredPath.value, authHeader.value);
       } catch (deleteError) {
         console.warn('No se pudo eliminar la imagen del servidor:', deleteError);
       }
@@ -151,6 +160,7 @@ const deletePhoto = async () => {
 
     // Actualizar referencias locales
     defaultPhoto.value = previewUrl.value;
+    currentStoredPath.value = '';
 
     // Cerrar modal y notificar éxito
     showDeleteModal.value = false;
@@ -233,9 +243,9 @@ const handleFileChange = async (event) => {
     const { filePath } = uploadResponse.data;
 
     // 4. Si la subida fue exitosa, eliminar la imagen anterior si existe y no es la predeterminada
-    if (defaultPhoto.value && !defaultPhotoPattern.test(defaultPhoto.value) && defaultPhoto.value !== filePath) {
+    if (currentStoredPath.value && currentStoredPath.value !== filePath) {
       try {
-        await beneficiaryServices.deleteImage(defaultPhoto.value, authHeader.value);
+        await beneficiaryServices.deleteImage(currentStoredPath.value, authHeader.value);
       } catch (deleteError) {
         console.warn('No se pudo eliminar la imagen anterior:', deleteError);
         // No hacemos throw aquí para no interrumpir el flujo
@@ -243,7 +253,7 @@ const handleFileChange = async (event) => {
     }
 
     // Actualizar la referencia local con la nueva ruta
-    defaultPhoto.value = filePath;
+    currentStoredPath.value = filePath;
 
     // 5. Actualizar la ruta de la foto en el beneficiario
     const updateResponse = await beneficiaryServices.updateBeneficiary(

@@ -3,18 +3,205 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --spb-brand: #7b0707;
+  --spb-brand-strong: #5f0505;
+  --spb-focus: #991b1b;
+  --spb-border: #d7dce2;
+  --spb-surface: #ffffff;
+  --spb-surface-muted: #f6f7f9;
+  --spb-canvas: #f1f3f5;
+  --spb-text: #17202e;
+  --spb-text-muted: #586273;
+}
+
+html {
+  color-scheme: light;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--spb-canvas);
+  color: var(--spb-text);
+  padding-right: env(safe-area-inset-right);
+  padding-left: env(safe-area-inset-left);
+}
+
+::selection {
+  background: #fecaca;
+  color: #450a0a;
+}
+
+@layer components {
+  .app-page {
+    @apply mx-auto w-full max-w-screen-2xl px-4 pb-12 pt-4 sm:px-6 lg:px-8;
+  }
+
+  .page-header {
+    @apply mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between;
+  }
+
+  .page-header-icon {
+    @apply grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-red-100 bg-red-50 text-red-900;
+  }
+
+  .page-title {
+    @apply text-xl font-bold tracking-tight text-gray-950 sm:text-2xl;
+  }
+
+  .page-description {
+    @apply mt-1 max-w-2xl text-sm leading-6 text-gray-600;
+  }
+
+  .page-actions {
+    @apply flex shrink-0 flex-wrap items-center gap-2;
+  }
+
+  .surface-panel {
+    @apply rounded-xl border border-gray-200 bg-white shadow-sm;
+  }
+
+  .toolbar-panel {
+    @apply mb-6 rounded-xl border border-gray-200 bg-white p-4 shadow-sm;
+  }
+
+  .section-heading {
+    @apply flex items-center gap-2 text-base font-semibold text-gray-900;
+  }
+
+  .section-heading-icon {
+    @apply h-5 w-5 text-red-800;
+  }
+
+  .btn-brand {
+    @apply border-red-900 bg-red-900 text-white hover:border-red-950 hover:bg-red-950;
+  }
+
+  .icon-action {
+    @apply btn btn-ghost btn-square btn-sm min-h-11 min-w-11;
+  }
+
+  .empty-state {
+    @apply flex min-h-64 flex-col items-center justify-center rounded-xl border border-dashed border-gray-300 bg-white px-6 py-10 text-center;
+  }
+
+  .empty-state-icon {
+    @apply mb-4 grid h-12 w-12 place-items-center rounded-xl bg-gray-100 text-gray-500;
+  }
+
+  .modal-header {
+    @apply mb-5 flex items-start justify-between gap-4 border-b border-gray-200 pb-4;
+  }
+
+  .modal-header-icon {
+    @apply grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-red-50 text-red-900;
+  }
+
+  .modal-title {
+    @apply text-lg font-bold text-gray-950;
+  }
+
+  .modal-description {
+    @apply mt-1 max-w-2xl text-sm leading-5 text-gray-600;
+  }
+}
+
+.btn {
+  text-transform: none;
+  font-weight: 600;
+  transition: color 180ms cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 180ms cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 180ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 120ms ease-out;
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+}
+
+.input,
+.select,
+.textarea {
+  border-color: var(--spb-border);
+  background-color: var(--spb-surface);
+  color: var(--spb-text);
+}
+
+.input::placeholder,
+.textarea::placeholder {
+  color: #667085;
+  opacity: 1;
+}
+
+.input:focus,
+.select:focus,
+.textarea:focus {
+  border-color: var(--spb-focus);
+  outline-color: color-mix(in srgb, var(--spb-focus) 30%, transparent);
+}
+
+.input:disabled,
+.select:disabled,
+.textarea:disabled {
+  border-color: #e1e5ea;
+  background-color: #f3f4f6;
+  color: #4b5563;
+  opacity: 1;
+}
+
+.modal {
+  z-index: 60;
+  background-color: rgb(17 24 39 / 0.56);
+}
+
+.modal-box {
+  position: relative;
+  border: 1px solid #e1e5ea;
+  border-radius: 1rem;
+  background: var(--spb-surface);
+  box-shadow: 0 24px 72px rgb(31 41 55 / 0.22);
+}
+
+.modal-action {
+  align-items: center;
+  gap: 0.5rem;
+  border-top: 1px solid #e5e7eb;
+  padding-top: 1rem;
+}
+
+:where(button, a, input, select, textarea, [tabindex]):focus-visible {
+  outline: 3px solid var(--spb-focus);
+  outline-offset: 2px;
+}
+
 .vue3-easy-data-table {
-  border-radius: 0.5rem;
-  outline: 1px solid #e2e2e2;
+  border-radius: 0.75rem;
+  outline: 1px solid var(--spb-border);
   border: none !important;
+  overflow: hidden;
 }
 .vue3-easy-data-table__header > tr {
-  border: 2px solid #ff0000 !important;
+  border-bottom: 1px solid var(--spb-border) !important;
   box-sizing: content-box;
 }
 .vue3-easy-data-table__header th {
-  background-color: transparent !important;
+  background-color: #f7f8fa !important;
+  color: #374151 !important;
+  font-size: 0.75rem !important;
+  font-weight: 700 !important;
   padding: 1rem 0.8rem !important;
+}
+
+.vue3-easy-data-table__body tr {
+  transition: background-color 160ms ease-out;
+}
+
+.vue3-easy-data-table__body tr:hover td {
+  background-color: #fafafa !important;
 }
 
 .vue3-easy-data-table__footer {
@@ -23,8 +210,8 @@
 
 .required:after {
   content: '*';
-  color: red;
-  margin-left: 0.5rem;
+  color: #b91c1c;
+  margin-left: 0.25rem;
 }
 
 
@@ -46,4 +233,23 @@
 /* Para garantizar que el overlay de notificaciones esté siempre al frente */
 .Vue3Toastify__overlay {
   z-index: 9998 !important;
+}
+
+@media (pointer: coarse) {
+  .btn,
+  button,
+  [role='button'] {
+    min-height: 44px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

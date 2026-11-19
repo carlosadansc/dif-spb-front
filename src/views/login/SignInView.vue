@@ -1,10 +1,29 @@
 <template>
-  <div class="relative flex flex-col justify-center h-screen overflow-hidden">
-    <div class="w-full p-6 m-auto bg-white lg:max-w-lg">
-      <div class="flex flex-col items-center justify-center mb-[5rem]">
-        <img src="@/assets/img/logo-dif.png" class="h-[105px] w-auto mb-1" alt="Logo DIF" />
-        <span class="font-bold text-center text-red-800">Sistema de Padrón de <br> Beneficiarios</span>
+  <main class="grid min-h-[100dvh] bg-gray-100 lg:grid-cols-[minmax(22rem,0.8fr)_1.2fr]">
+    <section class="hidden bg-red-950 p-10 text-white lg:flex lg:flex-col lg:justify-between" aria-label="Sistema de Padrón de Beneficiarios">
+      <img src="@/assets/img/logo-dif.png" class="h-16 w-auto self-start rounded-xl bg-white p-2" alt="DIF La Paz" />
+      <div class="max-w-md">
+        <IconUsersGroup class="mb-5 h-10 w-10 text-red-200" aria-hidden="true" />
+        <h1 class="text-3xl font-bold leading-tight">Sistema de Padrón de Beneficiarios</h1>
+        <p class="mt-3 text-sm leading-6 text-red-100">Consulta expedientes y registra la entrega de apoyos del DIF Municipal de La Paz.</p>
       </div>
+      <p class="text-xs text-red-200">Acceso exclusivo para personal autorizado</p>
+    </section>
+
+    <section class="flex items-center justify-center p-4 sm:p-8">
+      <div class="w-full max-w-md">
+        <div class="mb-6 flex items-center gap-3 lg:hidden">
+          <img src="@/assets/img/logo-dif.png" class="h-12 w-auto" alt="DIF La Paz" />
+          <span class="text-sm font-bold text-red-900">Padrón de beneficiarios</span>
+        </div>
+        <div class="surface-panel p-5 sm:p-7">
+          <header class="mb-6">
+            <div class="mb-3 grid h-11 w-11 place-items-center rounded-xl bg-red-50 text-red-900">
+              <IconLogin2 class="h-6 w-6" aria-hidden="true" />
+            </div>
+            <h2 class="text-2xl font-bold text-gray-950">Iniciar sesión</h2>
+            <p class="mt-1 text-sm text-gray-600">Ingresa tus credenciales para continuar.</p>
+          </header>
       
       
       <form @submit.prevent="handleSubmit" class="space-y-4" novalidate>
@@ -18,23 +37,17 @@
             placeholder="Ingrese su usuario"
             :class="['w-full input input-bordered', errors.username ? 'input-error' : '']"
             :disabled="loginBlocked"
+            :aria-invalid="Boolean(errors.username)"
+            :aria-describedby="errors.username ? 'username-error' : undefined"
             @input="clearError('username')"
           />
-          <p v-if="errors.username" class="mt-1 text-sm text-red-600">{{ errors.username }}</p>
+          <p v-if="errors.username" id="username-error" role="alert" class="mt-1 text-sm text-red-700">{{ errors.username }}</p>
         </div>
         
         <!-- Password Field -->
         <div>
-          <div class="flex justify-between items-center mb-1">
+          <div class="mb-1 flex items-center">
             <label for="password" class="block text-sm font-medium text-gray-700">Contraseña</label>
-            <button 
-              type="button" 
-              @click="showPassword = !showPassword" 
-              class="text-xs text-gray-600 hover:text-gray-800 focus:outline-none"
-              :disabled="loginBlocked"
-            >
-              {{ showPassword ? 'Ocultar' : 'Mostrar' }}
-            </button>
           </div>
           <div class="relative">
             <input 
@@ -44,29 +57,32 @@
               placeholder="Ingrese su contraseña"
               :class="['w-full input input-bordered pr-10', errors.password ? 'input-error' : '']"
               :disabled="loginBlocked"
+              :aria-invalid="Boolean(errors.password)"
+              :aria-describedby="errors.password ? 'password-error' : undefined"
               @input="clearError('password')"
             />
             <button 
               type="button" 
               @click="showPassword = !showPassword"
-              class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700"
+              :aria-label="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+              class="absolute inset-y-0 right-0 flex min-h-11 min-w-11 items-center justify-center text-gray-600 hover:text-gray-800"
               :disabled="loginBlocked"
             >
               <IconEye class="w-5 h-5" v-if="showPassword" /> 
               <IconEyeOff class="w-5 h-5" v-else />
             </button>
           </div>
-          <p v-if="errors.password" class="mt-1 text-sm text-red-600">{{ errors.password }}</p>
+          <p v-if="errors.password" id="password-error" role="alert" class="mt-1 text-sm text-red-700">{{ errors.password }}</p>
         </div>
         
         <!-- Remember Me -->
         <div class="flex items-center justify-between">
-          <div class="flex items-center">
+          <div class="flex min-h-11 items-center">
             <input 
               id="remember_me" 
               v-model="rememberMe" 
               type="checkbox" 
-              class="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
+              class="h-5 w-5 rounded border-gray-300 text-red-700 focus:ring-red-700"
               :disabled="loginBlocked"
             />
             <label for="remember_me" class="ml-2 block text-sm text-gray-700">
@@ -77,7 +93,7 @@
         </div>
         
         <!-- Error Message -->
-        <div v-if="formError" class="p-3 text-sm text-red-700 bg-red-100 rounded-lg">
+        <div v-if="formError" role="alert" aria-live="assertive" class="rounded-lg bg-red-100 p-3 text-sm text-red-800">
           {{ formError }}
         </div>
         
@@ -85,7 +101,7 @@
         <div>
           <button 
             type="submit" 
-            class="btn w-full text-white bg-red-800 hover:bg-red-900 rounded-[.8rem] transition-colors"
+            class="btn btn-brand min-h-12 w-full"
             :disabled="loading"
             :class="{ 'opacity-50 cursor-not-allowed': loading }"
           >
@@ -99,16 +115,16 @@
           </button>
         </div>
       </form>
-      
+        </div>
     </div>
-    
-  </div>
+    </section>
+  </main>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
+import { ref, onMounted, nextTick } from 'vue';
 import { toast } from 'vue3-toastify';
-import { IconEye, IconEyeOff } from '@tabler/icons-vue';
+import { IconEye, IconEyeOff, IconLogin2, IconUsersGroup } from '@tabler/icons-vue';
 import { storeToRefs } from 'pinia';
 import router from '../../router';
 import userServices from '../../services/userServices';
@@ -136,9 +152,6 @@ const loginBlockUntil = ref(null);
 // Check for login block on component mount
 onMounted(() => {
   checkLoginBlock();
-  // Clean up any existing login block state
-  localStorage.removeItem('loginBlockUntil');
-  localStorage.removeItem('failedLoginAttempts');
 });
 
 // Check if login is blocked
@@ -339,12 +352,6 @@ const trackFailedLogin = () => {
   }
 };
 
-// Lifecycle Hooks
-onMounted(() => {
-  // Clean up any existing login block state
-  localStorage.removeItem('loginBlockUntil');
-  localStorage.removeItem('failedLoginAttempts');
-});
 </script>
 
 <style scoped>

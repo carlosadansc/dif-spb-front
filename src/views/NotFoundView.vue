@@ -1,15 +1,17 @@
 <template>
-    <div class="flex flex-col items-center justify-center h-screen">
-        <h1 class="text-8xl font-bold text-center text-red-800 mb-5">404</h1>
-        <p class="text-center text-sm font-medium">La página que buscas no existe</p>
-        <router-link to="/" class="btn btn-sm btn-ghost text-red-800 rounded-[.8rem] mt-10 text-[1.2rem]">
-            <IconArrowLeft class="mr-1 h-5 w-5" /> Volver al inicio
-        </router-link>
-    </div>
+    <main class="flex min-h-[100dvh] items-center justify-center bg-gray-100 p-4">
+        <AppEmptyState title="Página no encontrada" description="La dirección no existe o ya no está disponible." class="w-full max-w-lg border-solid shadow-sm">
+            <template #icon><IconMapQuestion class="h-7 w-7" /></template>
+            <router-link to="/" class="btn btn-brand min-h-11">
+                <IconArrowLeft class="h-5 w-5" /> Volver al inicio
+            </router-link>
+        </AppEmptyState>
+    </main>
 </template>
 
 <script setup>
-import { IconArrowLeft } from "@tabler/icons-vue";
+import { IconArrowLeft, IconMapQuestion } from "@tabler/icons-vue";
+import AppEmptyState from '@/components/ui/AppEmptyState.vue';
 </script>
 
 <style lang="scss" scoped>

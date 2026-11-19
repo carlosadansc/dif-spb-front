@@ -3,7 +3,7 @@
     <!-- <h3 class="text-lg font-semibold text-gray-900 mb-4">Historial de Apoyos</h3> -->
     <div class="overflow-x-auto">
       <!-- Barra de filtros -->
-      <div class="bg-gray-50 rounded-lg p-4 mb-4">
+      <div class="mb-5 rounded-xl border border-gray-200 bg-gray-50 p-4">
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <!-- Filtro por folio -->
           <div>
@@ -34,22 +34,22 @@
         </div>
       </div>
 
-      <div class="flex justify-between items-center mb-[2rem]">
-        <!-- <div class="flex items-center gap-3"> -->
-        <h6 class="ms-4 font-medium text-sm">Entregas realizadas: <span v-if="!loading"
-            class="font-bold text-xl text-red-800">{{ filteredContributions.length }}</span> </h6>
+      <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 class="section-heading"><IconHeartHandshake class="section-heading-icon" /> Historial de apoyos</h2>
+          <p v-if="!loading" class="mt-1 text-sm text-gray-600">{{ filteredContributions.length }} entrega(s) registrada(s).</p>
+        </div>
 
         <div>
-          <ExportToExcelButton tooltip="Exportar historial a Excel" :loading="loadingExport" @click="exportToExcel" />
           <div class="tooltip tooltip-left" data-tip="Otorgar apoyo">
             <router-link :to="{ name: 'NewContribution', params: { id: props.beneficiary._id } }"
-              class="btn btn-square bg-red-800 font-black text-white text-[1.2rem] ms-2">
+              class="btn btn-brand min-h-11 ms-2" aria-label="Otorgar nuevo apoyo">
               <IconPlus class="w-5 h-5" />
+              <span>Otorgar apoyo</span>
             </router-link>
           </div>
         </div>
 
-        <!-- </div> -->
       </div>
 
       <div class="w-full">
@@ -60,20 +60,19 @@
         </div>
 
         <!-- Empty State -->
-        <div v-else-if="filteredContributions.length === 0" class="bg-white rounded-md shadow p-4 text-center">
-          <p v-if="hasActiveFilters" class="text-sm text-gray-500">
-            No se encontraron apoyos con los filtros aplicados
-          </p>
-          <p v-else class="text-sm text-gray-500">No apoyos otorgados <router-link
-              :to="{ name: 'NewContribution', params: { id: props.beneficiary._id } }"
-              class="text-red-800 font-bold text-xs underline cursor-pointer hover:text-red-500">Otorgar
-              Apoyo</router-link></p>
-        </div>
+        <AppEmptyState v-else-if="filteredContributions.length === 0"
+          :title="hasActiveFilters ? 'No hay coincidencias' : 'No hay apoyos registrados'"
+          :description="hasActiveFilters ? 'Ajusta los filtros para ampliar la búsqueda.' : 'Registra la primera entrega de apoyo para este beneficiario.'">
+          <template #icon><IconHeartHandshake class="h-7 w-7" /></template>
+          <router-link v-if="!hasActiveFilters" :to="{ name: 'NewContribution', params: { id: props.beneficiary._id } }" class="btn btn-brand">
+            <IconPlus class="h-4 w-4" /> Otorgar apoyo
+          </router-link>
+        </AppEmptyState>
 
         <!-- Contributions List -->
         <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div v-for="(contribution, index) in filteredContributions" :key="`contribution-card-${contribution._id}`"
-            class="bg-white border border-solid border-gray-100 rounded-lg p-4 flex flex-col">
+            class="rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md">
 
             <p class="text-xs text-gray-500 font-medium">Folio: <span class="font-bold text-red-800">{{
               contribution.folio }}</span>
@@ -88,13 +87,13 @@
               </div>
               <div class="flex gap-1">
                 <div class="tooltip" data-tip="Ver detalles">
-                  <button class="btn btn-sm btn-square btn-ghost text-blue-600" @click="openDetailsModal(contribution)">
+                  <button class="btn btn-sm btn-square btn-ghost text-blue-600" aria-label="Ver detalles del apoyo" @click="openDetailsModal(contribution)">
                     <IconFileInfo class="w-4 h-4" />
                   </button>
                 </div>
-                <div v-if="!contribution.haveMultipleBeneficiaries" class="tooltip" data-tip="Generar Ticket PDF">
+                <div class="tooltip" data-tip="Generar Ticket PDF">
                   <button class="btn btn-sm btn-square btn-ghost text-red-800" @click="generateTicketPDF(index)"
-                    :disabled="contribution.loadingPrint">
+                    aria-label="Generar comprobante PDF" :disabled="contribution.loadingPrint">
                     <IconPdf v-if="!contribution.loadingPrint" class="w-4 h-4" />
                     <IconLoader v-if="contribution.loadingPrint" class="w-4 h-4 animate-spin" />
                   </button>
@@ -149,17 +148,16 @@
 import { computed, ref, onMounted } from 'vue';
 import { AxiosError } from 'axios';
 import { toast } from 'vue3-toastify';
-import { exportToExcel as exportExcelUtil, formatDateForExcel, formatNumberForExcel } from '@/utils/excelExport';
-import { IconPlus, IconPdf, IconFileInfo, IconLoader, IconFilterX } from '@tabler/icons-vue';
+import { IconPlus, IconPdf, IconFileInfo, IconLoader, IconFilterX, IconHeartHandshake } from '@tabler/icons-vue';
+import AppEmptyState from '@/components/ui/AppEmptyState.vue';
 import { useAuth } from '@/composables/useAuth';
 import { useDate } from '@/utils/dateTool';
 import contributionServices from '@/services/contributionServices';
 import ContributionTicketPDF from './ContributionTicketPDF.vue';
-import ExportToExcelButton from '@/components/ExportToExcelButton.vue';
 import ContributionDetailsModal from './ContributionDetailsModal.vue';
 
 // composables
-const { authHeader, isAdmin, isStandardUser, isExecutive } = useAuth();
+const { authHeader } = useAuth();
 const { formatDate } = useDate();
 
 //props
@@ -173,9 +171,7 @@ const emits = defineEmits(['update:list']);
 const showDetailsModal = ref(false);
 const selectedContribution = ref({});
 const loading = ref(false);
-const loadingExport = ref(false);
 const contributions = ref([]);
-const contributionsForExport = ref([]);
 
 // Filtros
 const filters = ref({
@@ -249,108 +245,6 @@ const getContributions = async () => {
     loading.value = false
   }
 }
-
-// const getContributionsToExport = async () => {
-//   loadingExport.value = true;
-//   try {
-//     const response = await contributionServices.getContributionsByBeneficiaryForExport(props.beneficiary._id, authHeader.value)
-//     if (response.code === "ERR_NETWORK") {
-//       toast.error('No se pudo conectar con el servidor')
-//     } else {
-//       contributionsForExport.value = response.data
-//       console.log(contributionsForExport.value)
-//     }
-//   } catch (err) {
-//     if (err instanceof AxiosError) {
-//       toast.error(err.response?.data?.message)
-//     } else {
-//       toast.error(err)
-//     }
-//   } finally {
-//     loadingExport.value = false
-//   }
-// }
-
-const contributionColumns = {
-  "Folio": "folio",
-  "Fecha de apoyo": "contributionDate",
-  "Nombre": "beneficiaryName",
-  "Otorgado por": "createdBy",
-  "Tipo de apoyo": "categoryName",
-  "Apoyo otorgado": "description",
-  "Cantidad": "quantity",
-};
-
-const exportToExcel = async () => {
-  loadingExport.value = true;
-
-  try {
-    // Verificar que hay datos para exportar
-    if (filteredContributions.value.length === 0) {
-      toast.warning('No hay datos para exportar');
-      loadingExport.value = false;
-      return;
-    }
-
-
-    // Preparar los datos filtrados para exportación (excluyendo apoyos masivos)
-    const dataToExport = filteredContributions.value
-      .filter(contribution => !contribution.haveMultipleBeneficiaries) // Solo apoyos NO masivos
-      .map(contribution => ({
-        folio: contribution.folio,
-        contributionDate: contribution.contributionDate,
-        beneficiaryName: `${props.beneficiary.name} ${props.beneficiary.fatherSurname} ${props.beneficiary.motherSurname || ''}`.trim(),
-        createdBy: contribution.createdBy?.name || contribution.createdBy || '',
-        categoryName: contribution.productOrServices?.[0]?.productOrService?.category?.name || '',
-        description: contribution.productOrServices?.map(p => p.description).join(', ') || '',
-        quantity: contribution.productOrServices?.reduce((sum, p) => sum + (p.quantity || 0), 0) || 0
-      }));
-
-
-    // Generar nombre de archivo limpio
-    let fileName = 'historial-apoyos-smdif-la-paz';
-
-    if (props.beneficiary) {
-      const beneficiaryName = (props.beneficiary.name ? props.beneficiary.name.toLowerCase() : '').split(' ').join('-');
-      const fatherSurname = (props.beneficiary.fatherSurname ? props.beneficiary.fatherSurname.toLowerCase() : '').split(' ').join('-');
-
-      if (beneficiaryName && fatherSurname) {
-        fileName = `historial-apoyos-${beneficiaryName}-${fatherSurname}-smdif-la-paz`;
-      } else {
-        fileName = 'historial-apoyos-beneficiario-smdif-la-paz';
-      }
-    }
-
-    exportExcelUtil(
-      dataToExport,
-      contributionColumns,
-      fileName,
-      'Apoyos',
-      {
-        columnWidths: {
-          "Folio": 10,
-          "Fecha de apoyo": 12,
-          "Nombre": 25,
-          "Otorgado por": 20,
-          "Tipo de apoyo": 15,
-          "Apoyo otorgado": 30,
-          "Cantidad": 10,
-        },
-        formatters: {
-          'Fecha de apoyo': formatDateForExcel,
-          'Cantidad': formatNumberForExcel
-        }
-      }
-    );
-
-    toast.success(`${dataToExport.length} registro(s) exportado(s)`);
-  } catch (error) {
-    console.error("Error al exportar a Excel:", error);
-    toast.error('Error al exportar a Excel');
-  } finally {
-    loadingExport.value = false;
-  }
-};
 
 // Eventos de PDF
 const contributionTicketRef = ref()

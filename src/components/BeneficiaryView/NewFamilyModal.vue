@@ -1,14 +1,9 @@
 <template>
   <dialog class="modal" ref="newFamilyModalRef">
-    <div class="modal-box  w-full max-w-[40vw]">
-      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" @click="closeModal">
-        ✕
-      </button>
-      <h3 class="text-lg font-bold">Nuevo familiar</h3>
-      <p class="text-sm text-gray-l1-color mt-2">
-        Por favor, rellene los campos con los datos del apoyo que desea registrar. Recuerde que los datos
-        obligatorios se encuentran marcados con un asterisco (*).
-      </p>
+    <div class="modal-box max-h-[90dvh] w-full max-w-xl overflow-y-auto">
+      <AppModalHeader title="Nuevo familiar" description="Registra los datos de la persona que integra el hogar." @close="closeModal">
+        <template #icon><IconUsersGroup class="h-5 w-5" /></template>
+      </AppModalHeader>
 
       <div class="divider"></div>
       <form @submit.prevent="submitForm" class="space-y-4">
@@ -77,9 +72,9 @@
           </div>
         </div>
 
-        <!-- Parentezco -->
+        <!-- Parentesco -->
         <div>
-          <label for="relationship" class="block text-sm font-medium text-gray-700 required">Parentezco</label>
+          <label for="relationship" class="block text-sm font-medium text-gray-700 required">Parentesco</label>
           <div :class="{ error: v$.relationship.$errors.length }">
             <select v-model="family.relationship" id="scholarship" name="relationship"
               class="select select-bordered mt-2 w-full">
@@ -116,9 +111,9 @@
 
         <!-- Submit Button -->
         <div class="pt-4">
-          <button type="submit" class="btn bg-red-900 text-white w-full">
-            Guardar
-            <span v-if="loading" class="spinner">Guardando...</span>
+          <button type="submit" class="btn btn-brand w-full" :disabled="loading">
+            <span v-if="loading" class="loading loading-spinner loading-sm"></span>
+            {{ loading ? 'Guardando...' : 'Guardar familiar' }}
           </button>
         </div>
       </form>
@@ -128,6 +123,8 @@
 
 <script setup>
 import { computed, ref, watch } from 'vue'
+import { IconUsersGroup } from '@tabler/icons-vue'
+import AppModalHeader from '@/components/ui/AppModalHeader.vue'
 import router from '@/router';
 import { toast } from 'vue3-toastify'
 import { AxiosError } from 'axios'

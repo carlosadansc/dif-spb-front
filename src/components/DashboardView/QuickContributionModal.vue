@@ -1,7 +1,9 @@
 <template>
-    <div class="modal" :class="{ 'modal-open': show }">
+    <div class="modal" :class="{ 'modal-open': show }" role="dialog" aria-modal="true" @click.self="handleClose">
         <div class="modal-box">
-            <h3 class="font-bold text-lg mb-4">Otorgar Apoyo Rápido</h3>
+            <AppModalHeader title="Otorgar apoyo" description="Busca al beneficiario por CURP para continuar con la entrega." @close="handleClose">
+                <template #icon><IconHeartHandshake class="h-5 w-5" /></template>
+            </AppModalHeader>
 
             <div class="form-control">
                 <label class="label">
@@ -15,7 +17,8 @@
                 </label>
             </div>
 
-            <div v-if="errorMessage" class="alert alert-error mt-4">
+            <div v-if="errorMessage" class="alert mt-4 border border-red-200 bg-red-50 text-red-900" role="alert">
+                <IconAlertCircle class="h-5 w-5" />
                 <span>{{ errorMessage }}</span>
             </div>
 
@@ -23,9 +26,10 @@
                 <button class="btn" @click="handleClose" :disabled="isSearching">
                     Cancelar
                 </button>
-                <button class="btn btn-primary" @click="searchBeneficiary" :disabled="!isValidCurp || isSearching">
+                <button class="btn btn-brand min-w-32" @click="searchBeneficiary" :disabled="!isValidCurp || isSearching">
                     <span v-if="isSearching" class="loading loading-spinner loading-sm"></span>
-                    <span v-else>Buscar</span>
+                    <IconSearch v-else class="h-4 w-4" />
+                    <span>{{ isSearching ? 'Buscando...' : 'Buscar CURP' }}</span>
                 </button>
             </div>
         </div>
@@ -38,6 +42,8 @@ import { toast } from 'vue3-toastify';
 import { AxiosError } from 'axios';
 import { useAuth } from '@/composables/useAuth';
 import beneficiaryServices from '@/services/beneficiaryServices';
+import { IconAlertCircle, IconHeartHandshake, IconSearch } from '@tabler/icons-vue';
+import AppModalHeader from '@/components/ui/AppModalHeader.vue';
 
 // Props
 const props = defineProps({

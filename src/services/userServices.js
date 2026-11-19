@@ -46,11 +46,12 @@ const createUser = async (userData, headers) => {
 
 const updateUser = async (id, update, headers) => {
     try {
+        const payload = { ...(update.update || update) };
         // No enviar la contraseña si está vacía
-        if (update.password === '' || update.password === null) {
-            delete update.password;
+        if (payload.password === '' || payload.password === null || payload.password === undefined) {
+            delete payload.password;
         }
-        const response = await api.put(`/user/${id}`, update, { headers });
+        const response = await api.put(`/user/${id}`, payload, { headers });
         return response.data;
     } catch (err) {
         throw err;
@@ -60,32 +61,6 @@ const updateUser = async (id, update, headers) => {
 const deleteUser = async (id, headers) => {
     try {
         const response = await api.delete(`/user/${id}`, { headers });
-        return response.data;
-    } catch (err) {
-        throw err;
-    }
-};
-
-const toggleUserStatus = async (id, active, headers) => {
-    try {
-        const response = await api.patch(
-            `/user/${id}/status`, 
-            { active },
-            { headers }
-        );
-        return response.data;
-    } catch (err) {
-        throw err;
-    }
-};
-
-const changePassword = async (id, currentPassword, newPassword, headers) => {
-    try {
-        const response = await api.post(
-            `/user/${id}/change-password`,
-            { currentPassword, newPassword },
-            { headers }
-        );
         return response.data;
     } catch (err) {
         throw err;
@@ -107,7 +82,5 @@ export default {
     createUser,
     updateUser,
     getUser,
-    deleteUser,
-    toggleUserStatus,
-    changePassword
+    deleteUser
 };

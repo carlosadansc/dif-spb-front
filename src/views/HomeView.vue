@@ -1,6 +1,6 @@
 <template>
    <NavBarComponent />
-   <div class="w-full h-custom overflow-y-auto bg-gray-100 py-4 pb-12">
+   <div class="h-custom w-full overflow-y-auto bg-gray-100">
      <router-view />
    </div>
 </template>

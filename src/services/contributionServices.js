@@ -1,52 +1,45 @@
 import api from '../services/api'
 
+const unwrap = (request) => request.then((response) => response.data)
 
 const createContribution = async (contribution, headers) => {
-    return await api.post('/contribution/create', contribution, { headers }).then((response) =>  response.data ).catch((err) => err)
+    return unwrap(api.post('/contribution/create', contribution, { headers }))
 }
 
 const getProductOrServicesByCategory = async (params, headers) => {
-    return await api.get('/product-or-service/by-category', { params, headers } ).then((response) =>  response.data ).catch((err) => err)
+    return unwrap(api.get('/product-or-service/by-category', { params, headers }))
 }
 
 const getContributionsByBeneficiary = async (id, headers) => {
-    return await api.get(`/contribution/by-beneficiary/${id}`, { headers } ).then((response) =>  response.data ).catch((err) => err)
+    return unwrap(api.get(`/contribution/by-beneficiary/${id}`, { headers }))
 }
 
 const getContributionsByBeneficiaryForExport = async (id, headers) => {
-    return await api.get(`/contribution/by-beneficiary/${id}/export`, { headers } ).then((response) =>  response.data ).catch((err) => err)
+    return unwrap(api.get(`/contribution/by-beneficiary/${id}/export`, { headers }))
 }
 
 const getCategories = async (headers) => {
-    return await api.get('/categories', { headers } ).then((response) =>  response.data ).catch((err) => err)
+    return unwrap(api.get('/categories', { headers }))
 }
 
 const getContributionYears = async (headers) => {
-    return await api.get('/contribution/years', { headers } ).then((response) =>  response.data ).catch((err) => err)
+    return unwrap(api.get('/contribution/years', { headers }))
 }
 
 const getContributionSummary = async (params, headers) => {
-    return await api.get('/contribution/summary', { params, headers } ).then((response) =>  response.data ).catch((err) => err)
+    return unwrap(api.get('/contribution/summary', { params, headers }))
 }
 
 const getContributionSummaryByCategory = async (params, headers) => {
-    return await api.get('/contribution/summary-by-category', { params, headers } ).then((response) =>  response.data ).catch((err) => err)
+    return unwrap(api.get('/contribution/summary-by-category', { params, headers }))
 }
 
 const getAllContributions = async (headers) => {
-    return await api.get('/contribution/get-all', { headers } ).then((response) =>  response.data ).catch((err) => err)
-}
-
-const createMassiveContribution = async (contribution, headers) => {
-    return await api.post('/contribution/create-multiple', contribution, { headers }).then((response) =>  response.data ).catch((err) => {throw err})
-}
-
-const getMassiveContributions = async (params, headers) => {
-    return await api.get('/contribution/massive-contributions', { params, headers }).then((response) => response.data).catch((err) => err)
+    return unwrap(api.get('/contribution/get-all', { headers }))
 }
 
 const getContribution = async (id, headers) => {
-    return await api.get(`/contribution/${id}`, { headers }).then((response) => response.data).catch((err) => err)
+    return unwrap(api.get(`/contribution/${id}`, { headers }))
 }
 
 export default {
@@ -59,7 +52,5 @@ export default {
     getContributionSummary,
     getContributionSummaryByCategory,
     getAllContributions,
-    createMassiveContribution,
-    getMassiveContributions,
     getContribution
 }

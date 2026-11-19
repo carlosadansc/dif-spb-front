@@ -126,7 +126,7 @@
         </div>
         <div class="footer-text">
           <p>Este documento es válido como comprobante oficial de entrega de apoyo social otorgado por el DIF Municipal La Paz B.C.S.</p>
-          <p class="document-generated">Documento generado el {{ getCurrentDate() }} a través del Sistema Integral del Padrón de Beneficiarios</p>
+          <p class="document-generated">Documento generado el {{ getCurrentDate() }} a través del Sistema de Padrón de Beneficiarios (SPB)</p>
           <p class="document-operator">Expedido por: {{ capitalize(user.name) }} {{ capitalize(user.lastname) }} / {{ user.position }}</p>
         </div>
       </div>
@@ -135,7 +135,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 import html2canvas from 'html2canvas-pro';
 import jsPDF from 'jspdf';
 import { useDate } from '@/utils/dateTool';
@@ -143,23 +143,11 @@ import capitalize from '@/utils/capitalize';
 import logoDif from '@/assets/img/logo-dif.png';
 import logoAyunta from '@/assets/img/logo-ayunta.png';
 import { useAuth } from '@/composables/useAuth'
+import { fetchProtectedImageUrl } from '@/composables/useProtectedImage';
 
 // composables
 const { user } = useAuth()
 const { formatDate, getCurrentDate } = useDate()
-
-// computed
-const evidencePhotoUrl = computed(() => {
-  if (!props.contribution.evidencePhoto) return '';
-  const baseURL = import.meta.env.VITE_API_ENDPOINT || 'http://localhost:3000';
-  const photoPath = props.contribution.evidencePhoto;
-  // Si la ruta ya es una URL completa, devolverla tal cual
-  if (photoPath.startsWith('http')) {
-    return photoPath;
-  }
-  // Si no, construir la URL completa
-  return `${baseURL}${photoPath.startsWith('/') ? '' : '/'}${photoPath}`;
-});
 
 // props
 const props = defineProps({
@@ -246,8 +234,8 @@ const generateTicketPDF = async () => {
 
     // Cargar y agregar imagen
     try {
+      const protectedImageUrl = await fetchProtectedImageUrl(props.contribution.evidencePhoto);
       const img = new Image();
-      img.crossOrigin = 'anonymous';
       img.onload = () => {
         const imgWidthEv = pageWidth - 20;
         const imgHeightEv = (img.height * imgWidthEv) / img.width;
@@ -274,8 +262,13 @@ const generateTicketPDF = async () => {
         
         // Guardar el PDF
         pdf.save(`recibo-entrega-apoyo-${props.beneficiary.name.toLowerCase()}-${props.beneficiary.fatherSurname.toLowerCase()}-${props.contribution.folio}.pdf`);
+        if (protectedImageUrl.startsWith('blob:')) URL.revokeObjectURL(protectedImageUrl);
       };
-      img.src = evidencePhotoUrl.value;
+      img.onerror = () => {
+        if (protectedImageUrl.startsWith('blob:')) URL.revokeObjectURL(protectedImageUrl);
+        pdf.save(`recibo-entrega-apoyo-${props.beneficiary.name.toLowerCase()}-${props.beneficiary.fatherSurname.toLowerCase()}-${props.contribution.folio}.pdf`);
+      };
+      img.src = protectedImageUrl;
     } catch (error) {
       console.error('Error al cargar imagen de evidencia:', error);
       pdf.save(`recibo-entrega-apoyo-${props.beneficiary.name.toLowerCase()}-${props.beneficiary.fatherSurname.toLowerCase()}-${props.contribution.folio}.pdf`);
@@ -291,7 +284,7 @@ const generateTicketPDF = async () => {
     subject: 'Recibo de Entrega de Apoyo Social DIF Municipal',
     author: 'DIF Municipal La Paz B.C.S.',
     keywords: 'apoyo, recibo, beneficiario, oficial',
-    creator: 'Sistema de Padron de Beneficiarios'
+    creator: 'SPB - Sistema de Padrón de Beneficiarios'
   });
 };
 

@@ -2,7 +2,7 @@
   <div class="">
     <div class="overflow-x-auto">
       <!-- Barra de filtros -->
-      <div class="bg-gray-50 rounded-lg p-4 mb-4">
+      <div class="mb-5 rounded-xl border border-gray-200 bg-gray-50 p-4">
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <!-- Filtro por folio -->
           <div>
@@ -33,17 +33,18 @@
         </div>
       </div>
 
-      <div class="flex justify-between items-center mb-[2rem]">
-        <h6 class="ms-4 font-medium text-sm">
-          Estudios realizados:
-          <span v-if="!loading" class="font-bold text-xl text-red-800">{{ filteredAssessments.length }}</span>
-        </h6>
+      <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 class="section-heading"><IconClipboardData class="section-heading-icon" /> Estudios socioeconómicos</h2>
+          <p v-if="!loading" class="mt-1 text-sm text-gray-600">{{ filteredAssessments.length }} estudio(s) registrado(s).</p>
+        </div>
 
         <div>
           <div class="tooltip tooltip-left" data-tip="Nuevo estudio socioeconómico">
-            <button class="btn btn-square bg-red-800 font-black text-white text-[1.2rem]"
-              @click.prevent="openNewAssessmentModal">
+            <button class="btn btn-brand min-h-11"
+              aria-label="Crear estudio socioeconómico" @click.prevent="openNewAssessmentModal">
               <IconPlus class="w-5 h-5" />
+              Nuevo estudio
             </button>
           </div>
         </div>
@@ -56,23 +57,19 @@
         </div>
 
         <!-- Empty State -->
-        <div v-else-if="filteredAssessments.length === 0" class="bg-white rounded-md shadow p-4 text-center">
-          <p v-if="hasActiveFilters" class="text-sm text-gray-500">
-            No se encontraron estudios con los filtros aplicados
-          </p>
-          <p v-else class="text-sm text-gray-500">
-            No hay estudios socioeconómicos registrados
-            <span class="text-red-800 font-bold text-xs underline cursor-pointer hover:text-red-500"
-              @click="openNewAssessmentModal">
-              Crear estudio
-            </span>
-          </p>
-        </div>
+        <AppEmptyState v-else-if="filteredAssessments.length === 0"
+          :title="hasActiveFilters ? 'No hay coincidencias' : 'No hay estudios registrados'"
+          :description="hasActiveFilters ? 'Ajusta los filtros para ampliar la búsqueda.' : 'Genera el primer estudio socioeconómico para este beneficiario.'">
+          <template #icon><IconClipboardData class="h-7 w-7" /></template>
+          <button v-if="!hasActiveFilters" type="button" class="btn btn-brand" @click="openNewAssessmentModal">
+            <IconPlus class="h-4 w-4" /> Crear estudio
+          </button>
+        </AppEmptyState>
 
         <!-- Assessments List -->
         <div v-else class="grid grid-cols-1 gap-4">
           <div v-for="(assessment, index) in filteredAssessments" :key="`assessment-${assessment._id}`"
-            class="bg-white border border-solid border-gray-100 rounded-lg p-6 hover:shadow-md transition-shadow">
+            class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-shadow hover:shadow-md">
 
             <!-- Header -->
             <div class="flex justify-between items-start mb-4">
@@ -89,19 +86,21 @@
               <div class="flex gap-1">
                 <div class="tooltip" data-tip="Ver detalles">
                   <button class="btn btn-sm btn-square btn-ghost text-blue-600"
+                    aria-label="Ver detalles del estudio"
                     @click="viewAssessmentDetails(assessment)">
                     <IconFileInfo class="w-4 h-4" />
                   </button>
                 </div>
                 <div class="tooltip" data-tip="Generar Estudio PDF">
                   <button class="btn btn-sm btn-square btn-ghost text-red-800" @click="printAssessment(index)"
-                    :disabled="assessment.isGeneratingPDF">
+                    aria-label="Generar estudio PDF" :disabled="assessment.isGeneratingPDF">
                     <IconPdf v-if="!assessment.isGeneratingPDF" class="w-4 h-4" />
                     <IconLoader v-if="assessment.isGeneratingPDF" class="w-4 h-4 animate-spin" />
                   </button>
                 </div>
                 <div v-if="isAdmin" class="tooltip" data-tip="Eliminar">
                   <button class="btn btn-sm btn-square btn-ghost text-red-600"
+                    aria-label="Eliminar estudio socioeconómico"
                     @click="deleteAssessment(assessment._id)">
                     <IconTrash class="w-4 h-4" />
                   </button>
@@ -183,7 +182,8 @@
 import { ref, computed, onMounted, nextTick } from 'vue';
 import { AxiosError } from 'axios';
 import { toast } from 'vue3-toastify';
-import { IconPlus, IconFileInfo, IconTrash, IconPdf, IconLoader, IconFilterX } from '@tabler/icons-vue';
+import { IconPlus, IconFileInfo, IconTrash, IconPdf, IconLoader, IconFilterX, IconClipboardData } from '@tabler/icons-vue';
+import AppEmptyState from '@/components/ui/AppEmptyState.vue';
 import { useAuth } from '@/composables/useAuth';
 import { useDate } from '@/utils/dateTool';
 import socioeconomicServices from '@/services/socioeconomicServices';
@@ -203,6 +203,8 @@ const props = defineProps({
     required: true
   }
 });
+
+const emit = defineEmits(['beneficiary-updated']);
 
 // Data
 const loading = ref(false);
@@ -344,6 +346,7 @@ const closeNewModal = () => {
 
 const handleAssessmentCreated = () => {
   getAssessments();
+  emit('beneficiary-updated');
   closeNewModal();
 };
 

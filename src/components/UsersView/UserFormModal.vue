@@ -1,8 +1,10 @@
 <template>
-  <div class="modal modal-open">
+  <div class="modal modal-open" role="dialog" aria-modal="true" @click.self="closeModal">
     <div class="modal-box w-11/12 max-w-3xl">
-      <button class="btn btn-sm btn-circle absolute right-2 top-2" @click="closeModal">✕</button>
-      <h3 class="text-lg font-bold mb-4">{{ isEditing ? 'Editar Usuario' : 'Nuevo Usuario' }}</h3>
+      <AppModalHeader :title="isEditing ? 'Editar usuario' : 'Nuevo usuario'"
+        description="Configura los datos de acceso, el área y el nivel de permisos." @close="closeModal">
+        <template #icon><IconUserCog class="h-5 w-5" /></template>
+      </AppModalHeader>
       
       <form @submit.prevent="handleSubmit" class="space-y-4">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -150,7 +152,7 @@
             <input 
               type="checkbox" 
               v-model="formData.active" 
-              class="toggle toggle-primary" 
+              class="toggle toggle-error"
             />
             <span class="label-text">Usuario activo</span>
           </label>
@@ -167,11 +169,11 @@
           </button>
           <button 
             type="submit" 
-            class="btn btn-primary"
+            class="btn btn-brand min-w-32"
             :disabled="loading || passwordMismatch"
           >
             <span v-if="loading" class="loading loading-spinner"></span>
-            {{ isEditing ? 'Actualizar' : 'Guardar' }}
+            {{ isEditing ? 'Guardar cambios' : 'Crear usuario' }}
           </button>
         </div>
       </form>
@@ -182,7 +184,8 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
 import { toast } from 'vue3-toastify';
-import { IconEye, IconEyeOff } from '@tabler/icons-vue';
+import { IconEye, IconEyeOff, IconUserCog } from '@tabler/icons-vue';
+import AppModalHeader from '@/components/ui/AppModalHeader.vue';
 import userServices from '@/services/userServices';
 import { useAuth } from '@/composables/useAuth';
 import areaServices from '@/services/areaServices';

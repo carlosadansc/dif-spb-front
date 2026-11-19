@@ -1,25 +1,51 @@
 <template>
-    <div class="w-full max-w-5xl mx-auto px-4 py-8">
-        <div class="flex items-center gap-4 mb-6">
-            <button @click="goBack" class="btn btn-circle btn-ghost">
-                <IconArrowLeft class="w-6 h-6" />
+    <div class="app-page max-w-5xl">
+        <AppPageHeader title="Nuevo apoyo" description="Registra los artículos o servicios que se entregarán al beneficiario.">
+            <template #icon><IconHeartHandshake class="h-6 w-6" /></template>
+            <button @click="goBack" class="btn btn-ghost min-h-11">
+                <IconArrowLeft class="h-5 w-5" /> Volver al expediente
             </button>
-            <div>
-                <h1 class="text-2xl font-bold text-gray-900">Nuevo apoyo</h1>
-                <p class="text-sm text-gray-500">
-                    Registre los datos del apoyo que desea otorgar al beneficiario.
-                </p>
+        </AppPageHeader>
+
+        <div class="mb-5 flex items-center gap-3" aria-label="Progreso de la entrega">
+            <div class="flex items-center gap-2" :class="assessmentVerified ? 'text-green-800' : 'text-red-900'">
+                <span class="grid h-7 w-7 place-items-center rounded-full text-sm font-bold"
+                    :class="assessmentVerified ? 'bg-green-100' : 'bg-red-100'">
+                    <IconCheck v-if="assessmentVerified" class="h-4 w-4" />
+                    <span v-else>1</span>
+                </span>
+                <span class="hidden text-sm font-semibold sm:inline">Validar estudio</span>
+            </div>
+            <div class="h-px flex-1 bg-gray-300"></div>
+            <div class="flex items-center gap-2" :class="assessmentVerified ? 'text-red-900' : 'text-gray-400'">
+                <span class="grid h-7 w-7 place-items-center rounded-full text-sm font-bold"
+                    :class="assessmentVerified ? 'bg-red-100' : 'bg-gray-200'">2</span>
+                <span class="hidden text-sm font-semibold sm:inline">Registrar apoyo</span>
             </div>
         </div>
 
-        <div class="bg-white rounded-lg border border-gray-200 p-6">
+        <div v-if="!beneficiaryDetails" class="surface-panel space-y-4 p-6" aria-label="Cargando beneficiario">
+            <div class="skeleton h-6 w-64 max-w-full"></div>
+            <div class="skeleton h-32 w-full"></div>
+        </div>
+
+        <SocioeconomicPrerequisite v-else-if="!assessmentVerified" :beneficiary="beneficiaryDetails"
+            @verified="handleAssessmentVerified" @beneficiary-updated="getBeneficiaryDetails" />
+
+        <div v-else class="surface-panel p-4 sm:p-6">
             <form @submit.prevent="submitForm" class="space-y-6">
-                <div v-if="beneficiaryDetails" class="bg-blue-50 p-4 rounded-md border border-blue-100 mb-6">
-                    <p class="text-sm text-blue-800">
-                        Otorgando apoyo a: <span class="font-bold">{{ beneficiaryDetails.name }} {{
+                <div v-if="beneficiaryDetails" class="flex flex-col gap-3 rounded-xl border border-green-200 bg-green-50 p-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div class="flex items-start gap-3 text-green-950">
+                        <IconClipboardCheck class="mt-0.5 h-5 w-5 shrink-0" />
+                        <p class="text-sm">
+                            Estudio verificado para <span class="font-bold">{{ beneficiaryDetails.name }} {{
                             beneficiaryDetails.fatherSurname
                         }} {{ beneficiaryDetails.motherSurname }}</span>
-                    </p>
+                        </p>
+                    </div>
+                    <button type="button" class="btn btn-ghost btn-sm text-green-900" @click="resetAssessmentVerification">
+                        Revisar nuevamente
+                    </button>
                 </div>
 
                 <div class="grid grid-cols-1 gap-6">
@@ -33,7 +59,7 @@
                     </div>
                 </div>
 
-                <div class="divider">Agregar Items</div>
+                <div class="divider text-sm font-semibold text-gray-600">Agregar apoyos</div>
 
                 <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end bg-gray-50 p-4 rounded-lg">
                     <!-- Tipo de Apoyo -->
@@ -81,7 +107,7 @@
                     <!-- Botón Agregar -->
                     <div class="md:col-span-1 flex justify-end">
                         <div class="tooltip" data-tip="Agregar a la lista">
-                            <button type="button" @click="addItem"
+                            <button type="button" @click="addItem" aria-label="Agregar apoyo a la lista"
                                 class="btn btn-square bg-red-800 hover:bg-red-900 text-white">
                                 <IconPlus class="w-6 h-6" />
                             </button>
@@ -140,6 +166,7 @@
                                 <!-- Cantidad Control -->
                                 <div class="flex items-center border rounded-md bg-white">
                                     <button type="button" @click="decrementQuantity(index)"
+                                        :aria-label="`Reducir cantidad de ${item.description}`"
                                         :disabled="item.quantity <= 1"
                                         class="p-1 hover:bg-gray-100 text-gray-600 disabled:opacity-30 transition-colors">
                                         <IconMinus class="w-4 h-4" />
@@ -147,6 +174,7 @@
                                     <span class="px-3 py-1 text-sm font-bold min-w-[2.5rem] text-center">{{
                                         item.quantity }}</span>
                                     <button type="button" @click="incrementQuantity(index)"
+                                        :aria-label="`Aumentar cantidad de ${item.description}`"
                                         class="p-1 hover:bg-gray-100 text-gray-600 hover:text-green-600 transition-colors">
                                         <IconPlus class="w-4 h-4" />
                                     </button>
@@ -154,6 +182,7 @@
 
                                 <!-- Eliminar -->
                                 <button type="button" @click="removeItem(index)"
+                                    :aria-label="`Eliminar ${item.description}`"
                                     class="btn btn-sm btn-circle btn-ghost text-gray-400 hover:text-red-600 hover:bg-red-50">
                                     <IconX class="w-5 h-5" />
                                 </button>
@@ -180,6 +209,8 @@
 
                         <!-- Upload Area -->
                         <div v-if="!contribution.evidencePhoto" @click="triggerFileInput"
+                            @keydown.enter.prevent="triggerFileInput" @keydown.space.prevent="triggerFileInput"
+                            role="button" tabindex="0" aria-label="Seleccionar foto de evidencia"
                             class="border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center cursor-pointer hover:border-red-800 hover:bg-gray-50 transition-colors group">
 
                             <input type="file" ref="fileInput" class="hidden" accept="image/*"
@@ -192,8 +223,7 @@
 
                             <div v-else class="flex flex-col items-center">
                                 <IconCamera class="w-8 h-8 text-gray-400 group-hover:text-red-800 mb-2" />
-                                <span class="text-sm text-gray-600 font-medium">Click para subir foto de
-                                    evidencia</span>
+                                <span class="text-sm text-gray-600 font-medium">Selecciona una foto de evidencia</span>
                                 <span class="text-xs text-gray-400 mt-1">JPG, PNG (Max 5MB)</span>
                             </div>
                         </div>
@@ -201,7 +231,7 @@
                         <!-- Preview Area -->
                         <div v-else
                             class="relative w-full max-w-md mx-auto rounded-lg overflow-hidden border border-gray-200 shadow-sm group">
-                            <img :src="`${baseURL}${contribution.evidencePhoto}`" alt="Evidencia"
+                            <ProtectedImage :path="contribution.evidencePhoto" alt="Evidencia"
                                 class="w-full h-auto object-cover max-h-[300px]" />
 
                             <div
@@ -274,7 +304,8 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { toast } from 'vue3-toastify';
-import { IconPlus, IconTrash, IconMinus, IconX, IconArrowLeft, IconShoppingCart, IconCamera } from '@tabler/icons-vue';
+import { IconPlus, IconTrash, IconMinus, IconX, IconArrowLeft, IconShoppingCart, IconCamera, IconHeartHandshake, IconCheck, IconClipboardCheck } from '@tabler/icons-vue';
+import AppPageHeader from '@/components/ui/AppPageHeader.vue';
 import contributionServices from '@/services/contributionServices';
 import { useAuth } from '@/composables/useAuth';
 import { useRouter, useRoute } from 'vue-router'; // useRoute added
@@ -282,6 +313,8 @@ import { normalizeText } from '@/utils/normalizeObjectText'
 import { useDate } from '@/utils/dateTool'
 import beneficiaryServices from '@/services/beneficiaryServices'
 import ConfirmDeleteModal from '@/components/ConfirmDeleteModal.vue';
+import ProtectedImage from '@/components/ProtectedImage.vue';
+import SocioeconomicPrerequisite from '@/components/Contributions/SocioeconomicPrerequisite.vue';
 import { AxiosError } from 'axios';
 import dayjs from 'dayjs';
 
@@ -290,12 +323,13 @@ const { authHeader, user } = useAuth()
 const { getCurrentDate } = useDate()
 const router = useRouter()
 const route = useRoute() // Access route parameters
-const baseURL = import.meta.env.VITE_API_ENDPOINT || 'http://localhost:3000';
 
 
 // data
 const beneficiaryId = route.params.id; // Get ID from route
 const beneficiaryDetails = ref(null); // Validated beneficiary data
+const assessmentVerified = ref(false)
+const verifiedAssessment = ref(null)
 
 const medicineName = ref('');
 const otherName = ref('');
@@ -439,6 +473,16 @@ const getBeneficiaryDetails = async () => {
     }
 }
 
+const handleAssessmentVerified = (assessment) => {
+    verifiedAssessment.value = assessment
+    assessmentVerified.value = Boolean(assessment?._id)
+}
+
+const resetAssessmentVerification = () => {
+    assessmentVerified.value = false
+    verifiedAssessment.value = null
+}
+
 const getFamilyNames = async () => {
     try {
         const response = await beneficiaryServices.getBeneficiaryFamilyNames(beneficiaryId, authHeader.value)
@@ -475,6 +519,10 @@ const submitForm = async () => {
 
 // ... Same validation logic as Modal ...
 const validateForm = () => {
+    if (!verifiedAssessment.value?._id) {
+        toast.error('Confirma el estudio socioeconómico antes de continuar');
+        return false;
+    }
     if (!contribution.value.productOrServices?.length) {
         toast.error('Debe agregar al menos un producto o servicio');
         return false;
@@ -498,6 +546,7 @@ const preparePayload = () => {
             quantity: p.quantity
         })),
         beneficiary: beneficiaryId,
+        socioeconomicAssessment: verifiedAssessment.value._id,
         comments: normalizeText(contribution.value.comments),
         contributionDate: contribution.value.contributionDate,
         donor: normalizeText(contribution.value.donor),
@@ -509,7 +558,11 @@ const preparePayload = () => {
 const handleSuccessResponse = (response) => {
     isSubmissionSuccessful.value = true; // Marcar como éxito para evitar borrado de foto
     toast.success('Registro creado exitosamente');
-    goBack(); // Navigate back on success
+    router.replace({
+        name: 'Beneficiary',
+        params: { id: beneficiaryId },
+        query: { section: 'contributions' }
+    });
 };
 
 const handleSubmissionError = (err) => {

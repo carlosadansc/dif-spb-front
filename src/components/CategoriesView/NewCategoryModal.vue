@@ -1,7 +1,10 @@
 <template>
   <dialog :class="{ 'modal modal-open': isOpen, 'modal': !isOpen }">
     <div class="modal-box">
-      <h3 class="font-bold text-lg mb-4">{{ isEditing ? 'Editar' : 'Nueva' }} Categoría</h3>
+      <AppModalHeader :title="isEditing ? 'Editar categoría' : 'Nueva categoría'"
+        description="Define cómo se agruparán los productos y servicios disponibles." @close="closeModal">
+        <template #icon><IconCategory2 class="h-5 w-5" /></template>
+      </AppModalHeader>
 
       <form @submit.prevent="handleSubmit">
         <div class="space-y-4">
@@ -23,7 +26,7 @@
             <label class="label">
               <span class="label-text">Color</span>
             </label>
-            <input type="color" v-model="formData.color" class="w-10 h-10 border-none cursor-pointer" />
+            <input type="color" v-model="formData.color" class="h-11 w-full cursor-pointer rounded-lg border border-gray-300 bg-white p-1" aria-label="Color de la categoría" />
           </div>
         </div>
 
@@ -31,8 +34,9 @@
           <button type="button" class="btn btn-ghost" @click="closeModal">
             Cancelar
           </button>
-          <button type="submit" class="btn btn-primary" :disabled="loading">
-            {{ loading ? 'Guardando...' : 'Guardar' }}
+          <button type="submit" class="btn btn-brand min-w-36" :disabled="loading">
+            <span v-if="loading" class="loading loading-spinner loading-sm"></span>
+            {{ loading ? 'Guardando...' : 'Guardar categoría' }}
           </button>
         </div>
       </form>
@@ -51,6 +55,8 @@ import { useAuth } from '@/composables/useAuth';
 import { normalizeText } from '@/utils/normalizeObjectText';
 import { createLabel } from '@/utils/createLabel';
 import categoriesServices from '@/services/categoriesServices';
+import { IconCategory2 } from '@tabler/icons-vue';
+import AppModalHeader from '@/components/ui/AppModalHeader.vue';
 
 const { authHeader } = useAuth();
 

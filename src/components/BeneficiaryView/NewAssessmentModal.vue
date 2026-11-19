@@ -1,421 +1,375 @@
 <template>
-  <dialog class="modal" ref="newAssessmentModalRef">
-    <div class="modal-box w-full max-w-[90vw] max-h-[90vh] overflow-y-auto">
-      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" @click="closeModal">
-        ✕
-      </button>
+  <dialog ref="newAssessmentModalRef" class="modal">
+    <div class="modal-box flex max-h-[92dvh] w-full max-w-4xl flex-col overflow-hidden p-0">
+      <div class="px-5 pt-5 sm:px-7 sm:pt-6">
+        <AppModalHeader title="Actualizar estudio socioeconómico"
+          description="Confirma la información actual para crear un nuevo estudio." @close="closeModal">
+          <template #icon><IconClipboardPlus class="h-5 w-5" /></template>
+        </AppModalHeader>
 
-      <h3 class="text-lg font-bold">Nuevo Estudio Socioeconómico</h3>
-      <p class="text-sm text-gray-500 mt-2 required">
-        <span class="font-bold">¡Importante!</span> Verifique que los datos del beneficiario evaluado sean correctos antes de generar un nuevo estudio socioeconómico, de no ser así, por favor corrija los datos en las secciones de datos del beneficiario y datos económicos.
-      </p>
+        <div class="mt-5 flex items-center gap-3" aria-label="Progreso del estudio">
+          <progress class="progress progress-error h-2 flex-1" :value="currentStep" :max="steps.length"></progress>
+          <span class="shrink-0 text-sm font-bold text-gray-700">{{ currentStep }} de {{ steps.length }}</span>
+        </div>
+        <p class="mt-2 text-sm text-gray-600">{{ activeStep.description }}</p>
+      </div>
 
-      <div class="divider"></div>
-
-      <form @submit.prevent="submitForm" class="space-y-6">
-        <!-- General Info -->
-        <div class="bg-gray-50 p-4 rounded-lg">
-          <h4 class="font-bold text-sm mb-3 text-red-800">Información General</h4>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <form class="flex min-h-0 flex-1 flex-col" @submit.prevent="submitForm">
+        <div class="min-h-0 flex-1 overflow-y-auto px-5 py-6 sm:px-7">
+          <section v-if="currentStep === 1" class="mx-auto max-w-2xl space-y-5" aria-labelledby="economic-step-title">
             <div>
-              <p class="text-xs font-medium text-gray-600">Fecha de evaluación</p>
-              <p class="text-sm font-semibold text-gray-900">{{ formatDate(formData.assessmentDate) }}</p>
+              <h3 id="economic-step-title" class="text-lg font-bold text-gray-950">Situación laboral e ingresos</h3>
+              <p class="mt-1 text-sm text-gray-600">Actualiza los datos personales que influyen en la evaluación.</p>
             </div>
-          </div>
+
+            <div class="grid gap-4 sm:grid-cols-2">
+              <label class="form-control sm:col-span-2">
+                <span class="mb-2 text-sm font-semibold text-gray-800">¿Cuál es su ocupación actual?</span>
+                <input v-model.trim="formData.occupation" class="input input-bordered w-full" type="text"
+                  placeholder="Ej. comerciante, estudiante, hogar" />
+              </label>
+              <label class="form-control">
+                <span class="mb-2 text-sm font-semibold text-gray-800">Ingreso mensual</span>
+                <div class="input input-bordered flex items-center gap-2">
+                  <span class="font-semibold text-gray-500">$</span>
+                  <input v-model.number="formData.income" class="grow" type="number" min="0" step="0.01" />
+                </div>
+              </label>
+              <label class="form-control">
+                <span class="mb-2 text-sm font-semibold text-gray-800">Escolaridad</span>
+                <select v-model="formData.scholarship" class="select select-bordered w-full">
+                  <option value="" disabled>Selecciona una opción</option>
+                  <option v-for="item in scholarships" :key="item.value" :value="item.value">{{ item.text }}</option>
+                </select>
+              </label>
+              <label class="form-control">
+                <span class="mb-2 text-sm font-semibold text-gray-800">Estado civil</span>
+                <select v-model="formData.civilStatus" class="select select-bordered w-full">
+                  <option value="" disabled>Selecciona una opción</option>
+                  <option v-for="item in civilStatus" :key="item.value" :value="item.value">{{ item.text }}</option>
+                </select>
+              </label>
+              <label class="form-control">
+                <span class="mb-2 text-sm font-semibold text-gray-800">Servicio médico</span>
+                <select v-model="formData.medicalService" class="select select-bordered w-full">
+                  <option value="" disabled>Selecciona una opción</option>
+                  <option v-for="item in medicalServices" :key="item.value" :value="item.value">{{ item.text }}</option>
+                </select>
+              </label>
+              <label class="form-control sm:col-span-2">
+                <span class="mb-2 text-sm font-semibold text-gray-800">Descripción laboral <span class="font-normal text-gray-500">(opcional)</span></span>
+                <textarea v-model.trim="formData.occupationDescription" class="textarea textarea-bordered min-h-24 w-full"
+                  placeholder="Actividad, lugar de trabajo o situación actual"></textarea>
+              </label>
+            </div>
+          </section>
+
+          <section v-else-if="currentStep === 2" class="mx-auto max-w-2xl space-y-5" aria-labelledby="home-step-title">
+            <div>
+              <h3 id="home-step-title" class="text-lg font-bold text-gray-950">Condiciones de vivienda</h3>
+              <p class="mt-1 text-sm text-gray-600">Registra cómo es la vivienda y los servicios disponibles.</p>
+            </div>
+
+            <div class="grid gap-4 sm:grid-cols-2">
+              <label class="form-control">
+                <span class="mb-2 text-sm font-semibold text-gray-800">Tipo de vivienda</span>
+                <select v-model="formData.home.type" class="select select-bordered w-full">
+                  <option value="" disabled>Selecciona una opción</option>
+                  <option value="CASA">Casa</option>
+                  <option value="DEPARTAMENTO">Departamento</option>
+                  <option value="CUARTO">Cuarto</option>
+                  <option value="OTRO">Otro</option>
+                </select>
+              </label>
+              <label class="form-control">
+                <span class="mb-2 text-sm font-semibold text-gray-800">Tenencia</span>
+                <select v-model="formData.home.belonging" class="select select-bordered w-full">
+                  <option value="" disabled>Selecciona una opción</option>
+                  <option value="PROPIA">Propia</option>
+                  <option value="RENTA">Rentada</option>
+                  <option value="HIPOTECADA">Hipotecada</option>
+                  <option value="PRESTADA">Prestada</option>
+                </select>
+              </label>
+              <label class="form-control">
+                <span class="mb-2 text-sm font-semibold text-gray-800">Número de habitaciones</span>
+                <input v-model.number="formData.home.roomNumber" class="input input-bordered w-full" type="number" min="0" />
+              </label>
+              <label class="form-control">
+                <span class="mb-2 text-sm font-semibold text-gray-800">Tipo de piso</span>
+                <select v-model="formData.home.floorType" class="select select-bordered w-full">
+                  <option value="" disabled>Selecciona una opción</option>
+                  <option v-for="item in floorTypes" :key="item.value" :value="item.value">{{ item.text }}</option>
+                </select>
+              </label>
+              <label class="form-control">
+                <span class="mb-2 text-sm font-semibold text-gray-800">Material de paredes</span>
+                <select v-model="formData.home.wallType" class="select select-bordered w-full">
+                  <option value="" disabled>Selecciona una opción</option>
+                  <option v-for="item in wallTypes" :key="item.value" :value="item.value">{{ item.text }}</option>
+                </select>
+              </label>
+              <label class="form-control">
+                <span class="mb-2 text-sm font-semibold text-gray-800">Material del techo</span>
+                <select v-model="formData.home.ceilingType" class="select select-bordered w-full">
+                  <option value="" disabled>Selecciona una opción</option>
+                  <option v-for="item in ceilingTypes" :key="item.value" :value="item.value">{{ item.text }}</option>
+                </select>
+              </label>
+            </div>
+
+            <fieldset>
+              <legend class="mb-3 text-sm font-bold text-gray-900">Servicios disponibles</legend>
+              <div class="grid gap-2 sm:grid-cols-2">
+                <label v-for="service in homeServices" :key="service.key"
+                  class="flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border border-gray-200 px-4 py-3 hover:bg-gray-50">
+                  <input v-model="formData.home[service.key]" type="checkbox" class="checkbox checkbox-sm checkbox-error" />
+                  <span class="text-sm font-medium text-gray-800">{{ service.label }}</span>
+                </label>
+              </div>
+            </fieldset>
+          </section>
+
+          <section v-else-if="currentStep === 3" class="mx-auto max-w-2xl space-y-5" aria-labelledby="expenses-step-title">
+            <div>
+              <h3 id="expenses-step-title" class="text-lg font-bold text-gray-950">Gastos mensuales</h3>
+              <p class="mt-1 text-sm text-gray-600">Captura el gasto aproximado del hogar en cada concepto.</p>
+            </div>
+
+            <div class="grid gap-4 sm:grid-cols-2">
+              <label v-for="expense in expenseFields" :key="expense.key" class="form-control">
+                <span class="mb-2 text-sm font-semibold text-gray-800">{{ expense.label }}</span>
+                <div class="input input-bordered flex items-center gap-2">
+                  <span class="font-semibold text-gray-500">$</span>
+                  <input v-model.number="formData.expenses[expense.key]" class="grow" type="number" min="0" step="0.01" />
+                </div>
+              </label>
+            </div>
+
+            <div class="flex items-center justify-between rounded-xl bg-gray-100 px-4 py-3">
+              <span class="text-sm font-semibold text-gray-700">Gasto mensual estimado</span>
+              <span class="text-lg font-bold text-gray-950">{{ formatCurrency(totalExpenses) }}</span>
+            </div>
+          </section>
+
+          <section v-else class="mx-auto max-w-2xl space-y-5" aria-labelledby="review-step-title">
+            <div>
+              <h3 id="review-step-title" class="text-lg font-bold text-gray-950">Revisar y generar estudio</h3>
+              <p class="mt-1 text-sm text-gray-600">Confirma el resumen antes de guardar la actualización.</p>
+            </div>
+
+            <dl class="divide-y divide-gray-200 rounded-xl border border-gray-200 bg-white">
+              <div class="flex items-center justify-between gap-4 px-4 py-3">
+                <dt class="text-sm text-gray-600">Ocupación</dt>
+                <dd class="text-right text-sm font-bold text-gray-900">{{ formData.occupation }}</dd>
+              </div>
+              <div class="flex items-center justify-between gap-4 px-4 py-3">
+                <dt class="text-sm text-gray-600">Ingreso mensual personal</dt>
+                <dd class="text-right text-sm font-bold text-green-800">{{ formatCurrency(formData.income) }}</dd>
+              </div>
+              <div class="flex items-center justify-between gap-4 px-4 py-3">
+                <dt class="text-sm text-gray-600">Integrantes del hogar</dt>
+                <dd class="text-right text-sm font-bold text-gray-900">{{ householdSize }}</dd>
+              </div>
+              <div class="flex items-center justify-between gap-4 px-4 py-3">
+                <dt class="text-sm text-gray-600">Ingreso total del hogar</dt>
+                <dd class="text-right text-sm font-bold text-green-800">{{ formatCurrency(totalHouseholdIncome) }}</dd>
+              </div>
+              <div class="flex items-center justify-between gap-4 px-4 py-3">
+                <dt class="text-sm text-gray-600">Gastos mensuales</dt>
+                <dd class="text-right text-sm font-bold text-red-800">{{ formatCurrency(totalExpenses) }}</dd>
+              </div>
+            </dl>
+
+            <label class="form-control">
+              <span class="mb-2 text-sm font-semibold text-gray-800">Observaciones <span class="font-normal text-gray-500">(opcional)</span></span>
+              <textarea v-model.trim="formData.notes" class="textarea textarea-bordered min-h-28 w-full"
+                placeholder="Anota cambios relevantes o consideraciones de la evaluación"></textarea>
+            </label>
+
+            <div class="flex items-start gap-3 rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-950">
+              <IconInfoCircle class="mt-0.5 h-5 w-5 shrink-0" />
+              Se actualizará el perfil del beneficiario y se conservará este estudio como una nueva fotografía socioeconómica.
+            </div>
+          </section>
         </div>
 
-        <!-- Beneficiary data will be loaded automatically -->
-
-        <!-- Economic Data -->
-        <div class="bg-gray-50 p-4 rounded-lg">
-          <h4 class="font-bold text-sm mb-3 text-red-800">Datos Económicos</h4>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <p class="text-xs font-medium text-gray-600">Ingreso mensual</p>
-              <p class="text-sm font-semibold text-gray-900">{{ formatCurrency(formData.snapshot.income) }}</p>
-            </div>
-            <div>
-              <p class="text-xs font-medium text-gray-600">Ocupación</p>
-              <p class="text-sm font-semibold text-gray-900">{{ formData.snapshot.occupation || 'N/A' }}</p>
-            </div>
-            <div>
-              <p class="text-xs font-medium text-gray-600">Escolaridad</p>
-              <p class="text-sm font-semibold text-gray-900">{{ getScholarshipText(formData.snapshot.scholarship) }}</p>
-            </div>
-            <div>
-              <p class="text-xs font-medium text-gray-600">Estado civil</p>
-              <p class="text-sm font-semibold text-gray-900">{{ getCivilStatusText(formData.snapshot.civilStatus) }}</p>
-            </div>
-            <div>
-              <p class="text-xs font-medium text-gray-600">Servicio médico</p>
-              <p class="text-sm font-semibold text-gray-900">{{ getMedicalServiceText(formData.snapshot.medicalService) }}</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Household Summary -->
-        <div class="bg-gray-50 p-4 rounded-lg">
-          <h4 class="font-bold text-sm mb-3 text-red-800">Resumen del Hogar</h4>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <p class="text-xs font-medium text-gray-600">Integrantes del hogar</p>
-              <p class="text-sm font-semibold text-gray-900">{{ formData.snapshot.householdSize }}</p>
-            </div>
-            <div>
-              <p class="text-xs font-medium text-gray-600">Ingreso total del hogar</p>
-              <p class="text-sm font-semibold text-green-600">{{ formatCurrency(formData.snapshot.totalHouseholdIncome) }}</p>
-            </div>
-            <div>
-              <p class="text-xs font-medium text-gray-600">Gastos totales del hogar</p>
-              <p class="text-sm font-semibold text-red-600">{{ formatCurrency(formData.snapshot.totalHouseholdExpenses) }}</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Expenses -->
-        <div class="bg-gray-50 p-4 rounded-lg">
-          <h4 class="font-bold text-sm mb-3 text-red-800">Gastos Mensuales</h4>
-          <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-            <div>
-              <p class="text-xs font-medium text-gray-600">Transporte</p>
-              <p class="text-sm font-semibold text-gray-900">{{ formatCurrency(formData.snapshot.expenses.transport) }}</p>
-            </div>
-            <div>
-              <p class="text-xs font-medium text-gray-600">Alimentación</p>
-              <p class="text-sm font-semibold text-gray-900">{{ formatCurrency(formData.snapshot.expenses.meal) }}</p>
-            </div>
-            <div>
-              <p class="text-xs font-medium text-gray-600">TV/Internet</p>
-              <p class="text-sm font-semibold text-gray-900">{{ formatCurrency(formData.snapshot.expenses.tvService) }}</p>
-            </div>
-            <div>
-              <p class="text-xs font-medium text-gray-600">Agua</p>
-              <p class="text-sm font-semibold text-gray-900">{{ formatCurrency(formData.snapshot.expenses.waterService) }}</p>
-            </div>
-            <div>
-              <p class="text-xs font-medium text-gray-600">Electricidad</p>
-              <p class="text-sm font-semibold text-gray-900">{{ formatCurrency(formData.snapshot.expenses.electricService) }}</p>
-            </div>
-            <div>
-              <p class="text-xs font-medium text-gray-600">Otros gastos</p>
-              <p class="text-sm font-semibold text-gray-900">{{ formatCurrency(formData.snapshot.expenses.otherExpenses) }}</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Notes -->
-        <div>
-          <label class="block text-xs font-medium text-gray-700">Observaciones</label>
-          <textarea v-model="formData.notes" rows="4" class="input mt-1 block w-full bg-white border border-gray-300"
-            placeholder="Notas adicionales sobre el estudio..."></textarea>
-        </div>
-
-        <!-- Submit Button -->
-        <div class="pt-4">
-          <button :disabled="loading" type="submit" class="btn bg-red-900 text-white w-full">
-            <span v-if="!loading">Generar Estudio</span>
-            <span v-else class="loading loading-spinner loading-lg"></span>
+        <footer class="flex items-center justify-between gap-3 border-t border-gray-200 bg-gray-50 px-5 py-4 sm:px-7">
+          <button type="button" class="btn btn-ghost min-h-11" :disabled="loading" @click="currentStep === 1 ? closeModal() : previousStep()">
+            <IconArrowLeft class="h-5 w-5" /> {{ currentStep === 1 ? 'Cancelar' : 'Anterior' }}
           </button>
-        </div>
+          <button v-if="currentStep < steps.length" type="button" class="btn btn-brand min-h-11 px-6" @click="nextStep">
+            Continuar <IconArrowRight class="h-5 w-5" />
+          </button>
+          <button v-else type="submit" class="btn btn-brand min-h-11 px-6" :disabled="loading">
+            <span v-if="loading" class="loading loading-spinner loading-sm"></span>
+            <IconCircleCheck v-else class="h-5 w-5" />
+            {{ loading ? 'Guardando…' : 'Guardar estudio' }}
+          </button>
+        </footer>
       </form>
     </div>
-    <form method="dialog" class="modal-backdrop">
-      <button @click="closeModal">close</button>
-    </form>
+    <form method="dialog" class="modal-backdrop"><button :disabled="loading" @click="closeModal">Cerrar</button></form>
   </dialog>
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
-import { toast } from 'vue3-toastify';
-import { AxiosError } from 'axios';
+import { computed, ref, watch } from 'vue'
+import { toast } from 'vue3-toastify'
+import { IconArrowLeft, IconArrowRight, IconCircleCheck, IconClipboardPlus, IconInfoCircle } from '@tabler/icons-vue'
+import AppModalHeader from '@/components/ui/AppModalHeader.vue'
+import beneficiaryServices from '@/services/beneficiaryServices'
+import socioeconomicServices from '@/services/socioeconomicServices'
 import { useAuth } from '@/composables/useAuth'
-import socioeconomicServices from '@/services/socioeconomicServices';
-import civilStatus from '@/constants/civilStatus';
-import scholarships from '@/constants/scholarships';
-import medicalServices from '@/constants/medicalServices';
-import formatCurrency from '../../utils/formatCurrency';
-import { useDate } from '@/utils/dateTool';
-
-const { formatDate } = useDate();
-
-const { authHeader } = useAuth()
+import { normalizeObjectTextProperties } from '@/utils/normalizeObjectText'
+import formatCurrency from '@/utils/formatCurrency'
+import civilStatus from '@/constants/civilStatus'
+import scholarships from '@/constants/scholarships'
+import medicalServices from '@/constants/medicalServices'
+import floorTypes from '@/constants/floorTypes'
+import wallTypes from '@/constants/wallTypes'
+import ceilingTypes from '@/constants/ceilingTypes'
 
 const props = defineProps({
-  show: {
-    type: Boolean,
-    default: false
-  },
-  beneficiary: {
-    type: Object,
-    required: true
-  }
-});
+  show: { type: Boolean, default: false },
+  beneficiary: { type: Object, required: true }
+})
 
-const emit = defineEmits(['close', 'created']);
+const emit = defineEmits(['close', 'created'])
+const { authHeader } = useAuth()
+const newAssessmentModalRef = ref(null)
+const currentStep = ref(1)
+const loading = ref(false)
 
-const newAssessmentModalRef = ref(null);
-const loading = ref(false);
+const steps = [
+  { title: 'Economía', description: 'Primero revisa la situación laboral y los ingresos.' },
+  { title: 'Vivienda', description: 'Continúa con las condiciones actuales de vivienda.' },
+  { title: 'Gastos', description: 'Registra los gastos mensuales aproximados.' },
+  { title: 'Confirmación', description: 'Finalmente revisa el resumen y genera el estudio.' }
+]
 
-const formData = ref({
+const homeServices = [
+  { key: 'haveBathroom', label: 'Baño' },
+  { key: 'haveToilet', label: 'Sanitario' },
+  { key: 'haveDrainage', label: 'Drenaje' },
+  { key: 'haveWaterService', label: 'Agua potable' },
+  { key: 'haveElectricService', label: 'Electricidad' },
+  { key: 'haveTvService', label: 'Televisión o internet' }
+]
+
+const expenseFields = [
+  { key: 'transport', label: 'Transporte' },
+  { key: 'meal', label: 'Alimentación' },
+  { key: 'tvService', label: 'Televisión o internet' },
+  { key: 'waterService', label: 'Agua' },
+  { key: 'electricService', label: 'Electricidad' },
+  { key: 'otherExpenses', label: 'Otros gastos' }
+]
+
+const emptyForm = () => ({
   assessmentDate: new Date().toISOString().split('T')[0],
   notes: '',
-  snapshot: {
-    income: 0,
-    occupation: '',
-    occupationDescription: '',
-    scholarship: '',
-    civilStatus: '',
-    medicalService: '',
-    address: {
-      communityType: '',
-      delegation: '',
-      subdelegation: '',
-      street: '',
-      sideStreets: '',
-      extNum: '',
-      intNum: '',
-      neighborhood: '',
-      cp: null,
-      city: ''
-    },
-    spouseOrTutor: {
-      curp: '',
-      fullname: '',
-      age: null,
-      phone: '',
-      work: '',
-      income: 0,
-      relationship: ''
-    },
-    home: {
-      type: '',
-      roomNumber: null,
-      belonging: '',
-      floorType: '',
-      wallType: '',
-      ceilingType: '',
-      haveBathroom: false,
-      haveToilet: false,
-      haveDrainage: false,
-      haveSepticTank: false,
-      haveWaterService: false,
-      haveElectricService: false,
-      haveAirConditioning: false,
-      haveTvService: false
-    },
-    expenses: {
-      transport: 0,
-      meal: 0,
-      tvService: 0,
-      waterService: 0,
-      electricService: 0,
-      otherExpenses: 0
-    },
-    familyMembers: [],
-    totalHouseholdIncome: 0,
-    totalHouseholdExpenses: 0,
-    householdSize: 1
-  }
-});
-
-watch(
-  () => props.show,
-  async (value) => {
-    if (value) {
-      newAssessmentModalRef.value?.showModal();
-      // Load beneficiary data automatically when modal opens
-      await loadFromBeneficiary();
-    } else {
-      newAssessmentModalRef.value?.close();
-    }
+  income: 0,
+  occupation: '',
+  occupationDescription: '',
+  scholarship: '',
+  civilStatus: '',
+  medicalService: '',
+  home: {
+    type: '', roomNumber: 0, belonging: '', floorType: '', wallType: '', ceilingType: '',
+    haveBathroom: false, haveToilet: false, haveDrainage: false, haveSepticTank: false,
+    haveWaterService: false, haveElectricService: false, haveAirConditioning: false, haveTvService: false
   },
-  { immediate: true }
-);
+  expenses: { transport: 0, meal: 0, tvService: 0, waterService: 0, electricService: 0, otherExpenses: 0 }
+})
+
+const formData = ref(emptyForm())
+const activeStep = computed(() => steps[currentStep.value - 1])
+const familyMembers = computed(() => props.beneficiary.families || props.beneficiary.family || [])
+const householdSize = computed(() => 1 + (props.beneficiary.spouseOrTutor?.fullname ? 1 : 0) + familyMembers.value.length)
+const totalExpenses = computed(() => Object.values(formData.value.expenses).reduce((sum, value) => sum + (Number(value) || 0), 0))
+const totalHouseholdIncome = computed(() => {
+  const familyIncome = familyMembers.value.reduce((sum, member) => sum + (Number(member.income) || 0), 0)
+  return (Number(formData.value.income) || 0) + (Number(props.beneficiary.spouseOrTutor?.income) || 0) + familyIncome
+})
+
+const loadBeneficiaryData = () => {
+  const beneficiary = props.beneficiary
+  formData.value = {
+    ...emptyForm(),
+    income: beneficiary.income || 0,
+    occupation: beneficiary.occupation || '',
+    occupationDescription: beneficiary.occupationDescription || '',
+    scholarship: beneficiary.scholarship || '',
+    civilStatus: beneficiary.civilStatus || '',
+    medicalService: beneficiary.medicalService || '',
+    home: { ...emptyForm().home, ...(beneficiary.home || {}) },
+    expenses: { ...emptyForm().expenses, ...(beneficiary.expenses || {}) }
+  }
+  currentStep.value = 1
+}
+
+watch(() => props.show, (show) => {
+  if (show) {
+    loadBeneficiaryData()
+    newAssessmentModalRef.value?.showModal()
+  } else {
+    newAssessmentModalRef.value?.close()
+  }
+}, { immediate: true })
+
+const validateCurrentStep = () => {
+  if (currentStep.value === 1 && (!formData.value.occupation || !formData.value.scholarship || !formData.value.civilStatus || !formData.value.medicalService)) {
+    toast.warning('Completa ocupación, escolaridad, estado civil y servicio médico')
+    return false
+  }
+  if (currentStep.value === 2 && (!formData.value.home.type || !formData.value.home.belonging || !formData.value.home.floorType || !formData.value.home.wallType || !formData.value.home.ceilingType)) {
+    toast.warning('Completa los datos principales de la vivienda')
+    return false
+  }
+  return true
+}
+
+const nextStep = () => {
+  if (validateCurrentStep()) currentStep.value += 1
+}
+
+const previousStep = () => { currentStep.value = Math.max(1, currentStep.value - 1) }
 
 const closeModal = () => {
-  emit('close');
-};
-
-const calculateTotals = () => {
-  // Calculate total household income
-  let totalIncome = parseFloat(formData.value.snapshot.income) || 0;
-
-  if (formData.value.snapshot.spouseOrTutor?.income) {
-    totalIncome += parseFloat(formData.value.snapshot.spouseOrTutor.income);
-  }
-
-  if (formData.value.snapshot.familyMembers?.length) {
-    formData.value.snapshot.familyMembers.forEach(member => {
-      if (member.income) {
-        totalIncome += parseFloat(member.income);
-      }
-    });
-  }
-
-  formData.value.snapshot.totalHouseholdIncome = totalIncome;
-
-  // Calculate total expenses
-  const expenses = formData.value.snapshot.expenses;
-  const totalExpenses =
-    (parseFloat(expenses.transport) || 0) +
-    (parseFloat(expenses.meal) || 0) +
-    (parseFloat(expenses.tvService) || 0) +
-    (parseFloat(expenses.waterService) || 0) +
-    (parseFloat(expenses.electricService) || 0) +
-    (parseFloat(expenses.otherExpenses) || 0);
-
-  formData.value.snapshot.totalHouseholdExpenses = totalExpenses;
-
-  // Calculate household size
-  let householdSize = 1; // Beneficiary
-  if (formData.value.snapshot.spouseOrTutor?.fullname) householdSize++;
-  if (formData.value.snapshot.familyMembers?.length) {
-    householdSize += formData.value.snapshot.familyMembers.length;
-  }
-
-  formData.value.snapshot.householdSize = householdSize;
-};
-
-const loadFromBeneficiary = async () => {
-  if (!props.beneficiary) return;
-
-  loading.value = true;
-  try {
-    const ben = props.beneficiary;
-
-    // Load economic data
-    if (ben.income) formData.value.snapshot.income = ben.income;
-    if (ben.occupation) formData.value.snapshot.occupation = ben.occupation;
-    if (ben.scholarship) formData.value.snapshot.scholarship = ben.scholarship;
-    if (ben.civilStatus) formData.value.snapshot.civilStatus = ben.civilStatus;
-    if (ben.medicalService) formData.value.snapshot.medicalService = ben.medicalService;
-
-    // Load address
-    if (ben.address) {
-      formData.value.snapshot.address = { ...ben.address };
-    }
-
-    // Load spouse/tutor
-    if (ben.spouseOrTutor) {
-      formData.value.snapshot.spouseOrTutor = { ...ben.spouseOrTutor };
-    }
-
-    // Load home
-    if (ben.home) {
-      formData.value.snapshot.home = { ...ben.home };
-    }
-
-    // Load expenses
-    if (ben.expenses) {
-      formData.value.snapshot.expenses = { ...ben.expenses };
-    }
-
-    // Load family members
-    if (ben.family && ben.family.length > 0) {
-      formData.value.snapshot.familyMembers = ben.family.map(member => ({
-        name: member.name || '',
-        lastname: member.lastname || '',
-        age: member.age || null,
-        sex: member.sex || '',
-        scholarship: member.scholarship || '',
-        phone: member.phone || '',
-        relationship: member.relationship || '',
-        occupation: member.occupation || '',
-        income: member.income || 0
-      }));
-    }
-
-    // Calculate totals
-    calculateTotals();
-
-    // toast.success('Datos cargados desde el beneficiario');
-  } catch (error) {
-    console.error('Error loading beneficiary data:', error);
-    // toast.error('Error al cargar los datos del beneficiario');
-  } finally {
-    loading.value = false;
-  }
-};
+  if (!loading.value) emit('close')
+}
 
 const submitForm = async () => {
-  loading.value = true;
-
+  if (loading.value) return
+  loading.value = true
   try {
-    // Calculate totals before submitting
-    calculateTotals();
+    await beneficiaryServices.updateBeneficiary({
+      filter: props.beneficiary._id,
+      update: normalizeObjectTextProperties({
+        income: Number(formData.value.income) || 0,
+        occupation: formData.value.occupation,
+        occupationDescription: formData.value.occupationDescription,
+        scholarship: formData.value.scholarship,
+        civilStatus: formData.value.civilStatus,
+        medicalService: formData.value.medicalService,
+        home: formData.value.home,
+        expenses: Object.fromEntries(Object.entries(formData.value.expenses).map(([key, value]) => [key, Number(value) || 0]))
+      })
+    }, authHeader.value)
 
-    const payload = {
-      ...formData.value
-    };
+    const response = await socioeconomicServices.createAssessment(props.beneficiary._id, {
+      assessmentDate: formData.value.assessmentDate,
+      notes: formData.value.notes
+    }, authHeader.value)
 
-    const response = await socioeconomicServices.createAssessment(props.beneficiary._id, payload, authHeader.value);
-
-    if (response.code === "ERR_NETWORK") {
-      toast.error('No se pudo conectar con el servidor');
-    } else {
-      toast.success('Estudio socioeconómico creado exitosamente');
-      emit('created');
-      resetForm();
-      closeModal();
-    }
-  } catch (err) {
-    if (err instanceof AxiosError) {
-      toast.error(err.response?.data?.message || 'Error al crear el estudio');
-    } else {
-      console.error('Error:', err);
-      toast.error('Error inesperado al crear el estudio');
-    }
+    toast.success('Estudio socioeconómico actualizado')
+    emit('created', response.data)
+    emit('close')
+  } catch (error) {
+    toast.error(error.response?.data?.message || 'No se pudo guardar el estudio socioeconómico')
   } finally {
-    loading.value = false;
+    loading.value = false
   }
-};
-
-const resetForm = () => {
-  formData.value = {
-    assessmentDate: new Date().toISOString().split('T')[0],
-    notes: '',
-    snapshot: {
-      income: 0,
-      occupation: '',
-      occupationDescription: '',
-      scholarship: '',
-      civilStatus: '',
-      medicalService: '',
-      address: {},
-      spouseOrTutor: {},
-      home: {},
-      expenses: {
-        transport: 0,
-        meal: 0,
-        tvService: 0,
-        waterService: 0,
-        electricService: 0,
-        otherExpenses: 0
-      },
-      familyMembers: [],
-      totalHouseholdIncome: 0,
-      totalHouseholdExpenses: 0,
-      householdSize: 1
-    }
-  };
-};
-
-const getCivilStatusText = (statusValue) => {
-  if (!statusValue) return 'N/A';
-  const status = civilStatus.find(s => s.value === statusValue);
-  return status ? status.text : statusValue;
-};
-
-const getScholarshipText = (scholarshipValue) => {
-  if (!scholarshipValue) return 'N/A';
-  const scholarship = scholarships.find(s => s.value === scholarshipValue);
-  return scholarship ? scholarship.text : scholarshipValue;
-};
-
-const getMedicalServiceText = (serviceValue) => {
-  if (!serviceValue) return 'N/A';
-  const service = medicalServices.find(s => s.value === serviceValue);
-  return service ? service.text : serviceValue;
-};
+}
 </script>

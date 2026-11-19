@@ -1,5 +1,5 @@
 <template>
-  <SplashScreen v-if="showSplash" />
+  <SplashScreen v-if="showSplash" @ready="showSplash = false" />
   <main v-else class="h-dvh w-full overflow-hidden">
     <router-view />
   </main>
@@ -11,13 +11,6 @@ import SplashScreen from './components/SplashScreen.vue';
 
 const showSplash = ref(true);
 
-// Ocultar el splash screen después de un tiempo máximo por si hay algún error
-document.addEventListener('DOMContentLoaded', () => {
-  const maxWaitTime = 10000; // 10 segundos
-  setTimeout(() => {
-    showSplash.value = false;
-  }, maxWaitTime);
-});
 </script>
 
 <style>

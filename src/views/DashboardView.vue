@@ -1,54 +1,18 @@
 <template>
-  <div class="container mx-auto px-4 relative">
-    <!-- Quick Access Dock -->
-    <div class="absolute right-4 top-4 z-10">
-      <div
-        class="bg-white/80 backdrop-blur-md border border-gray-200 rounded-2xl shadow-lg p-2 flex items-center gap-2">
-        <!-- Botón: Ir a Beneficiarios -->
-        <div class="tooltip tooltip-bottom" data-tip="Ir al padrón de beneficiarios">
-          <router-link to="/beneficiaries"
-            class="btn btn-square btn-ghost hover:bg-blue-50 hover:text-blue-600 transition-all duration-200 hover:scale-110">
-            <IconUsers class="w-5 h-5" />
-          </router-link>
-        </div>
-
-        <!-- Separador -->
-        <div class="w-px h-8 bg-gray-300"></div>
-
-        <!-- Botón: Otorgar Apoyo Rápido -->
-        <div class="tooltip tooltip-bottom" data-tip="Otorgar apoyo rápido">
-          <button @click="showQuickContributionModal = true"
-            class="btn btn-square btn-ghost hover:bg-red-50 hover:text-red-600 transition-all duration-200 hover:scale-110">
-            <IconPlus class="w-5 h-5" />
-          </button>
-        </div>
-
-        <!-- Separador -->
-        <div class="w-px h-8 bg-gray-300"></div>
-
-        <!-- Botón: Apoyo Masivo -->
-        <div class="tooltip tooltip-bottom" data-tip="Registrar jornada masiva">
-          <router-link to="/massive-contribution"
-            class="btn btn-square btn-ghost hover:bg-purple-50 hover:text-purple-600 transition-all duration-200 hover:scale-110">
-            <IconUsersGroup class="w-5 h-5" />
-          </router-link>
-        </div>
-
-        <!-- Separador -->
-        <div class="w-px h-8 bg-gray-300"></div>
-
-        <!-- Botón: Exportar Apoyos -->
-        <div v-if="isAdmin || isExecutive" class="tooltip tooltip-bottom" data-tip="Exportar padrón de apoyos">
-          <button @click.prevent="exportToExcel" :disabled="loadingExport"
-            class="btn btn-square btn-ghost hover:bg-green-50 hover:text-green-600 transition-all duration-200 hover:scale-110 disabled:opacity-50">
-            <IconFileDownload v-if="!loadingExport" class="w-5 h-5" />
-            <IconLoader v-else class="w-5 h-5 animate-spin" />
-          </button>
-        </div>
+  <div class="app-page">
+    <AppPageHeader title="Resumen de apoyos" description="Consulta la actividad reciente y accede a las tareas más frecuentes.">
+      <template #icon><IconChartBar class="h-6 w-6" /></template>
+      <div class="flex flex-wrap gap-2" aria-label="Acciones rápidas">
+        <router-link to="/beneficiaries" class="btn min-h-11 btn-outline border-red-200 text-red-900 hover:bg-red-50">
+          <IconUsers class="h-5 w-5" aria-hidden="true" /> Beneficiarios
+        </router-link>
+        <button @click="showQuickContributionModal = true" class="btn min-h-11 bg-red-800 text-white hover:bg-red-900">
+          <IconPlus class="h-5 w-5" aria-hidden="true" /> Otorgar apoyo
+        </button>
       </div>
-    </div>
+    </AppPageHeader>
 
-    <div class="flex justify-between items-center">
+    <div class="toolbar-panel flex items-center justify-between">
       <DateSelector v-model="dateFilter" />
     </div>
 
@@ -81,7 +45,8 @@
 
 <script setup>
 import { ref, watch, computed, onMounted } from 'vue';
-import { IconFileDownload, IconUsers, IconLoader, IconPlus, IconUsersGroup } from '@tabler/icons-vue';
+import { IconChartBar, IconUsers, IconPlus } from '@tabler/icons-vue';
+import AppPageHeader from '@/components/ui/AppPageHeader.vue';
 import DateSelector from '@/components/DashboardView/DateSelector.vue';
 import SummaryByCategoryChart from '@/components/DashboardView/SummaryByCategoryChart.vue';
 import ContributionStats from '@/components/DashboardView/ContributionStats.vue';
@@ -98,10 +63,9 @@ import { toast } from 'vue3-toastify';
 import { AxiosError } from 'axios';
 import { useAuth } from '@/composables/useAuth';
 import { omitUndefined } from '@/utils/omitUndefined';
-import * as XLSX from 'xlsx';
 
 // composables
-const { authHeader, isAdmin, isExecutive, isStandardUser } = useAuth()
+const { authHeader } = useAuth()
 
 // data
 const dateFilter = ref({
@@ -117,8 +81,6 @@ const loadingSummaryByCategory = ref(false)
 const loadingBeneficiariesByDelegation = ref(false)
 const loadingBeneficiariesBySex = ref(false)
 const loadingBeneficiariesCount = ref(false)
-const loadingContributions = ref(false)
-const loadingExport = ref(false)
 const showQuickContributionModal = ref(false)
 const showNewBeneficiaryModal = ref(false)
 const defaultCurp = ref('')
@@ -128,7 +90,6 @@ const contributionSummaryByCategoryData = ref([])
 const beneficiariesByDelegationData = ref({})
 const beneficiariesBySexData = ref({})
 const beneficiariesCount = ref(0)
-const contributionsData = ref([])
 
 //computed
 const contributionsCount = computed(() => {
@@ -250,117 +211,6 @@ const getBeneficiariesBySex = async () => {
   }
 }
 
-const getAllContributions = async () => {
-  try {
-    loadingExport.value = true
-    const response = await contributionServices.getAllContributions(authHeader.value);
-    if (response.code === "ERR_NETWORK") {
-      toast.error('No se pudo conectar con el servidor')
-    } else {
-      contributionsData.value = response.data
-    }
-  } catch (err) {
-    if (err instanceof AxiosError) {
-      toast.error(err.response?.data?.message)
-    } else {
-      toast.error(err)
-    }
-  } finally {
-    loadingExport.value = false
-  }
-}
-
-// Export to Excel
-// Export to Excel
-const json_fields = {
-  "folio": "folio",
-  "CURP": "curp",
-  "Nombre": "nombre",
-  "Apellido paterno": "apellido paterno",
-  "Apellido materno": "apellido materno",
-  "Fecha de nacimiento": "fecha de nacimiento",
-  "Sexo": "sexo",
-  "Edad": "edad",
-  "Calle": "calle",
-  "Número": "numero",
-  "Colonia": "colonia",
-  "Delegación": "delegacion",
-  "Subdelegación": "subdilegacion",
-  "Código postal": "codigo postal",
-  "Fecha de apoyo": "fecha de apoyo",
-  "Quien recibió": "quien recibio",
-  "Quien entregó": "quien entrego",
-  "Tipo de apoyo": "tipo de apoyo",
-  "Apoyo otorgado": "apoyo otorgado",
-  "Cantidad": "cantidad"
-};
-
-const exportToExcel = async () => {
-  loadingExport.value = true;
-
-  try {
-    await getAllContributions();
-
-    const dataExcel = contributionsData.value.map(contribution => {
-      const row = {};
-      for (const [key, value] of Object.entries(json_fields)) {
-        try {
-          // Los campos no están anidados, así que accedemos directamente
-          const cellValue = contribution[value];
-
-          // Formatear fechas si es necesario
-          if ((key === 'Fecha de nacimiento' || key === 'Fecha de apoyo') && cellValue) {
-            // Suponiendo que las fechas ya vienen formateadas como DD/MM/YYYY
-            row[key] = cellValue;
-          } else {
-            row[key] = cellValue ?? '';
-          }
-        } catch (error) {
-          console.warn(`Error procesando campo ${key}:`, error);
-          row[key] = '';
-        }
-      }
-      return row;
-    });
-
-    // Crear hoja de cálculo
-    const worksheet = XLSX.utils.json_to_sheet(dataExcel);
-
-    // Ajustar anchos de algunas columnas
-    worksheet['!cols'] = [
-      { wch: 15 }, // Folio
-      { wch: 18 }, // CURP
-      { wch: 15 }, // Nombre
-      { wch: 15 }, // Apellido paterno
-      { wch: 15 }, // Apellido materno
-      { wch: 15 }, // Fecha de nacimiento
-      { wch: 10 }, // Sexo
-      { wch: 8 },  // Edad
-      { wch: 15 }, // Calle
-      { wch: 10 }, // Número
-      { wch: 15 }, // Colonia
-      { wch: 15 }, // Delegación
-      { wch: 15 }, // Subdelegación
-      { wch: 10 }, // Código postal
-      { wch: 15 }, // Fecha de apoyo
-      { wch: 15 }, // Quien recibió
-      { wch: 15 }, // Quien entregó
-      { wch: 15 }, // Tipo de apoyo
-      { wch: 25 }, // Apoyo otorgado
-      { wch: 10 }  // Cantidad
-    ];
-
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Apoyos');
-    XLSX.writeFile(workbook, 'registro-apoyos-otorgados-smdif-la-paz.xlsx');
-  } catch (error) {
-    console.error('Error al exportar a Excel:', error);
-    // Aquí podrías mostrar una notificación de error al usuario
-  } finally {
-    loadingExport.value = false;
-  }
-};
-
 const selectCategoryFilter = (category) => {
   categoryFilter.value = category
   if (category._id === 1) {
@@ -386,15 +236,7 @@ const handleBeneficiaryCreated = () => {
   // Cerrar modal y refrescar datos si es necesario
   showNewBeneficiaryModal.value = false;
   defaultCurp.value = '';
-  toast.success('Beneficiario creado exitosamente');
   // Opcional: refrescar estadísticas
-  getBeneficiariesTotal();
-}
-
-const handleMassiveContributionCreated = () => {
-  // Refrescar estadísticas después de crear jornada masiva
-  getContributionSummary();
-  getContributionSummaryByCategory();
   getBeneficiariesTotal();
 }
 

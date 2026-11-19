@@ -1,33 +1,35 @@
 <template>
-  <div v-if="show" class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-lg w-full max-w-md">
-      <div class="p-6">
-        <h2 class="text-xl font-semibold mb-4">{{ editingArea ? 'Editar Área' : 'Nueva Área' }}</h2>
+  <div v-if="show" class="modal modal-open" role="dialog" aria-modal="true" @click.self="$emit('close')">
+    <div class="modal-box w-full max-w-md">
+        <AppModalHeader :title="editingArea ? 'Editar área' : 'Nueva área'"
+          description="Define el nombre y, si aplica, el área de la que depende." @close="$emit('close')">
+          <template #icon><IconSitemap class="h-5 w-5" /></template>
+        </AppModalHeader>
         
         <form @submit.prevent="$emit('save')">
-          <div class="mb-4">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="name">
+          <div class="form-control">
+            <label class="mb-1 block text-sm font-semibold text-gray-700" for="name">
               Nombre <span class="text-red-500">*</span>
             </label>
             <input
               v-model="formData.name"
               type="text"
               id="name"
-              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              :class="{ 'border-red-500': errors.name }"
+              class="input input-bordered w-full"
+              :class="{ 'input-error': errors.name }"
               maxlength="100"
             />
-            <p v-if="errors.name" class="text-red-500 text-xs italic">{{ errors.name }}</p>
+            <p v-if="errors.name" class="mt-1 text-xs font-medium text-red-700" role="alert">{{ errors.name }}</p>
           </div>
 
-          <div class="mb-4">
-            <label class="block text-gray-700 text-sm font-bold mb-2" for="parentArea">
-              Área Padre
+          <div class="form-control mt-4">
+            <label class="mb-1 block text-sm font-semibold text-gray-700" for="parentArea">
+              Área superior
             </label>
             <select
               v-model="formData.parentArea"
               id="parentArea"
-              class="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              class="select select-bordered w-full"
             >
               <option :value="null">Ninguna</option>
               <option 
@@ -39,36 +41,34 @@
                 {{ area.name }}
               </option>
             </select>
-            <p v-if="errors.parentArea" class="text-red-500 text-xs italic">{{ errors.parentArea }}</p>
+            <p v-if="errors.parentArea" class="mt-1 text-xs font-medium text-red-700" role="alert">{{ errors.parentArea }}</p>
           </div>
 
-          <div class="flex justify-end gap-3 mt-6">
+          <div class="modal-action">
             <button
               type="button"
               @click="$emit('close')"
-              class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+              class="btn btn-ghost"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              class="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700"
+              class="btn btn-brand min-w-28"
               :disabled="loading"
             >
-              <span v-if="loading">
-                <i class="fas fa-spinner fa-spin"></i> Guardando...
-              </span>
-              <span v-else>Guardar</span>
+              <span v-if="loading" class="loading loading-spinner loading-sm"></span>
+              {{ loading ? 'Guardando...' : 'Guardar área' }}
             </button>
           </div>
         </form>
-      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { IconSitemap } from '@tabler/icons-vue';
+import AppModalHeader from '@/components/ui/AppModalHeader.vue';
 
 const props = defineProps({
   show: {

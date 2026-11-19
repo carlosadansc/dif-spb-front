@@ -5,14 +5,17 @@ import { useAuth } from '../composables/useAuth'
 // Components
 import HomeView from "../views/HomeView.vue"
 import LoginView from "../views/login/SignInView.vue"
-import DashboardView from '../views/DashboardView.vue'
-import BeneficiariesView from '../views/BeneficiariesView.vue'
-import BeneficiaryView from '../views/BeneficiaryView.vue'
-import UsersView from '../views/UsersView.vue'
-import CategoriesView from '../views/CategoriesView.vue'
-import AreasView from '../views/AreasView.vue'
-import NewContributionView from '../views/NewContributionView.vue'
 import NotFoundView from '../views/NotFoundView.vue'
+
+const DashboardView = () => import('../views/DashboardView.vue')
+const BeneficiariesView = () => import('../views/BeneficiariesView.vue')
+const BeneficiaryView = () => import('../views/BeneficiaryView.vue')
+const QuickBeneficiaryRegistrationView = () => import('../views/QuickBeneficiaryRegistrationView.vue')
+const UsersView = () => import('../views/UsersView.vue')
+const CategoriesView = () => import('../views/CategoriesView.vue')
+const AreasView = () => import('../views/AreasView.vue')
+const NewContributionView = () => import('../views/NewContributionView.vue')
+const ReportsView = () => import('../views/ReportsView.vue')
 
 // Routes
 const routes = [
@@ -53,6 +56,24 @@ const routes = [
         }
       },
       {
+        path: 'reports',
+        name: 'Reports',
+        component: ReportsView,
+        meta: {
+          requiresExecutive: true,
+          title: 'Reportes'
+        }
+      },
+      {
+        path: 'beneficiaries/quick-register',
+        name: 'QuickBeneficiaryRegistration',
+        component: QuickBeneficiaryRegistrationView,
+        meta: {
+          requiresStandardUser: true,
+          title: 'Registro rápido con INE'
+        }
+      },
+      {
         path: 'beneficiaries/:id/new-contribution',
         name: 'NewContribution',
         component: NewContributionView,
@@ -61,24 +82,6 @@ const routes = [
           title: 'Nuevo Apoyo'
         },
         props: true
-      },
-      {
-        path: 'massive-contributions',
-        name: 'MassiveContributions',
-        component: () => import('../views/MassiveContributionsView.vue'),
-        meta: {
-          requiresStandardUser: true,
-          title: 'Historial de Jornadas'
-        }
-      },
-      {
-        path: 'massive-contribution',
-        name: 'NewMassiveContribution',
-        component: () => import('../views/NewMassiveContributionView.vue'),
-        meta: {
-          requiresStandardUser: true,
-          title: 'Nuevo Apoyo Masivo'
-        }
       },
       {
         path: 'beneficiaries/:id',
@@ -149,7 +152,7 @@ router.beforeEach((to, from, next) => {
 
   // Establecer título de la página
   if (to.meta.title) {
-    document.title = `${to.meta.title} | DIF SIPA`;
+    document.title = `${to.meta.title} | SPB DIF`;
   }
 
   // Usuario autenticado

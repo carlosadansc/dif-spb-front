@@ -34,7 +34,7 @@
           <div class="formal-section-content">
             <div class="beneficiary-header">
               <div class="beneficiary-photo-container" v-if="props.beneficiary.photo">
-                <img :src="getPhotoUrl(props.beneficiary.photo)" alt="Foto del beneficiario" class="beneficiary-photo" />
+                <ProtectedImage :path="props.beneficiary.photo" alt="Foto del beneficiario" class="beneficiary-photo" />
               </div>
               <div class="beneficiary-info">
                 <table class="info-table">
@@ -293,10 +293,10 @@
           </div>
         </div>
         <div class="footer-text">
-          <p>Este documento es válido como ficha oficial de registro del beneficiario en el Sistema Integral del Padron
+          <p>Este documento es válido como ficha oficial de registro del beneficiario en el Sistema de Padrón
             de Beneficiarios del DIF Municipal La Paz B.C.S.</p>
-          <p class="document-generated">Documento generado el {{ getCurrentDate() }} a través del Sistema Integral
-            del Padrón de Beneficiarios</p>
+          <p class="document-generated">Documento generado el {{ getCurrentDate() }} a través del Sistema de Padrón
+            de Beneficiarios (SPB)</p>
           <p class="document-operator">Expedido por: {{ capitalize(user.name) }} {{ capitalize(user.lastname) }} / {{
             user.position }}</p>
         </div>
@@ -315,6 +315,7 @@ import capitalize from '@/utils/capitalize';
 import logoDif from '@/assets/img/logo-dif.png';
 import logoAyunta from '@/assets/img/logo-ayunta.png';
 import { useAuth } from '@/composables/useAuth';
+import ProtectedImage from '@/components/ProtectedImage.vue';
 
 // composables
 const { user } = useAuth();
@@ -352,11 +353,6 @@ const formatBelonging = (belonging) => {
     'PRESTADA': 'Prestada'
   };
   return belongingMap[belonging] || belonging;
-};
-
-const apiEndpoint = import.meta.env.VITE_API_ENDPOINT || "http://localhost:3000";
-const getPhotoUrl = (photo) => {
-  return apiEndpoint + photo;
 };
 
 const generateProfilePDF = async () => {
@@ -523,7 +519,7 @@ const generateProfilePDF = async () => {
       subject: 'Ficha Oficial de Beneficiario DIF Municipal',
       author: 'DIF Municipal La Paz B.C.S.',
       keywords: 'beneficiario, ficha, oficial',
-      creator: 'Sistema del Padron de Beneficiarios'
+      creator: 'SPB - Sistema de Padrón de Beneficiarios'
     });
 
     pdf.save(`${beneficiaryFileName.value}.pdf`);

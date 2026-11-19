@@ -2,38 +2,44 @@
   <div class="splash-screen">
     <div class="splash-content">
       <div class="spinner">
-        <div v-if="!conectionError" class="double-bounce1"></div>
-        <div v-if="!conectionError" class="double-bounce2"></div>
+        <div v-if="!connectionError" class="double-bounce1"></div>
+        <div v-if="!connectionError" class="double-bounce2"></div>
       </div>
       <h1 class="text-2xl font-semibold mt-6">Iniciando aplicación...</h1>
-      <p class="mt-2 text-gray-600">Por favor espere un momento</p>
+      <p v-if="!connectionError" class="mt-2 text-gray-700" role="status">Comprobando conexión con el servidor</p>
 
-      <p v-if="conectionError" class="mt-2 text-red-600">Error al conectar con el servidor</p>
+      <div v-else class="mt-4" role="alert">
+        <p class="text-red-800">No fue posible conectar con el servidor.</p>
+        <button type="button" class="btn mt-4 min-h-11 bg-red-800 text-white hover:bg-red-900" :disabled="checking" @click="checkServerStatus">
+          <span v-if="checking" class="loading loading-spinner loading-sm"></span>
+          {{ checking ? 'Conectando…' : 'Reintentar conexión' }}
+        </button>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, onMounted } from 'vue';
 import api from '../services/api';
 
-const router = useRouter();
-const conectionError = ref(false);
+const emit = defineEmits(['ready'])
+const connectionError = ref(false);
+const checking = ref(false)
 
 const checkServerStatus = async () => {
+  if (checking.value) return
+  checking.value = true
+  connectionError.value = false
   try {
     const response = await api.get('/');
     if (response.status === 200) {
-      console.log('Servidor listo');
-      // Redirigir al dashboard o a la ruta inicial
-      router.push('/dashboard');
+      emit('ready')
     }
   } catch (error) {
-    console.error('Error al conectar con el servidor:', error);
-    conectionError.value = true;
-    // Reintentar después de un tiempo
-    setTimeout(checkServerStatus, 3000);
+    connectionError.value = true;
+  } finally {
+    checking.value = false
   }
 };
 
@@ -41,10 +47,6 @@ onMounted(() => {
   checkServerStatus();
 });
 
-onBeforeUnmount(() => {
-  // Limpiar cualquier temporizador pendiente
-  clearTimeout();
-});
 </script>
 
 <style scoped>
@@ -86,6 +88,17 @@ onBeforeUnmount(() => {
 
 .double-bounce2 {
   animation-delay: -1.0s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .double-bounce1, .double-bounce2 {
+    animation: none;
+  }
+
+  .double-bounce2 {
+    opacity: 0.25;
+    transform: scale(0.65);
+  }
 }
 
 @keyframes sk-bounce {
